@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -w \"\\\\nHTTP: %{http_code}\" \"https://kanjiapi.dev/v1/kanji/grade-1\")",
+      "Bash(curl -s -w \"\\\\nHTTP: %{http_code}\" \"https://kanjiapi.dev/v1/kanji/joyo\")",
+      "Bash(curl -s -w \"\\\\nHTTP: %{http_code}\" \"https://kanjiapi.dev/v1/kanji/jlpt5\")",
+      "Bash(curl -s -w \"\\\\nHTTP: %{http_code}\" \"https://kanjiapi.dev/v1/kanji/5\")",
+      "Bash(curl -s \"https://kanjiapi.dev/v1/kanji\")",
+      "Bash(curl -s \"https://kanjiapi.dev\")",
+      "Bash(python -c \"import sys; data=sys.stdin.read\\(\\); print\\(data[:2000]\\)\")",
+      "Bash(curl -s \"https://kanjiapi.dev/v1/kanji/grade-1\" -o /dev/null -w \"%{http_code}\")",
+      "Bash(curl -s \"https://kanjiapi.dev/v1/kanji/joyo\" -o /dev/null -w \"%{http_code}\")",
+      "Bash(curl -s \"https://kanjiapi.dev/index.js\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://kanjiapi.dev/v1/kanji/jlpt-5\")",
+      "Bash(npx tsc *)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"const p = require\\('./node_modules/zustand/package.json'\\); console.log\\(JSON.stringify\\(Object.keys\\(p.exports || {}\\), null, 2\\)\\)\")",
+      "Bash(node -e \"const s = require\\('./node_modules/zustand/shallow'\\); console.log\\(Object.keys\\(s\\)\\)\")"
+    ]
+  }
+}

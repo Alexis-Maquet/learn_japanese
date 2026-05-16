@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0d1117] text-gray-100 font-japanese;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer components {
+  .kanji-char {
+    font-family: 'Noto Sans JP', serif;
+    font-weight: 400;
+  }
+
+  .btn-primary {
+    @apply bg-japan-red text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium;
+  }
+
+  .btn-secondary {
+    @apply bg-[#21262d] text-gray-200 px-4 py-2 rounded-lg hover:bg-[#30363d] transition-colors border border-[#30363d];
+  }
+
+  .card {
+    @apply bg-[#161b22] border border-[#30363d] rounded-xl;
+  }
+
+  .badge-jlpt {
+    @apply text-xs font-bold px-2 py-0.5 rounded-full;
+  }
+
+  .badge-n5 { @apply bg-green-900 text-green-300; }
+  .badge-n4 { @apply bg-blue-900 text-blue-300; }
+  .badge-n3 { @apply bg-yellow-900 text-yellow-300; }
+  .badge-n2 { @apply bg-orange-900 text-orange-300; }
+  .badge-n1 { @apply bg-red-900 text-red-300; }
+  .badge-none { @apply bg-gray-800 text-gray-400; }
+}
+
+/* Stroke order SVG styling */
+.stroke-order-svg path {
+  fill: none;
+  stroke: #e5e7eb;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stroke-order-svg path.active {
+  stroke: #DC143C;
+}
+
+.stroke-order-svg path.dimmed {
+  stroke: #374151;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-[#0d1117];
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-[#30363d] rounded;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-[#484f58];
+}

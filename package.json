@@ -9,8 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-words": "node scripts/generate-kanji-words.mjs",
-    "generate-icons": "node scripts/generate-icons.mjs",
-    "deploy": "npm run build && gh-pages -d dist -t"
+    "generate-icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "react": "^19.2.6",

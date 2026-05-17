@@ -10,7 +10,7 @@ import { StatsPage } from '@/pages/StatsPage';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className="min-h-screen bg-[#0d1117] text-gray-100">
         <Navigation />
         <main>

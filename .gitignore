@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Large generated data files (download/generate locally — see scripts/)
+public/kanjiapi_full.json
+public/kanji_words.json
+public/svg/
+resources/
+
+# Claude Code local settings
+.claude/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

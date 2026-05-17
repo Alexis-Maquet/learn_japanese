@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useListStore } from '../store/listStore';
-import { CreateListModal } from '../components/lists/CreateListModal';
+import { useListStore } from '@/store/listStore';
+import { CreateListModal } from '@/components/lists/CreateListModal';
 
 export function UserListsPage() {
   const { lists, deleteList } = useListStore();

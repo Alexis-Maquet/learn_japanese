@@ -1,11 +1,20 @@
 import { create } from 'zustand';
-import type { KanjiDetails, FilterState } from '../types';
-import { fetchKanjiByJlpt, fetchKanjiDetails } from '../utils/api';
-import { logger } from '../utils/logger';
+import type { KanjiDetails, KanjiWord, FilterState } from '@/types';
+import { fetchKanjiByJlpt, fetchKanjiNoJlpt, fetchKanjiByFrequency, fetchKanjiDetails, fetchKanjiWords, searchKanjiInDb } from '@/utils/api';
+import { logger } from '@/utils/logger';
+
+const FREQUENCY_GROUPS: Record<string, number> = {
+  top100: 100,
+  top500: 500,
+  top1000: 1000,
+  top2000: 2000,
+};
 
 interface KanjiStore {
   kanjiByLevel: Record<string, string[]>;
+  kanjiByFrequency: Record<string, string[]>;
   details: Record<string, KanjiDetails>;
+  kanjiWords: Record<string, KanjiWord[]>;
   loading: boolean;
   error: string | null;
   filters: FilterState;
@@ -13,7 +22,9 @@ interface KanjiStore {
 
   loadKanjiForLevel: (level: string) => Promise<void>;
   loadAllLevels: () => Promise<void>;
+  loadFrequencyGroups: () => Promise<void>;
   loadDetails: (kanji: string) => Promise<KanjiDetails>;
+  loadWords: (kanji: string) => Promise<void>;
   setFilters: (filters: Partial<FilterState>) => void;
   setPage: (page: number) => void;
   getFilteredKanji: () => string[];
@@ -21,17 +32,21 @@ interface KanjiStore {
 
 export const useKanjiStore = create<KanjiStore>((set, get) => ({
   kanjiByLevel: {},
+  kanjiByFrequency: {},
   details: {},
+  kanjiWords: {},
   loading: false,
   error: null,
-  filters: { jlpt: [], domains: [], search: '' },
+  filters: { jlpt: [], domains: [], search: '', lists: [] },
   currentPage: 1,
 
   loadKanjiForLevel: async (level) => {
     const { kanjiByLevel } = get();
     if (kanjiByLevel[level]) return;
     try {
-      const kanjis = await fetchKanjiByJlpt(level);
+      const kanjis = level === 'none'
+        ? await fetchKanjiNoJlpt()
+        : await fetchKanjiByJlpt(level);
       logger.info('kanjiStore', `Kanjis chargés pour ${level}`, { count: kanjis.length });
       set((s) => ({ kanjiByLevel: { ...s.kanjiByLevel, [level]: kanjis } }));
     } catch (e) {
@@ -44,10 +59,28 @@ export const useKanjiStore = create<KanjiStore>((set, get) => ({
     logger.info('kanjiStore', 'Chargement de tous les niveaux JLPT');
     set({ loading: true, error: null });
     try {
-      await Promise.all(['N5', 'N4', 'N3', 'N2', 'N1'].map((l) => get().loadKanjiForLevel(l)));
+      await Promise.all(['N5', 'N4', 'N3', 'N2', 'N1', 'none'].map((l) => get().loadKanjiForLevel(l)));
       logger.info('kanjiStore', 'Tous les niveaux chargés');
     } finally {
       set({ loading: false });
+    }
+  },
+
+  loadFrequencyGroups: async () => {
+    const { kanjiByFrequency } = get();
+    const missing = Object.keys(FREQUENCY_GROUPS).filter((k) => !kanjiByFrequency[k]);
+    if (missing.length === 0) return;
+    logger.info('kanjiStore', 'Chargement des groupes de fréquence');
+    try {
+      await Promise.all(
+        missing.map(async (key) => {
+          const kanjis = await fetchKanjiByFrequency(FREQUENCY_GROUPS[key]);
+          set((s) => ({ kanjiByFrequency: { ...s.kanjiByFrequency, [key]: kanjis } }));
+        })
+      );
+      logger.info('kanjiStore', 'Groupes de fréquence chargés');
+    } catch (e) {
+      logger.error('kanjiStore', 'Échec chargement groupes de fréquence', e);
     }
   },
 
@@ -60,6 +93,13 @@ export const useKanjiStore = create<KanjiStore>((set, get) => ({
     return d;
   },
 
+  loadWords: async (kanji) => {
+    const { kanjiWords } = get();
+    if (kanjiWords[kanji]) return;
+    const words = await fetchKanjiWords(kanji);
+    set((s) => ({ kanjiWords: { ...s.kanjiWords, [kanji]: words } }));
+  },
+
   setFilters: (filters) => set((s) => ({ filters: { ...s.filters, ...filters }, currentPage: 1 })),
 
   setPage: (page) => set({ currentPage: page }),
@@ -69,22 +109,17 @@ export const useKanjiStore = create<KanjiStore>((set, get) => ({
 
     const levelsToShow = filters.jlpt.length > 0 ? filters.jlpt : ['N5', 'N4', 'N3', 'N2', 'N1'];
     const seen = new Set<string>();
-    const result: string[] = [];
+    const pool: string[] = [];
 
     for (const level of levelsToShow) {
       for (const k of kanjiByLevel[level] ?? []) {
-        if (!seen.has(k)) {
-          seen.add(k);
-          result.push(k);
-        }
+        if (!seen.has(k)) { seen.add(k); pool.push(k); }
       }
     }
 
-    if (filters.search) {
-      const s = filters.search.trim();
-      return result.filter((k) => k === s || k.includes(s));
-    }
+    if (!filters.search.trim()) return pool;
 
-    return result;
+    const matches = searchKanjiInDb(filters.search.trim());
+    return pool.filter((k) => matches.has(k));
   },
 }));

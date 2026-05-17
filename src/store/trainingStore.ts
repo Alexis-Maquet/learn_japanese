@@ -1,16 +1,14 @@
 import { create } from 'zustand';
-import type { TrainingSession, TrainingCard, TrainingMode, ReadingType, KanjiDetails } from '../types';
-import { toRomaji } from '../utils/romaji';
-import { logger } from '../utils/logger';
+import type { TrainingSession, TrainingCard, KanjiDetails } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface TrainingStore {
   session: TrainingSession | null;
-  startSession: (listId: string, listName: string, kanjis: KanjiDetails[], mode: TrainingMode, readingType: ReadingType) => void;
+  startSession: (listIds: string[], listName: string, kanjis: KanjiDetails[]) => void;
   answerCard: (correct: boolean, selectedAnswer?: string) => void;
   nextCard: () => void;
   prevCard: () => void;
   endSession: () => void;
-  generateChoices: (card: TrainingCard) => string[];
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -25,7 +23,7 @@ function shuffle<T>(arr: T[]): T[] {
 export const useTrainingStore = create<TrainingStore>((set, get) => ({
   session: null,
 
-  startSession: (listId, listName, kanjis, mode, readingType) => {
+  startSession: (listIds, listName, kanjis) => {
     const cards: TrainingCard[] = shuffle(kanjis).map((d) => ({
       kanji: d.kanji,
       details: d,
@@ -33,12 +31,10 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
       correct: null,
     }));
 
-    const session = {
+    const session: TrainingSession = {
       id: crypto.randomUUID(),
-      listId,
+      listIds,
       listName,
-      mode,
-      readingType,
       cards,
       currentIndex: 0,
       startedAt: Date.now(),
@@ -46,8 +42,6 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
 
     logger.info('trainingStore', `Session démarrée : "${listName}"`, {
       sessionId: session.id,
-      mode,
-      readingType,
       cardCount: cards.length,
     });
 
@@ -104,31 +98,5 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
     const { session } = get();
     if (session) logger.info('trainingStore', `Session abandonnée : "${session.listName}"`, { sessionId: session.id });
     set({ session: null });
-  },
-
-  generateChoices: (card) => {
-    const { session } = get();
-    if (!session) return [];
-
-    const readings = session.readingType === 'on' ? card.details.on_readings : card.details.kun_readings;
-    const correctReading = readings[0];
-    if (!correctReading) return [];
-
-    const correct = toRomaji(correctReading);
-
-    const allCards = session.cards.filter((c) => c.kanji !== card.kanji);
-    const distractors = shuffle(allCards)
-      .slice(0, 10)
-      .flatMap((c) => {
-        const r = session.readingType === 'on' ? c.details.on_readings : c.details.kun_readings;
-        return r.slice(0, 1);
-      })
-      .map((r) => toRomaji(r))
-      .filter((r) => r && r !== correct);
-
-    const unique = Array.from(new Set(distractors)).slice(0, 3);
-    while (unique.length < 3) unique.push('---');
-
-    return shuffle([correct, ...unique]);
   },
 }));

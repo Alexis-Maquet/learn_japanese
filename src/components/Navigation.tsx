@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useListStore } from '../store/listStore';
+import { useListStore } from '@/store/listStore';
 
 const NAV_LINKS = [
   { to: '/', label: 'Kanjis', icon: '漢' },
   { to: '/lists', label: 'Mes listes', icon: '📋' },
   { to: '/training', label: 'Entraînement', icon: '✏️' },
+  { to: '/stats', label: 'Statistiques', icon: '📊' },
 ];
 
 export function Navigation() {

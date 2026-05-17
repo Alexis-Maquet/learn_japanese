@@ -1,17 +1,35 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
-import { useKanjiStore } from '../store/kanjiStore';
-import { FilterBar } from '../components/filters/FilterBar';
-import { KanjiCard } from '../components/kanji/KanjiCard';
+import { useKanjiStore } from '@/store/kanjiStore';
+import { useListStore } from '@/store/listStore';
+import { FilterBar } from '@/components/filters/FilterBar';
+import { KanjiCard } from '@/components/kanji/KanjiCard';
+import { AddToListModal } from '@/components/lists/AddToListModal';
 
 const PAGE_SIZE = 60;
 
 export function KanjiListPage() {
   const { kanjiByLevel, loadAllLevels, loading, error, currentPage, setPage } = useKanjiStore();
+  const filters = useKanjiStore((s) => s.filters);
+  const userLists = useListStore((s) => s.lists);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => { loadAllLevels(); }, [loadAllLevels]);
 
-  const allKanji = useKanjiStore(useShallow((s) => s.getFilteredKanji()));
+  const baseKanji = useKanjiStore(useShallow((s) => s.getFilteredKanji()));
+
+  // Apply user list filter on top of base filters
+  const allKanji = useMemo(() => {
+    if (filters.lists.length === 0) return baseKanji;
+    const allowed = new Set<string>();
+    for (const id of filters.lists) {
+      const list = userLists.find((l) => l.id === id);
+      if (list) list.kanjis.forEach((k) => allowed.add(k));
+    }
+    return baseKanji.filter((k) => allowed.has(k));
+  }, [baseKanji, filters.lists, userLists]);
 
   const levelMap = useMemo(() => {
     const m: Record<string, string> = {};
@@ -26,6 +44,28 @@ export function KanjiListPage() {
 
   const loaded = Object.keys(kanjiByLevel).length;
 
+  function toggleSelect(kanji: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(kanji)) next.delete(kanji);
+      else next.add(kanji);
+      return next;
+    });
+  }
+
+  function exitSelectionMode() {
+    setSelectionMode(false);
+    setSelected(new Set());
+  }
+
+  function selectAllPage() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      pageKanji.forEach((k) => next.add(k));
+      return next;
+    });
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -36,9 +76,17 @@ export function KanjiListPage() {
             {loaded < 5 ? ` (chargement ${loaded}/5 niveaux...)` : ''}
           </p>
         </div>
-        {loading && (
-          <div className="w-6 h-6 border-2 border-japan-red border-t-transparent rounded-full animate-spin" />
-        )}
+        <div className="flex items-center gap-3">
+          {loading && (
+            <div className="w-6 h-6 border-2 border-japan-red border-t-transparent rounded-full animate-spin" />
+          )}
+          <button
+            onClick={() => selectionMode ? exitSelectionMode() : setSelectionMode(true)}
+            className={selectionMode ? 'btn-primary text-sm' : 'btn-secondary text-sm'}
+          >
+            {selectionMode ? '✕ Annuler' : '☑ Sélectionner'}
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -58,6 +106,10 @@ export function KanjiListPage() {
                 <span>{kanjiByLevel[l]?.length ?? '…'} kanjis</span>
               </div>
             ))}
+            <div className="flex justify-between text-gray-600">
+              <span>Sans JLPT</span>
+              <span>{kanjiByLevel['none']?.length ?? '…'} kanjis</span>
+            </div>
           </div>
         </aside>
 
@@ -70,7 +122,13 @@ export function KanjiListPage() {
 
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6 gap-3">
             {pageKanji.map((k) => (
-              <KanjiCard key={k} kanji={k} jlptLevel={levelMap[k] ?? null} />
+              <KanjiCard
+                key={k}
+                kanji={k}
+                jlptLevel={levelMap[k] ?? null}
+                selected={selectionMode ? selected.has(k) : undefined}
+                onSelect={selectionMode ? toggleSelect : undefined}
+              />
             ))}
           </div>
 
@@ -116,6 +174,46 @@ export function KanjiListPage() {
           )}
         </main>
       </div>
+
+      {/* Barre de sélection sticky */}
+      {selectionMode && (
+        <div className="fixed bottom-0 left-0 right-0 bg-[#161b22] border-t border-[#30363d] px-4 py-3 z-40">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-white font-medium">
+                {selected.size} kanji{selected.size > 1 ? 's' : ''} sélectionné{selected.size > 1 ? 's' : ''}
+              </span>
+              <button onClick={selectAllPage} className="text-sm text-gray-400 hover:text-white transition-colors">
+                Tout sélectionner la page
+              </button>
+              {selected.size > 0 && (
+                <button onClick={() => setSelected(new Set())} className="text-sm text-gray-400 hover:text-white transition-colors">
+                  Tout désélectionner
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={exitSelectionMode} className="btn-secondary text-sm">
+                Annuler
+              </button>
+              <button
+                disabled={selected.size === 0}
+                onClick={() => setShowAddModal(true)}
+                className="btn-primary text-sm disabled:opacity-40"
+              >
+                + Ajouter à une liste
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddModal && selected.size > 0 && (
+        <AddToListModal
+          kanjis={[...selected]}
+          onClose={() => { setShowAddModal(false); exitSelectionMode(); }}
+        />
+      )}
     </div>
   );
 }

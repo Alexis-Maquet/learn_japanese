@@ -1,4 +1,4 @@
-import type { Domain } from '../types';
+import type { Domain } from '@/types';
 
 const DOMAIN_KEYWORDS: Record<Domain, string[]> = {
   'Nombres': ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',

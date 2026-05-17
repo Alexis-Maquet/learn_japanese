@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useKanjiStore } from '../../store/kanjiStore';
-import { jlptNumericToLabel, getDomainsForKanji } from '../../utils/domains';
-import { JlptBadge } from './JlptBadge';
-import { useListStore } from '../../store/listStore';
+import { useKanjiStore } from '@/store/kanjiStore';
+import { jlptNumericToLabel, getDomainsForKanji } from '@/utils/domains';
+import { JlptBadge } from '@/components/kanji/JlptBadge';
+import { useListStore } from '@/store/listStore';
 
 interface Props {
   kanji: string;
   jlptLevel?: string | null;
   listId?: string;
+  selected?: boolean;
+  onSelect?: (kanji: string) => void;
 }
 
-export function KanjiCard({ kanji, jlptLevel, listId }: Props) {
+export function KanjiCard({ kanji, jlptLevel, listId, selected, onSelect }: Props) {
   const { details, loadDetails, filters } = useKanjiStore();
   const { addKanjiToList, removeKanjiFromList, lists } = useListStore();
   const d = details[kanji];
@@ -23,17 +25,23 @@ export function KanjiCard({ kanji, jlptLevel, listId }: Props) {
   const jlpt = d ? jlptNumericToLabel(d.jlpt) : (jlptLevel ?? null);
   const domains = d ? getDomainsForKanji(d.meanings) : [];
 
-  // Domain filter
   if (filters.domains.length > 0 && d && !filters.domains.some((fd) => domains.includes(fd as never))) {
     return null;
   }
 
-  return (
-    <Link
-      to={`/kanji/${encodeURIComponent(kanji)}`}
-      className="card p-4 flex flex-col items-center gap-2 hover:border-japan-red transition-all hover:shadow-lg hover:shadow-japan-red/10 group cursor-pointer"
-    >
-      <div className="text-5xl kanji-char text-white group-hover:text-japan-red transition-colors leading-none">
+  const cardContent = (
+    <>
+      {onSelect && (
+        <div className={`absolute top-2 right-2 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+          selected ? 'bg-japan-red border-japan-red' : 'border-gray-500 bg-transparent'
+        }`}>
+          {selected && <span className="text-white text-xs leading-none">✓</span>}
+        </div>
+      )}
+
+      <div className={`text-5xl kanji-char leading-none transition-colors ${
+        selected ? 'text-japan-red' : 'text-white group-hover:text-japan-red'
+      }`}>
         {kanji}
       </div>
 
@@ -79,6 +87,26 @@ export function KanjiCard({ kanji, jlptLevel, listId }: Props) {
           ✕ Retirer
         </button>
       )}
+    </>
+  );
+
+  const className = `relative card p-4 flex flex-col items-center gap-2 transition-all hover:shadow-lg group cursor-pointer ${
+    selected
+      ? 'border-japan-red shadow-japan-red/20'
+      : 'hover:border-japan-red hover:shadow-japan-red/10'
+  }`;
+
+  if (onSelect) {
+    return (
+      <div className={className} onClick={() => onSelect(kanji)}>
+        {cardContent}
+      </div>
+    );
+  }
+
+  return (
+    <Link to={`/kanji/${encodeURIComponent(kanji)}`} className={className}>
+      {cardContent}
     </Link>
   );
 }

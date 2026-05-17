@@ -9,6 +9,13 @@ export interface KanjiDetails {
   jlpt: number | null;
   unicode: string;
   heisig_en: string;
+  freq_mainichi_shinbun: number | null;
+}
+
+export interface KanjiWord {
+  word: string;
+  reading: string;
+  meaning: string;
 }
 
 export interface KanjiEntry {
@@ -27,7 +34,7 @@ export interface KanjiList {
   updatedAt: number;
 }
 
-export type TrainingMode = 'flashcard' | 'multiple-choice' | 'writing';
+export type TrainingMode = 'flashcard' | 'multiple-choice' | 'writing' | 'romaji-input';
 
 export type ReadingType = 'on' | 'kun';
 
@@ -41,10 +48,8 @@ export interface TrainingCard {
 
 export interface TrainingSession {
   id: string;
-  listId: string;
+  listIds: string[];
   listName: string;
-  mode: TrainingMode;
-  readingType: ReadingType;
   cards: TrainingCard[];
   currentIndex: number;
   startedAt: number;
@@ -55,6 +60,7 @@ export interface FilterState {
   jlpt: string[];
   domains: string[];
   search: string;
+  lists: string[];
 }
 
 export const JLPT_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;

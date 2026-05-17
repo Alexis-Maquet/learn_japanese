@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Navigation } from './components/Navigation';
-import { KanjiListPage } from './pages/KanjiListPage';
-import { KanjiDetailPage } from './pages/KanjiDetailPage';
-import { UserListsPage } from './pages/UserListsPage';
-import { ListDetailPage } from './pages/ListDetailPage';
-import { TrainingPage } from './pages/TrainingPage';
-import { TrainingSetupPage } from './pages/TrainingSetupPage';
-import { TrainingSessionPage } from './pages/TrainingSessionPage';
+import { Navigation } from '@/components/Navigation';
+import { KanjiListPage } from '@/pages/KanjiListPage';
+import { KanjiDetailPage } from '@/pages/KanjiDetailPage';
+import { UserListsPage } from '@/pages/UserListsPage';
+import { ListDetailPage } from '@/pages/ListDetailPage';
+import { TrainingPage } from '@/pages/TrainingPage';
+import { TrainingSessionPage } from '@/pages/TrainingSessionPage';
+import { StatsPage } from '@/pages/StatsPage';
 
 export default function App() {
   return (
@@ -20,8 +20,8 @@ export default function App() {
             <Route path="/lists" element={<UserListsPage />} />
             <Route path="/lists/:id" element={<ListDetailPage />} />
             <Route path="/training" element={<TrainingPage />} />
-            <Route path="/training/:listId" element={<TrainingSetupPage />} />
-            <Route path="/training/:listId/session" element={<TrainingSessionPage />} />
+            <Route path="/training/session" element={<TrainingSessionPage />} />
+            <Route path="/stats" element={<StatsPage />} />
           </Routes>
         </main>
       </div>

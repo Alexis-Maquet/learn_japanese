@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getKanjiVGUrl } from '../../utils/api';
-import { parseKanjiVGSvg } from '../../utils/strokeOrder';
+import { getKanjiVGUrl } from '@/utils/api';
+import { parseKanjiVGSvg } from '@/utils/strokeOrder';
 
 interface StrokePath {
   d: string;

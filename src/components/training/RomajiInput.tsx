@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { TrainingCard } from '@/types';
-import { checkAnswer, toRomaji } from '@/utils/romaji';
+import { checkAnswer, toRomaji, stripOkurigana } from '@/utils/romaji';
 
 interface Props {
   card: TrainingCard;
@@ -9,7 +9,10 @@ interface Props {
 }
 
 export function RomajiInput({ card, onAnswer, onNext }: Props) {
-  const allReadings = [...card.details.on_readings, ...card.details.kun_readings];
+  const allReadings = [
+    ...card.details.on_readings.slice(0, 3),
+    ...card.details.kun_readings.slice(0, 3),
+  ];
 
   const [inputs, setInputs] = useState<string[]>(() => new Array(allReadings.length).fill(''));
   const [submitted, setSubmitted] = useState(false);
@@ -17,7 +20,10 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
   const firstRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const readings = [...card.details.on_readings, ...card.details.kun_readings];
+    const readings = [
+      ...card.details.on_readings.slice(0, 3),
+      ...card.details.kun_readings.slice(0, 3),
+    ];
     setInputs(new Array(readings.length).fill(''));
     setSubmitted(false);
     setSessionCorrect(false);
@@ -100,8 +106,8 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
           <div className="flex flex-wrap gap-x-4 gap-y-0.5">
             {allReadings.map((r, i) => (
               <span key={i} className="text-gray-300">
-                <span className="kanji-char">{r}</span>
-                <span className="text-gray-500 ml-1 text-xs">{toRomaji(r)}</span>
+                <span className="kanji-char">{stripOkurigana(r)}</span>
+                <span className="text-gray-500 ml-1 text-xs">{toRomaji(stripOkurigana(r))}</span>
               </span>
             ))}
           </div>

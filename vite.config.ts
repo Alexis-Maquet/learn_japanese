@@ -63,8 +63,8 @@ export default defineConfig({
         start_url: '/learn_japanese/',
         scope: '/learn_japanese/',
         icons: [
-          { src: '/learn_japanese/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/learn_japanese/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/learn_japanese/icons/kanji_dark_512.png', sizes: '192x192', type: 'image/png' },
+          { src: '/learn_japanese/icons/kanji_dark_512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
     }),

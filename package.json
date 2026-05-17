@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-words": "node scripts/generate-kanji-words.mjs",
-    "generate-icons": "node scripts/generate-icons.mjs"
+    "generate-words": "node scripts/generate-kanji-words.mjs"
   },
   "dependencies": {
     "react": "^19.2.6",

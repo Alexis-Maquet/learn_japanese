@@ -10,8 +10,8 @@ interface Props {
 
 export function RomajiInput({ card, onAnswer, onNext }: Props) {
   const allReadings = [
-    ...card.details.on_readings.slice(0, 3),
-    ...card.details.kun_readings.slice(0, 3),
+    ...card.details.on_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
+    ...card.details.kun_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
   ];
 
   const [inputs, setInputs] = useState<string[]>(() => new Array(allReadings.length).fill(''));
@@ -21,8 +21,8 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
 
   useEffect(() => {
     const readings = [
-      ...card.details.on_readings.slice(0, 3),
-      ...card.details.kun_readings.slice(0, 3),
+      ...card.details.on_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
+      ...card.details.kun_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
     ];
     setInputs(new Array(readings.length).fill(''));
     setSubmitted(false);

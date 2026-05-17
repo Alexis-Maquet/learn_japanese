@@ -20,12 +20,23 @@ export function stripOkurigana(reading: string): string {
   return reading.split('.')[0];
 }
 
+export function fullReading(reading: string): string {
+  return reading.replace('.', '');
+}
+
 export function checkAnswer(input: string, readings: string[]): boolean {
   const normalized = normalizeAnswer(input);
+  const hiragana = normalizeAnswer(toHiragana(input));
   return readings.some((r) => {
     const stripped = stripOkurigana(r);
-    const romaji = normalizeAnswer(toRomaji(stripped));
-    const hiragana = normalizeAnswer(toHiragana(input));
-    return normalized === romaji || hiragana === normalizeAnswer(stripped) || normalized === normalizeAnswer(stripped);
+    const full = fullReading(r);
+    return (
+      normalized === normalizeAnswer(toRomaji(stripped)) ||
+      normalized === normalizeAnswer(toRomaji(full)) ||
+      hiragana === normalizeAnswer(stripped) ||
+      hiragana === normalizeAnswer(full) ||
+      normalized === normalizeAnswer(stripped) ||
+      normalized === normalizeAnswer(full)
+    );
   });
 }

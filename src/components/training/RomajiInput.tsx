@@ -8,22 +8,39 @@ interface Props {
   onNext: () => void;
 }
 
+function deduplicateReadings(readings: string[]): string[] {
+  const seenStems = new Set<string>();
+  const seenFull = new Set<string>();
+  return readings.filter((r) => {
+    const stem = r.split('.')[0];
+    const full = r.replace('.', '');
+    if (seenStems.has(stem) || seenFull.has(full)) return false;
+    seenStems.add(stem);
+    seenFull.add(full);
+    return true;
+  });
+}
+
+function buildReadings(on: string[], kun: string[]): string[] {
+  const filteredOn = deduplicateReadings(on.filter((r) => !r.startsWith('-'))).slice(0, 3);
+  const filteredKun = deduplicateReadings(kun.filter((r) => !r.startsWith('-'))).slice(0, 3);
+  return [...filteredOn, ...filteredKun].slice(0, 4);
+}
+
 export function RomajiInput({ card, onAnswer, onNext }: Props) {
-  const allReadings = [
-    ...card.details.on_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
-    ...card.details.kun_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
+  const displayReadings = buildReadings(card.details.on_readings, card.details.kun_readings);
+  const allValidReadings = [
+    ...card.details.on_readings.filter((r) => !r.startsWith('-')),
+    ...card.details.kun_readings.filter((r) => !r.startsWith('-')),
   ];
 
-  const [inputs, setInputs] = useState<string[]>(() => new Array(allReadings.length).fill(''));
+  const [inputs, setInputs] = useState<string[]>(() => new Array(displayReadings.length).fill(''));
   const [submitted, setSubmitted] = useState(false);
   const [sessionCorrect, setSessionCorrect] = useState(false);
   const firstRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const readings = [
-      ...card.details.on_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
-      ...card.details.kun_readings.filter((r) => !r.startsWith('-')).slice(0, 3),
-    ];
+    const readings = buildReadings(card.details.on_readings, card.details.kun_readings);
     setInputs(new Array(readings.length).fill(''));
     setSubmitted(false);
     setSessionCorrect(false);
@@ -35,7 +52,7 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-    const allValid = nonEmpty.every((input) => checkAnswer(input, allReadings));
+    const allValid = nonEmpty.every((input) => checkAnswer(input, allValidReadings));
     setSessionCorrect(allValid);
     setSubmitted(true);
     onAnswer(allValid, nonEmpty.join(', '));
@@ -43,7 +60,7 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
 
   const inputState = (value: string): 'idle' | 'correct' | 'wrong' => {
     if (!submitted || !value.trim()) return 'idle';
-    return checkAnswer(value, allReadings) ? 'correct' : 'wrong';
+    return checkAnswer(value, displayReadings) ? 'correct' : 'wrong';
   };
 
   const inputClass = (value: string) => {
@@ -65,7 +82,7 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
       {/* Input fields */}
       <div className="w-full max-w-sm space-y-2">
         <p className="text-xs text-gray-500 text-center">
-          {allReadings.length} prononciation{allReadings.length > 1 ? 's' : ''} — au moins une requise, toutes doivent être correctes
+          {displayReadings.length} prononciation{displayReadings.length > 1 ? 's' : ''} — au moins une requise, toutes doivent être correctes
         </p>
         {inputs.map((value, i) => (
           <div key={i} className="relative">
@@ -104,7 +121,7 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
             {sessionCorrect ? '✓ Correct !' : '✗ Incorrect'}
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-0.5">
-            {allReadings.map((r, i) => (
+            {displayReadings.map((r, i) => (
               <span key={i} className="text-gray-300">
                 <span className="kanji-char">{stripOkurigana(r)}</span>
                 <span className="text-gray-500 ml-1 text-xs">{toRomaji(stripOkurigana(r))}</span>

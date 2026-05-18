@@ -93,7 +93,15 @@ export function ScanPage() {
       setRemainingCalls(getRemainingCalls());
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      setGeminiError(msg);
+      if (msg.includes('429') || msg.includes('quota')) {
+        setGeminiError(
+          'Quota dépassé ou tier gratuit non disponible (limit: 0). ' +
+          'Assurez-vous que votre clé provient de aistudio.google.com et non de Google Cloud Console. ' +
+          'Sur Cloud Console, la facturation désactive le tier gratuit.'
+        );
+      } else {
+        setGeminiError(msg);
+      }
       if (msg.includes('401') || msg.includes('API_KEY_INVALID') || msg.includes('PERMISSION_DENIED') || msg.includes('auth')) {
         clearApiKey();
         setShowApiKeyModal(true);

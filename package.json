@@ -11,9 +11,11 @@
     "generate-words": "node scripts/generate-kanji-words.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.1",
+    "tesseract.js": "^7.0.0",
     "wanakana": "^5.3.1",
     "zustand": "^5.0.13"
   },

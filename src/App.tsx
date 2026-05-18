@@ -7,13 +7,14 @@ import { ListDetailPage } from '@/pages/ListDetailPage';
 import { TrainingPage } from '@/pages/TrainingPage';
 import { TrainingSessionPage } from '@/pages/TrainingSessionPage';
 import { StatsPage } from '@/pages/StatsPage';
+import { ScanPage } from '@/pages/ScanPage';
 
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className="min-h-screen bg-[#0d1117] text-gray-100">
         <Navigation />
-        <main>
+        <main className="[padding-bottom:env(safe-area-inset-bottom)]">
           <Routes>
             <Route path="/" element={<KanjiListPage />} />
             <Route path="/kanji/:kanji" element={<KanjiDetailPage />} />
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/training" element={<TrainingPage />} />
             <Route path="/training/session" element={<TrainingSessionPage />} />
             <Route path="/stats" element={<StatsPage />} />
+            <Route path="/scan" element={<ScanPage />} />
           </Routes>
         </main>
       </div>

@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { to: '/lists', label: 'Mes listes', icon: '📋' },
   { to: '/training', label: 'Entraînement', icon: '✏️' },
   { to: '/stats', label: 'Statistiques', icon: '📊' },
+  { to: '/scan', label: 'Scanner', icon: '📷' },
 ];
 
 export function Navigation() {
@@ -13,7 +14,7 @@ export function Navigation() {
   const lists = useListStore((s) => s.lists);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0d1117]/95 backdrop-blur border-b border-[#30363d]">
+    <header className="sticky top-0 z-50 bg-[#0d1117]/95 backdrop-blur border-b border-[#30363d] [padding-top:env(safe-area-inset-top)]">
       <div className="max-w-7xl mx-auto px-4 flex items-center gap-6 h-14">
         <Link to="/" className="flex items-center gap-2 font-bold text-lg text-white">
           <span className="text-japan-red text-2xl kanji-char">漢字</span>

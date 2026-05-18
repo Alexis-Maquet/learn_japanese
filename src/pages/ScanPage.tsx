@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { createWorker } from 'tesseract.js';
 import { ImageCapture, type CapturedImage } from '@/components/scan/ImageCapture';
 import { KanjiAnalysis } from '@/components/scan/KanjiAnalysis';
-import { extractKanji, highlightKanjiInText } from '@/utils/kanjiExtract';
+import { extractKanjiWords, highlightKanjiInText } from '@/utils/kanjiExtract';
 import { extractTextWithGemini, getApiKey, saveApiKey, clearApiKey, getRemainingCalls } from '@/utils/geminiVision';
 
 type OcrStatus = 'idle' | 'loading' | 'done' | 'error';
@@ -124,7 +124,7 @@ export function ScanPage() {
 
   const hasApiKey = !!getApiKey();
   const activeText = activeSource === 'gemini' && geminiText ? geminiText : ocrText;
-  const kanjis = extractKanji(activeText);
+  const kanjis = extractKanjiWords(activeText);
   const segments = activeText ? highlightKanjiInText(activeText) : [];
   const showSourceToggle = !!(ocrText && geminiText);
 
@@ -287,8 +287,8 @@ export function ScanPage() {
       {/* Kanji analysis */}
       {kanjis.length > 0 && (
         <div className="card p-5 space-y-4">
-          <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium">Kanji détectés</h2>
-          <KanjiAnalysis kanjis={kanjis} />
+          <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium">Mots en kanji</h2>
+          <KanjiAnalysis words={kanjis} />
         </div>
       )}
 

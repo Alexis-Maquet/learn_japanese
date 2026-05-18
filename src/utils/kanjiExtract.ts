@@ -1,7 +1,13 @@
 const KANJI_RE = /[一-鿿㐀-䶿豈-﫿]/g;
+const KANJI_WORD_RE = /[一-鿿㐀-䶿豈-﫿]+/g;
 
 export function extractKanji(text: string): string[] {
   const matches = text.match(KANJI_RE) ?? [];
+  return [...new Set(matches)];
+}
+
+export function extractKanjiWords(text: string): string[] {
+  const matches = text.match(KANJI_WORD_RE) ?? [];
   return [...new Set(matches)];
 }
 

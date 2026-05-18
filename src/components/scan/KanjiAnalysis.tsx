@@ -1,85 +1,121 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
 import { useKanjiStore } from '@/store/kanjiStore';
 import { JlptBadge } from '@/components/kanji/JlptBadge';
+import { SpeakButton } from '@/components/kanji/SpeakButton';
 import { AddToListModal } from '@/components/lists/AddToListModal';
+import { KanjiDetailModal } from './KanjiDetailModal';
 import { jlptNumericToLabel } from '@/utils/domains';
 import type { KanjiDetails } from '@/types';
 
-interface KanjiCardInlineProps {
+interface KanjiCardProps {
   kanji: string;
+  onClick: (k: string) => void;
 }
 
-function KanjiCardInline({ kanji }: KanjiCardInlineProps) {
+function KanjiCard({ kanji, onClick }: KanjiCardProps) {
   const { details, loadDetails } = useKanjiStore();
   const d: KanjiDetails | undefined = details[kanji];
 
-  useEffect(() => {
-    loadDetails(kanji);
-  }, [kanji, loadDetails]);
+  useEffect(() => { loadDetails(kanji); }, [kanji, loadDetails]);
 
   const jlpt = d ? jlptNumericToLabel(d.jlpt) : null;
 
   return (
-    <Link
-      to={`/kanji/${encodeURIComponent(kanji)}`}
-      className="card p-4 flex flex-col items-center gap-2 hover:border-japan-red hover:shadow-japan-red/10 transition-all group cursor-pointer"
+    <button
+      onClick={() => onClick(kanji)}
+      className="card p-3 flex flex-col items-center gap-1.5 hover:border-japan-red transition-all group cursor-pointer w-full"
     >
-      <span className="text-5xl kanji-char leading-none text-white group-hover:text-japan-red transition-colors">
+      <span className="text-4xl kanji-char leading-none text-white group-hover:text-japan-red transition-colors">
         {kanji}
       </span>
       <JlptBadge level={jlpt} />
       {d ? (
-        <>
-          <p className="text-xs text-gray-400 text-center line-clamp-2 leading-relaxed">
-            {d.meanings.slice(0, 3).join(', ')}
-          </p>
-          <div className="w-full space-y-0.5">
-            {d.on_readings.length > 0 && (
-              <p className="text-xs text-center">
-                <span className="text-gray-500">音: </span>
-                <span className="text-blue-300">{d.on_readings.slice(0, 2).join('、')}</span>
-              </p>
-            )}
-            {d.kun_readings.length > 0 && (
-              <p className="text-xs text-center">
-                <span className="text-gray-500">訓: </span>
-                <span className="text-green-300">{d.kun_readings.slice(0, 2).join('、')}</span>
-              </p>
-            )}
-          </div>
-        </>
+        <p className="text-xs text-gray-400 text-center line-clamp-2 leading-relaxed">
+          {d.meanings.slice(0, 2).join(', ')}
+        </p>
       ) : (
-        <div className="w-full space-y-1">
-          <div className="h-3 bg-[#21262d] rounded animate-pulse" />
-          <div className="h-3 bg-[#21262d] rounded animate-pulse w-3/4 mx-auto" />
-        </div>
+        <div className="w-full h-3 bg-[#21262d] rounded animate-pulse" />
       )}
-      <span className="text-xs text-gray-600 group-hover:text-gray-400 transition-colors mt-1">
-        Voir détails →
-      </span>
-    </Link>
+    </button>
+  );
+}
+
+interface WordGroupProps {
+  word: string;
+  onKanjiClick: (k: string) => void;
+}
+
+function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
+  const { kanjiWords, loadWords } = useKanjiStore();
+  const chars = useMemo(() => [...word], [word]);
+
+  useEffect(() => {
+    chars.forEach((k) => loadWords(k));
+  }, [word, chars, loadWords]);
+
+  const definition = useMemo(() => {
+    for (const k of chars) {
+      const entries = kanjiWords[k] ?? [];
+      const match =
+        entries.find((e) => e.word === word) ??
+        entries.find((e) => e.word.length > 1 && e.word.startsWith(word));
+      if (match) return match;
+    }
+    return null;
+  }, [word, chars, kanjiWords]);
+
+  return (
+    <div className="card p-4 space-y-3">
+      {/* Word header with definition */}
+      <div className="flex items-start gap-3">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="kanji-char text-2xl text-white">{word}</span>
+          {definition && <SpeakButton text={word} />}
+        </div>
+        {definition ? (
+          <div className="flex-1 min-w-0">
+            <p className="kanji-char text-base text-gray-400 leading-tight">{definition.reading}</p>
+            <p className="text-sm text-gray-300 mt-0.5">{definition.meaning}</p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-600 italic self-center">définition non trouvée</p>
+        )}
+      </div>
+
+      {/* Individual kanji cards */}
+      <div className="flex flex-wrap gap-2">
+        {chars.map((k) => (
+          <div key={k} className="w-[88px]">
+            <KanjiCard kanji={k} onClick={onKanjiClick} />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
 interface Props {
-  kanjis: string[];
+  words: string[];
 }
 
-export function KanjiAnalysis({ kanjis }: Props) {
+export function KanjiAnalysis({ words }: Props) {
   const [showAddToList, setShowAddToList] = useState(false);
+  const [selectedKanji, setSelectedKanji] = useState<string | null>(null);
 
-  if (kanjis.length === 0) {
-    return (
-      <p className="text-gray-500 text-sm italic">Aucun kanji détecté dans ce texte.</p>
-    );
+  const allKanjis = useMemo(() => [...new Set(words.flatMap((w) => [...w]))], [words]);
+
+  if (words.length === 0) {
+    return <p className="text-gray-500 text-sm italic">Aucun kanji détecté dans ce texte.</p>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-400">
-          <span className="text-white font-semibold">{kanjis.length}</span> kanji{kanjis.length > 1 ? 's' : ''} détecté{kanjis.length > 1 ? 's' : ''}
+          <span className="text-white font-semibold">{words.length}</span>{' '}
+          mot{words.length > 1 ? 's' : ''} en kanji —{' '}
+          <span className="text-white font-semibold">{allKanjis.length}</span>{' '}
+          kanji{allKanjis.length > 1 ? 's' : ''} uniques
         </p>
         <button
           onClick={() => setShowAddToList(true)}
@@ -90,14 +126,17 @@ export function KanjiAnalysis({ kanjis }: Props) {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {kanjis.map((k) => (
-          <KanjiCardInline key={k} kanji={k} />
+      <div className="space-y-3">
+        {words.map((word) => (
+          <KanjiWordGroup key={word} word={word} onKanjiClick={setSelectedKanji} />
         ))}
       </div>
 
       {showAddToList && (
-        <AddToListModal kanjis={kanjis} onClose={() => setShowAddToList(false)} />
+        <AddToListModal kanjis={allKanjis} onClose={() => setShowAddToList(false)} />
+      )}
+      {selectedKanji && (
+        <KanjiDetailModal kanji={selectedKanji} onClose={() => setSelectedKanji(null)} />
       )}
     </div>
   );

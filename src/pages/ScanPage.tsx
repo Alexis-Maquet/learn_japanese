@@ -3,7 +3,7 @@ import { createWorker } from 'tesseract.js';
 import { ImageCapture, type CapturedImage } from '@/components/scan/ImageCapture';
 import { KanjiAnalysis } from '@/components/scan/KanjiAnalysis';
 import { extractKanji, highlightKanjiInText } from '@/utils/kanjiExtract';
-import { extractTextWithGemini, getApiKey, saveApiKey, clearApiKey } from '@/utils/geminiVision';
+import { extractTextWithGemini, getApiKey, saveApiKey, clearApiKey, getRemainingCalls } from '@/utils/geminiVision';
 
 type OcrStatus = 'idle' | 'loading' | 'done' | 'error';
 type GeminiStatus = 'idle' | 'loading' | 'done' | 'error';
@@ -28,6 +28,7 @@ export function ScanPage() {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [apiKeyError, setApiKeyError] = useState('');
+  const [remainingCalls, setRemainingCalls] = useState(() => getRemainingCalls());
   const workerRef = useRef<Awaited<ReturnType<typeof createWorker>> | null>(null);
 
   const handleCapture = useCallback((img: CapturedImage) => {
@@ -65,7 +66,7 @@ export function ScanPage() {
       setOcrText(data.text.trim());
       setOcrStatus('done');
       setOcrPhase('');
-      setActiveSource('tesseract');
+      if (data.text.trim()) setActiveSource('tesseract');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setOcrError(msg);
@@ -86,6 +87,7 @@ export function ScanPage() {
       setGeminiText(text);
       setGeminiStatus('done');
       setActiveSource('gemini');
+      setRemainingCalls(getRemainingCalls());
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
       if (msg.includes('401') || msg.includes('API_KEY_INVALID') || msg.includes('auth')) {
@@ -108,10 +110,11 @@ export function ScanPage() {
     runGemini(apiKeyInput.trim());
   };
 
+  const hasApiKey = !!getApiKey();
   const activeText = activeSource === 'gemini' && geminiText ? geminiText : ocrText;
   const kanjis = extractKanji(activeText);
   const segments = activeText ? highlightKanjiInText(activeText) : [];
-  const hasApiKey = !!getApiKey();
+  const showSourceToggle = !!(ocrText && geminiText);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
@@ -141,7 +144,8 @@ export function ScanPage() {
         <div className="card p-5 space-y-4">
           <h2 className="text-xs uppercase tracking-wider text-gray-500 font-medium">Reconnaissance de texte</h2>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 items-center">
+            {/* Tesseract */}
             <button
               onClick={runTesseract}
               disabled={ocrStatus === 'loading'}
@@ -160,7 +164,8 @@ export function ScanPage() {
               )}
             </button>
 
-            {ocrStatus === 'done' && (
+            {/* Gemini + modifier clé */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => runGemini()}
                 disabled={geminiStatus === 'loading'}
@@ -175,14 +180,30 @@ export function ScanPage() {
                   <>
                     <span>✨</span>
                     <span>
-                      {geminiStatus === 'done' ? 'Relancer Gemini' : 'Confirmer avec Gemini'}
+                      {geminiStatus === 'done' ? 'Relancer Gemini' : 'Analyser avec Gemini'}
                       {!hasApiKey && ' (clé requise)'}
                     </span>
                   </>
                 )}
               </button>
-            )}
+              {hasApiKey && (
+                <button
+                  onClick={() => setShowApiKeyModal(true)}
+                  title="Modifier la clé API Gemini"
+                  className="text-gray-500 hover:text-gray-300 transition-colors p-1"
+                >
+                  ⚙️
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Remaining calls */}
+          {hasApiKey && (
+            <p className="text-xs text-gray-600">
+              {remainingCalls.toLocaleString()} appels Gemini restants aujourd'hui (sur 1 500)
+            </p>
+          )}
 
           {ocrStatus === 'error' && (
             <div className="text-red-400 text-sm space-y-1">
@@ -192,12 +213,18 @@ export function ScanPage() {
             </div>
           )}
 
+          {ocrStatus === 'done' && !ocrText && (
+            <p className="text-sm text-gray-500">
+              Aucun texte japonais détecté. Qualité ou orientation de l'image insuffisante — essayez avec Gemini.
+            </p>
+          )}
+
           {geminiStatus === 'error' && (
             <p className="text-red-400 text-sm">Erreur Gemini API. Vérifiez votre clé API.</p>
           )}
 
           {/* Source toggle */}
-          {ocrText && geminiText && (
+          {showSourceToggle && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-500">Source :</span>
               <button
@@ -236,9 +263,7 @@ export function ScanPage() {
                   )
                 )}
               </div>
-              <p className="text-xs text-gray-600">
-                Les kanji sont surlignés en rouge.
-              </p>
+              <p className="text-xs text-gray-600">Les kanji sont surlignés en rouge.</p>
             </div>
           )}
         </div>
@@ -258,8 +283,9 @@ export function ScanPage() {
           <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 w-full max-w-md space-y-4">
             <h3 className="text-lg font-bold text-white">Clé API Gemini</h3>
             <p className="text-sm text-gray-400">
-              Entrez votre clé API Google Gemini pour utiliser la reconnaissance IA.
-              Elle sera stockée localement dans votre navigateur.
+              {hasApiKey
+                ? 'Entrez une nouvelle clé pour remplacer celle enregistrée, ou supprimez-la.'
+                : 'Entrez votre clé API Google Gemini. Elle sera stockée localement dans votre navigateur.'}
             </p>
             <a
               href="https://aistudio.google.com/app/apikey"

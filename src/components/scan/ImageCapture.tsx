@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import type { SupportedMediaType } from '@/utils/claudeVision';
+import type { SupportedMediaType } from '@/utils/geminiVision';
 
 export interface CapturedImage {
   dataUrl: string;

@@ -3,10 +3,10 @@ import { createWorker } from 'tesseract.js';
 import { ImageCapture, type CapturedImage } from '@/components/scan/ImageCapture';
 import { KanjiAnalysis } from '@/components/scan/KanjiAnalysis';
 import { extractKanji, highlightKanjiInText } from '@/utils/kanjiExtract';
-import { extractTextWithClaude, getApiKey, saveApiKey, clearApiKey } from '@/utils/claudeVision';
+import { extractTextWithGemini, getApiKey, saveApiKey, clearApiKey } from '@/utils/geminiVision';
 
 type OcrStatus = 'idle' | 'loading' | 'done' | 'error';
-type ClaudeStatus = 'idle' | 'loading' | 'done' | 'error';
+type GeminiStatus = 'idle' | 'loading' | 'done' | 'error';
 
 const OCR_PHASE_LABELS: Record<string, string> = {
   'initializing tesseract': 'Initialisation…',
@@ -22,9 +22,9 @@ export function ScanPage() {
   const [ocrProgress, setOcrProgress] = useState(0);
   const [ocrPhase, setOcrPhase] = useState('');
   const [ocrError, setOcrError] = useState('');
-  const [claudeText, setClaudeText] = useState('');
-  const [claudeStatus, setClaudeStatus] = useState<ClaudeStatus>('idle');
-  const [activeSource, setActiveSource] = useState<'tesseract' | 'claude'>('tesseract');
+  const [geminiText, setGeminiText] = useState('');
+  const [geminiStatus, setGeminiStatus] = useState<GeminiStatus>('idle');
+  const [activeSource, setActiveSource] = useState<'tesseract' | 'gemini'>('tesseract');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [apiKeyError, setApiKeyError] = useState('');
@@ -37,8 +37,8 @@ export function ScanPage() {
     setOcrProgress(0);
     setOcrPhase('');
     setOcrError('');
-    setClaudeText('');
-    setClaudeStatus('idle');
+    setGeminiText('');
+    setGeminiStatus('idle');
     setActiveSource('tesseract');
   }, []);
 
@@ -73,42 +73,42 @@ export function ScanPage() {
     }
   };
 
-  const runClaude = async (key?: string) => {
+  const runGemini = async (key?: string) => {
     if (!image) return;
     const apiKey = key ?? getApiKey();
     if (!apiKey) {
       setShowApiKeyModal(true);
       return;
     }
-    setClaudeStatus('loading');
+    setGeminiStatus('loading');
     try {
-      const text = await extractTextWithClaude(apiKey, image.base64, image.mediaType);
-      setClaudeText(text);
-      setClaudeStatus('done');
-      setActiveSource('claude');
+      const text = await extractTextWithGemini(apiKey, image.base64, image.mediaType);
+      setGeminiText(text);
+      setGeminiStatus('done');
+      setActiveSource('gemini');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('401') || msg.includes('auth')) {
+      if (msg.includes('401') || msg.includes('API_KEY_INVALID') || msg.includes('auth')) {
         clearApiKey();
         setShowApiKeyModal(true);
       }
-      setClaudeStatus('error');
+      setGeminiStatus('error');
     }
   };
 
   const handleSaveApiKey = () => {
-    if (!apiKeyInput.trim() || !apiKeyInput.startsWith('sk-')) {
-      setApiKeyError('La clé doit commencer par "sk-"');
+    if (!apiKeyInput.trim()) {
+      setApiKeyError('La clé ne peut pas être vide');
       return;
     }
     saveApiKey(apiKeyInput.trim());
     setShowApiKeyModal(false);
     setApiKeyInput('');
     setApiKeyError('');
-    runClaude(apiKeyInput.trim());
+    runGemini(apiKeyInput.trim());
   };
 
-  const activeText = activeSource === 'claude' && claudeText ? claudeText : ocrText;
+  const activeText = activeSource === 'gemini' && geminiText ? geminiText : ocrText;
   const kanjis = extractKanji(activeText);
   const segments = activeText ? highlightKanjiInText(activeText) : [];
   const hasApiKey = !!getApiKey();
@@ -162,20 +162,20 @@ export function ScanPage() {
 
             {ocrStatus === 'done' && (
               <button
-                onClick={() => runClaude()}
-                disabled={claudeStatus === 'loading'}
+                onClick={() => runGemini()}
+                disabled={geminiStatus === 'loading'}
                 className="btn-secondary text-sm flex items-center gap-2 disabled:opacity-50"
               >
-                {claudeStatus === 'loading' ? (
+                {geminiStatus === 'loading' ? (
                   <>
                     <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                    <span>Claude analyse...</span>
+                    <span>Gemini analyse...</span>
                   </>
                 ) : (
                   <>
                     <span>✨</span>
                     <span>
-                      {claudeStatus === 'done' ? 'Relancer Claude API' : 'Confirmer avec Claude API'}
+                      {geminiStatus === 'done' ? 'Relancer Gemini' : 'Confirmer avec Gemini'}
                       {!hasApiKey && ' (clé requise)'}
                     </span>
                   </>
@@ -192,12 +192,12 @@ export function ScanPage() {
             </div>
           )}
 
-          {claudeStatus === 'error' && (
-            <p className="text-red-400 text-sm">Erreur Claude API. Vérifiez votre clé API.</p>
+          {geminiStatus === 'error' && (
+            <p className="text-red-400 text-sm">Erreur Gemini API. Vérifiez votre clé API.</p>
           )}
 
           {/* Source toggle */}
-          {ocrText && claudeText && (
+          {ocrText && geminiText && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-500">Source :</span>
               <button
@@ -209,12 +209,12 @@ export function ScanPage() {
                 Tesseract
               </button>
               <button
-                onClick={() => setActiveSource('claude')}
+                onClick={() => setActiveSource('gemini')}
                 className={`px-3 py-1 rounded-full text-xs transition-colors ${
-                  activeSource === 'claude' ? 'bg-japan-red text-white' : 'bg-[#21262d] text-gray-400 hover:text-white'
+                  activeSource === 'gemini' ? 'bg-japan-red text-white' : 'bg-[#21262d] text-gray-400 hover:text-white'
                 }`}
               >
-                Claude API
+                Gemini
               </button>
             </div>
           )}
@@ -256,22 +256,22 @@ export function ScanPage() {
       {showApiKeyModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 w-full max-w-md space-y-4">
-            <h3 className="text-lg font-bold text-white">Clé API Claude</h3>
+            <h3 className="text-lg font-bold text-white">Clé API Gemini</h3>
             <p className="text-sm text-gray-400">
-              Entrez votre clé API Anthropic pour utiliser la reconnaissance Claude.
+              Entrez votre clé API Google Gemini pour utiliser la reconnaissance IA.
               Elle sera stockée localement dans votre navigateur.
             </p>
             <a
-              href="https://console.anthropic.com/"
+              href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-japan-red hover:underline inline-block"
             >
-              Obtenir une clé sur console.anthropic.com →
+              Obtenir une clé gratuite sur aistudio.google.com →
             </a>
             <input
               type="password"
-              placeholder="sk-ant-..."
+              placeholder="AIza..."
               value={apiKeyInput}
               onChange={(e) => { setApiKeyInput(e.target.value); setApiKeyError(''); }}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveApiKey()}

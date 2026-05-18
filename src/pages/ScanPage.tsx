@@ -8,11 +8,20 @@ import { extractTextWithClaude, getApiKey, saveApiKey, clearApiKey } from '@/uti
 type OcrStatus = 'idle' | 'loading' | 'done' | 'error';
 type ClaudeStatus = 'idle' | 'loading' | 'done' | 'error';
 
+const OCR_PHASE_LABELS: Record<string, string> = {
+  'initializing tesseract': 'Initialisation…',
+  'loading language traineddata': 'Téléchargement modèle japonais (~20 Mo)…',
+  'initializing api': 'Préparation du moteur…',
+  'recognizing text': 'Reconnaissance en cours…',
+};
+
 export function ScanPage() {
   const [image, setImage] = useState<CapturedImage | null>(null);
   const [ocrText, setOcrText] = useState('');
   const [ocrStatus, setOcrStatus] = useState<OcrStatus>('idle');
   const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrPhase, setOcrPhase] = useState('');
+  const [ocrError, setOcrError] = useState('');
   const [claudeText, setClaudeText] = useState('');
   const [claudeStatus, setClaudeStatus] = useState<ClaudeStatus>('idle');
   const [activeSource, setActiveSource] = useState<'tesseract' | 'claude'>('tesseract');
@@ -26,6 +35,8 @@ export function ScanPage() {
     setOcrText('');
     setOcrStatus('idle');
     setOcrProgress(0);
+    setOcrPhase('');
+    setOcrError('');
     setClaudeText('');
     setClaudeStatus('idle');
     setActiveSource('tesseract');
@@ -35,6 +46,8 @@ export function ScanPage() {
     if (!image) return;
     setOcrStatus('loading');
     setOcrProgress(0);
+    setOcrPhase('Initialisation…');
+    setOcrError('');
     try {
       if (workerRef.current) {
         await workerRef.current.terminate();
@@ -42,17 +55,20 @@ export function ScanPage() {
       }
       const worker = await createWorker('jpn', 1, {
         logger: (m: { status: string; progress: number }) => {
-          if (m.status === 'recognizing text') {
-            setOcrProgress(Math.round(m.progress * 100));
-          }
+          const label = OCR_PHASE_LABELS[m.status] ?? m.status;
+          setOcrPhase(label);
+          setOcrProgress(Math.round(m.progress * 100));
         },
       });
       workerRef.current = worker;
       const { data } = await worker.recognize(image.dataUrl);
       setOcrText(data.text.trim());
       setOcrStatus('done');
+      setOcrPhase('');
       setActiveSource('tesseract');
-    } catch {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setOcrError(msg);
       setOcrStatus('error');
     }
   };
@@ -133,8 +149,8 @@ export function ScanPage() {
             >
               {ocrStatus === 'loading' ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Analyse... {ocrProgress > 0 ? `${ocrProgress}%` : ''}</span>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0" />
+                  <span className="truncate max-w-[200px]">{ocrPhase || 'Chargement…'}{ocrProgress > 0 ? ` ${ocrProgress}%` : ''}</span>
                 </>
               ) : (
                 <>
@@ -169,7 +185,11 @@ export function ScanPage() {
           </div>
 
           {ocrStatus === 'error' && (
-            <p className="text-red-400 text-sm">Erreur lors de la reconnaissance. Vérifiez que l'image est lisible.</p>
+            <div className="text-red-400 text-sm space-y-1">
+              <p>Erreur lors de la reconnaissance.</p>
+              {ocrError && <p className="text-xs text-red-500 font-mono break-all">{ocrError}</p>}
+              <p className="text-xs text-gray-500">Vérifiez que l'image est lisible et que la connexion est active (premier chargement : ~20 Mo).</p>
+            </div>
           )}
 
           {claudeStatus === 'error' && (

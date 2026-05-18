@@ -24,6 +24,7 @@ export function ScanPage() {
   const [ocrError, setOcrError] = useState('');
   const [geminiText, setGeminiText] = useState('');
   const [geminiStatus, setGeminiStatus] = useState<GeminiStatus>('idle');
+  const [geminiError, setGeminiError] = useState('');
   const [activeSource, setActiveSource] = useState<'tesseract' | 'gemini'>('tesseract');
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
@@ -40,6 +41,7 @@ export function ScanPage() {
     setOcrError('');
     setGeminiText('');
     setGeminiStatus('idle');
+    setGeminiError('');
     setActiveSource('tesseract');
   }, []);
 
@@ -82,6 +84,7 @@ export function ScanPage() {
       return;
     }
     setGeminiStatus('loading');
+    setGeminiError('');
     try {
       const text = await extractTextWithGemini(apiKey, image.base64, image.mediaType);
       setGeminiText(text);
@@ -89,8 +92,9 @@ export function ScanPage() {
       setActiveSource('gemini');
       setRemainingCalls(getRemainingCalls());
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('401') || msg.includes('API_KEY_INVALID') || msg.includes('auth')) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setGeminiError(msg);
+      if (msg.includes('401') || msg.includes('API_KEY_INVALID') || msg.includes('PERMISSION_DENIED') || msg.includes('auth')) {
         clearApiKey();
         setShowApiKeyModal(true);
       }
@@ -220,7 +224,10 @@ export function ScanPage() {
           )}
 
           {geminiStatus === 'error' && (
-            <p className="text-red-400 text-sm">Erreur Gemini API. Vérifiez votre clé API.</p>
+            <div className="text-red-400 text-sm space-y-1">
+              <p>Erreur Gemini API.</p>
+              {geminiError && <p className="text-xs text-red-500 font-mono break-all">{geminiError}</p>}
+            </div>
           )}
 
           {/* Source toggle */}

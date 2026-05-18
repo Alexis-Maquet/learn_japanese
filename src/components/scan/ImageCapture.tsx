@@ -11,18 +11,33 @@ interface Props {
   onCapture: (img: CapturedImage) => void;
 }
 
-function fileToCapture(file: File): Promise<CapturedImage> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const [header, base64] = dataUrl.split(',');
-      const mediaType = (header.match(/data:([^;]+)/)?.[1] ?? 'image/jpeg') as SupportedMediaType;
-      resolve({ dataUrl, base64, mediaType });
+const MAX_SIZE = 1536;
+
+function resizeToJpeg(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, MAX_SIZE / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
     };
+    img.src = dataUrl;
+  });
+}
+
+async function fileToCapture(file: File): Promise<CapturedImage> {
+  const raw = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+  const dataUrl = await resizeToJpeg(raw);
+  const [, base64] = dataUrl.split(',');
+  return { dataUrl, base64, mediaType: 'image/jpeg' };
 }
 
 export function ImageCapture({ onCapture }: Props) {
@@ -53,34 +68,15 @@ export function ImageCapture({ onCapture }: Props) {
 
   return (
     <div className="flex flex-wrap gap-3">
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
+      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
-      <button
-        onClick={() => cameraInputRef.current?.click()}
-        className="btn-primary flex items-center gap-2 text-sm"
-      >
+      <button onClick={() => cameraInputRef.current?.click()} className="btn-primary flex items-center gap-2 text-sm">
         <span>📷</span>
         <span>Appareil photo</span>
       </button>
 
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        className="btn-secondary flex items-center gap-2 text-sm"
-      >
+      <button onClick={() => fileInputRef.current?.click()} className="btn-secondary flex items-center gap-2 text-sm">
         <span>🖼️</span>
         <span>Importer image</span>
       </button>

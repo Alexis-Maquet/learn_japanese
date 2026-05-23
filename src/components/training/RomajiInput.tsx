@@ -66,9 +66,11 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
     onAnswer(allValid, nonEmpty.join(', '));
   };
 
+  const correctionReadings = deduplicateReadings(allValidReadings);
+
   const inputState = (value: string): 'idle' | 'correct' | 'wrong' => {
     if (!submitted || !value.trim()) return 'idle';
-    return checkAnswer(value, displayReadings) ? 'correct' : 'wrong';
+    return checkAnswer(value, allValidReadings) ? 'correct' : 'wrong';
   };
 
   const inputClass = (value: string) => {
@@ -129,7 +131,7 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
             {sessionCorrect ? '✓ Correct !' : '✗ Incorrect'}
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-0.5">
-            {displayReadings.map((r, i) => (
+            {correctionReadings.map((r, i) => (
               <span key={i} className="text-gray-300">
                 <span className="kanji-char">{stripOkurigana(r)}</span>
                 <span className="text-gray-500 ml-1 text-xs">{toRomaji(stripOkurigana(r))}</span>

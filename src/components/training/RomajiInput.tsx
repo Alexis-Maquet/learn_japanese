@@ -7,6 +7,7 @@ interface Props {
   card: TrainingCard;
   onAnswer: (correct: boolean, selected: string) => void;
   onNext: () => void;
+  isLastCard?: boolean;
 }
 
 function deduplicateReadings(readings: string[]): string[] {
@@ -28,7 +29,7 @@ function buildReadings(on: string[], kun: string[]): string[] {
   return [...filteredOn, ...filteredKun].slice(0, 4);
 }
 
-export function RomajiInput({ card, onAnswer, onNext }: Props) {
+export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Props) {
   const displayReadings = buildReadings(card.details.on_readings, card.details.kun_readings);
   const allValidReadings = [
     ...card.details.on_readings.filter((r) => !r.startsWith('-')),
@@ -52,7 +53,10 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
   }, [card.kanji]);
 
   useEffect(() => {
-    if (submitted) nextRef.current?.focus();
+    if (!submitted) return;
+    // Delay focus to avoid Enter key from submission triggering an immediate click
+    const t = setTimeout(() => nextRef.current?.focus(), 80);
+    return () => clearTimeout(t);
   }, [submitted]);
 
   const nonEmpty = inputs.filter((v) => v.trim());
@@ -157,7 +161,7 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
             Fiche
           </button>
           <button ref={nextRef} onClick={onNext} className="btn-primary flex-1">
-            Suivant →
+            {isLastCard ? 'Résultats →' : 'Suivant →'}
           </button>
         </div>
       )}

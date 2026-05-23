@@ -178,6 +178,7 @@ export function TrainingSessionPage() {
             card={card}
             onAnswer={(c, selected) => answerCard(c, selected)}
             onNext={nextCard}
+            isLastCard={session.currentIndex === session.cards.length - 1}
           />
         )}
       </div>

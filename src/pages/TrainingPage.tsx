@@ -165,6 +165,26 @@ export function TrainingPage() {
         </div>
       )}
 
+      {/* User lists */}
+      {lists.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Mes listes</h2>
+          <div className="space-y-2">
+            {lists.map((list) => (
+              <ListRow
+                key={list.id}
+                id={list.id}
+                name={list.name}
+                description={list.description || `${list.kanjis.length} kanji`}
+                count={list.kanjis.length}
+                isSelected={selected.has(list.id)}
+                onToggle={toggle}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* JLPT predefined */}
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Par niveau JLPT</h2>
@@ -214,32 +234,18 @@ export function TrainingPage() {
         </div>
       </section>
 
-      {/* User lists */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Mes listes</h2>
-        {lists.length === 0 ? (
+      {/* User lists fallback when empty */}
+      {lists.length === 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Mes listes</h2>
           <div className="card p-6 text-center space-y-2">
             <p className="text-gray-400 text-sm">Aucune liste personnalisée.</p>
             <Link to="/lists" className="text-japan-red text-sm hover:underline">
               Créer une liste →
             </Link>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {lists.map((list) => (
-              <ListRow
-                key={list.id}
-                id={list.id}
-                name={list.name}
-                description={list.description || `${list.kanjis.length} kanji`}
-                count={list.kanjis.length}
-                isSelected={selected.has(list.id)}
-                onToggle={toggle}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Sticky start button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0d1117]/90 backdrop-blur border-t border-[#21262d]">

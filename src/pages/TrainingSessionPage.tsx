@@ -10,7 +10,7 @@ function pct(correct: number, total: number) {
 }
 
 export function TrainingSessionPage() {
-  const { session, answerCard, nextCard, endSession } = useTrainingStore();
+  const { session, answerCard, nextCard, endSession, pauseSession } = useTrainingStore();
   const { kanjiStats, sessions, recordSession } = useStatsStore();
   const navigate = useNavigate();
 
@@ -182,12 +182,19 @@ export function TrainingSessionPage() {
         )}
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center gap-6">
+        <button
+          onClick={() => { pauseSession(); navigate('/training'); }}
+          className="btn-secondary text-sm flex items-center gap-2"
+        >
+          <span>⏸</span>
+          <span>Mettre en pause</span>
+        </button>
         <button
           onClick={() => { endSession(); navigate('/training'); }}
-          className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+          className="text-xs text-gray-600 hover:text-red-400 transition-colors"
         >
-          Abandonner la session
+          Abandonner
         </button>
       </div>
     </div>

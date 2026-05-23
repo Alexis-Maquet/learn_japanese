@@ -55,10 +55,16 @@ export function TrainingPage() {
 
   const lists = useListStore((s) => s.lists);
   const { kanjiByLevel, kanjiByFrequency, loadAllLevels, loadFrequencyGroups, loadDetails, details } = useKanjiStore();
-  const startSession = useTrainingStore((s) => s.startSession);
+  const { startSession, resumePausedSession } = useTrainingStore();
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [pausedInfo, setPausedInfo] = useState<{ listName: string; progress: number; total: number } | null>(() => {
+    const raw = localStorage.getItem('training_paused_session');
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    return { listName: s.listName, progress: s.currentIndex, total: s.cards.length };
+  });
 
   useEffect(() => {
     loadAllLevels();
@@ -107,6 +113,17 @@ export function TrainingPage() {
       .filter(Boolean)
       .join(', ');
 
+  const handleResume = () => {
+    resumePausedSession();
+    setPausedInfo(null);
+    navigate('/training/session');
+  };
+
+  const handleDiscardPaused = () => {
+    localStorage.removeItem('training_paused_session');
+    setPausedInfo(null);
+  };
+
   const handleStart = async () => {
     const kanjis = resolveSelectedKanjis();
     if (kanjis.length === 0 || loading) return;
@@ -129,6 +146,24 @@ export function TrainingPage() {
           Sélectionnez une ou plusieurs listes, puis commencez. On-yomi et kun-yomi sont tous les deux demandés.
         </p>
       </div>
+
+      {pausedInfo && (
+        <div className="card p-4 border-yellow-600/50 bg-yellow-900/10 flex items-center gap-3">
+          <span className="text-yellow-400 text-xl shrink-0">⏸</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">{pausedInfo.listName}</p>
+            <p className="text-xs text-gray-400">{pausedInfo.progress} / {pausedInfo.total} kanjis effectués</p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button onClick={handleResume} className="btn-primary text-sm py-1.5 px-3">
+              Reprendre
+            </button>
+            <button onClick={handleDiscardPaused} className="text-xs text-gray-600 hover:text-red-400 transition-colors px-1">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* JLPT predefined */}
       <section className="space-y-3">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { TrainingCard } from '@/types';
 import { checkAnswer, toRomaji, stripOkurigana } from '@/utils/romaji';
+import { KanjiDetailModal } from '@/components/scan/KanjiDetailModal';
 
 interface Props {
   card: TrainingCard;
@@ -37,15 +38,22 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
   const [inputs, setInputs] = useState<string[]>(() => new Array(displayReadings.length).fill(''));
   const [submitted, setSubmitted] = useState(false);
   const [sessionCorrect, setSessionCorrect] = useState(false);
+  const [showKanjiModal, setShowKanjiModal] = useState(false);
   const firstRef = useRef<HTMLInputElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const readings = buildReadings(card.details.on_readings, card.details.kun_readings);
     setInputs(new Array(readings.length).fill(''));
     setSubmitted(false);
     setSessionCorrect(false);
+    setShowKanjiModal(false);
     firstRef.current?.focus();
   }, [card.kanji]);
+
+  useEffect(() => {
+    if (submitted) nextRef.current?.focus();
+  }, [submitted]);
 
   const nonEmpty = inputs.filter((v) => v.trim());
   const canSubmit = nonEmpty.length > 0 && !submitted;
@@ -142,9 +150,18 @@ export function RomajiInput({ card, onAnswer, onNext }: Props) {
           Vérifier
         </button>
       ) : (
-        <button onClick={onNext} className="btn-primary w-full max-w-sm">
-          Suivant →
-        </button>
+        <div className="w-full max-w-sm flex gap-2">
+          <button onClick={() => setShowKanjiModal(true)} className="btn-secondary flex-1">
+            Fiche
+          </button>
+          <button ref={nextRef} onClick={onNext} className="btn-primary flex-1">
+            Suivant →
+          </button>
+        </div>
+      )}
+
+      {showKanjiModal && (
+        <KanjiDetailModal kanji={card.kanji} onClose={() => setShowKanjiModal(false)} />
       )}
     </div>
   );

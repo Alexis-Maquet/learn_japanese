@@ -5,6 +5,7 @@ import { SpeakButton } from '@/components/kanji/SpeakButton';
 import { AddToListModal } from '@/components/lists/AddToListModal';
 import { KanjiDetailModal } from './KanjiDetailModal';
 import { jlptNumericToLabel } from '@/utils/domains';
+import { getWordDefinition, getApiKey } from '@/utils/geminiVision';
 import type { KanjiDetails } from '@/types';
 
 interface KanjiCardProps {
@@ -48,10 +49,14 @@ interface WordGroupProps {
 function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
   const { kanjiWords, loadWords } = useKanjiStore();
   const chars = useMemo(() => [...word], [word]);
+  const [geminiDef, setGeminiDef] = useState<{ reading: string; meaning: string } | null>(null);
+  const [geminiLoading, setGeminiLoading] = useState(false);
 
   useEffect(() => {
     chars.forEach((k) => loadWords(k));
   }, [word, chars, loadWords]);
+
+  const allLoaded = useMemo(() => chars.every(k => kanjiWords[k] !== undefined), [chars, kanjiWords]);
 
   const definition = useMemo(() => {
     for (const k of chars) {
@@ -64,18 +69,38 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
     return null;
   }, [word, chars, kanjiWords]);
 
+  useEffect(() => {
+    if (!allLoaded || definition !== null || geminiDef !== null || geminiLoading) return;
+    const apiKey = getApiKey();
+    if (!apiKey) return;
+    setGeminiLoading(true);
+    getWordDefinition(apiKey, word)
+      .then(d => { if (d) setGeminiDef(d); })
+      .finally(() => setGeminiLoading(false));
+  }, [allLoaded, definition, word, geminiDef, geminiLoading]);
+
+  const displayDef = definition ?? geminiDef;
+
   return (
     <div className="card p-4 space-y-3">
       {/* Word header with definition */}
       <div className="flex items-start gap-3">
         <div className="flex items-center gap-2 shrink-0">
           <span className="kanji-char text-2xl text-white">{word}</span>
-          {definition && <SpeakButton text={word} />}
+          {displayDef && <SpeakButton text={word} />}
         </div>
-        {definition ? (
+        {geminiLoading ? (
+          <div className="flex items-center gap-2 self-center">
+            <span className="w-3 h-3 border border-gray-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-gray-600">Gemini…</span>
+          </div>
+        ) : displayDef ? (
           <div className="flex-1 min-w-0">
-            <p className="kanji-char text-base text-gray-400 leading-tight">{definition.reading}</p>
-            <p className="text-sm text-gray-300 mt-0.5">{definition.meaning}</p>
+            <p className="kanji-char text-base text-gray-400 leading-tight">{displayDef.reading}</p>
+            <p className="text-sm text-gray-300 mt-0.5">{displayDef.meaning}</p>
+            {!definition && geminiDef && (
+              <span className="text-xs text-gray-600">✨ Gemini</span>
+            )}
           </div>
         ) : (
           <p className="text-xs text-gray-600 italic self-center">définition non trouvée</p>

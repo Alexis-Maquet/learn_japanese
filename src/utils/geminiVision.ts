@@ -86,6 +86,27 @@ export async function extractTextWithGemini(
   return result.response.text().trim();
 }
 
+export async function getWordDefinition(
+  apiKey: string,
+  word: string
+): Promise<{ reading: string; meaning: string } | null> {
+  try {
+    const modelName = await pickModel(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: modelName });
+    const result = await model.generateContent(
+      `Donne la lecture en hiragana et la signification en français du mot japonais "${word}". Réponds uniquement avec ce JSON sans markdown: {"reading":"...","meaning":"..."}`
+    );
+    trackApiCall();
+    const text = result.response.text().trim();
+    const match = text.match(/\{[\s\S]*?\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]) as { reading: string; meaning: string };
+  } catch {
+    return null;
+  }
+}
+
 export function getApiKey(): string | null {
   return localStorage.getItem('gemini_api_key');
 }

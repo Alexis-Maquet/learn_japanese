@@ -2,12 +2,16 @@ import { create } from 'zustand';
 import type { TrainingSession, TrainingCard, KanjiDetails } from '@/types';
 import { logger } from '@/utils/logger';
 
+const PAUSED_KEY = 'training_paused_session';
+
 interface TrainingStore {
   session: TrainingSession | null;
   startSession: (listIds: string[], listName: string, kanjis: KanjiDetails[]) => void;
   answerCard: (correct: boolean, selectedAnswer?: string) => void;
   nextCard: () => void;
   prevCard: () => void;
+  pauseSession: () => void;
+  resumePausedSession: () => boolean;
   endSession: () => void;
 }
 
@@ -23,7 +27,27 @@ function shuffle<T>(arr: T[]): T[] {
 export const useTrainingStore = create<TrainingStore>((set, get) => ({
   session: null,
 
+  pauseSession: () => {
+    const { session } = get();
+    if (session) {
+      localStorage.setItem(PAUSED_KEY, JSON.stringify(session));
+      logger.info('trainingStore', `Session mise en pause : "${session.listName}"`, { sessionId: session.id });
+      set({ session: null });
+    }
+  },
+
+  resumePausedSession: () => {
+    const raw = localStorage.getItem(PAUSED_KEY);
+    if (!raw) return false;
+    const session = JSON.parse(raw) as TrainingSession;
+    localStorage.removeItem(PAUSED_KEY);
+    logger.info('trainingStore', `Session reprise : "${session.listName}"`, { sessionId: session.id });
+    set({ session });
+    return true;
+  },
+
   startSession: (listIds, listName, kanjis) => {
+    localStorage.removeItem(PAUSED_KEY);
     const cards: TrainingCard[] = shuffle(kanjis).map((d) => ({
       kanji: d.kanji,
       details: d,
@@ -97,6 +121,7 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
   endSession: () => {
     const { session } = get();
     if (session) logger.info('trainingStore', `Session abandonnée : "${session.listName}"`, { sessionId: session.id });
+    localStorage.removeItem(PAUSED_KEY);
     set({ session: null });
   },
 }));

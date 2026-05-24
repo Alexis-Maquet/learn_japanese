@@ -108,51 +108,64 @@ export async function getWordDefinition(
   }
 }
 
-export async function generateSentenceExercise(
+export async function generateSentenceExercises(
   apiKey: string,
   targetKanjis: string[],
-): Promise<SentenceExercise | null> {
-  try {
-    const sample = [...targetKanjis].sort(() => Math.random() - 0.5).slice(0, 5);
-    const modelName = await pickModel(apiKey);
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
+  count: number,
+): Promise<SentenceExercise[]> {
+  const shuffled = [...targetKanjis].sort(() => Math.random() - 0.5);
+  const perGroup = Math.min(4, Math.max(1, Math.ceil(shuffled.length / count)));
+  const kanjiGroups = Array.from({ length: count }, (_, i) =>
+    Array.from({ length: perGroup }, (_, j) => shuffled[(i * perGroup + j) % shuffled.length])
+      .filter((k, idx, arr) => arr.indexOf(k) === idx)
+  );
 
-    const prompt = `Tu es un professeur de japonais. Génère une phrase japonaise courte et naturelle (5 à 12 mots) contenant au moins un des kanjis suivants : ${sample.join('、')}.
+  const modelName = await pickModel(apiKey);
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: modelName });
 
-Découpe la phrase en mots. Pour chaque mot fournis :
+  const groupsDesc = kanjiGroups
+    .map((g, i) => `Phrase ${i + 1} : ${g.join('、')} (isTarget=true pour les mots contenant ces kanjis : ${g.join('')})`)
+    .join('\n');
+
+  const prompt = `Tu es un professeur de japonais. Génère exactement ${count} phrases japonaises courtes et naturelles (5 à 12 mots chacune). Varie les structures grammaticales et les sujets entre les phrases. Pour chaque phrase, utilise au moins un des kanjis indiqués.
+
+Répartition des kanjis par phrase :
+${groupsDesc}
+
+Pour chaque phrase, découpe-la en mots. Pour chaque mot fournis :
 - text : mot tel qu'il apparaît
 - reading : lecture en hiragana (katakana pour mots d'origine étrangère)
 - meaning : traduction française (3 mots max)
-- isTarget : true uniquement si le mot contient l'un de ces caractères : ${sample.join('')}
+- isTarget : true uniquement si le mot contient les kanjis assignés à cette phrase
 
 Pour chaque mot avec isTarget=true, ajoute également :
 - keywords : 4 à 7 mots-clés français minuscules validant une réponse correcte (synonymes inclus)
-- options : exactement 4 traductions françaises courtes — la BONNE réponse en première position, puis 3 leurres plausibles tirés d'autres mots japonais courants
+- options : exactement 4 traductions françaises courtes — la BONNE réponse en première position, puis 3 leurres plausibles
 
 Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
-{"sentence":"...","words":[{"text":"...","reading":"...","meaning":"...","isTarget":false},{"text":"...","reading":"...","meaning":"...","isTarget":true,"keywords":["..."],"options":["correcte","leurre1","leurre2","leurre3"]}]}`;
+{"exercises":[{"sentence":"...","words":[{"text":"...","reading":"...","meaning":"...","isTarget":false},{"text":"...","reading":"...","meaning":"...","isTarget":true,"keywords":["..."],"options":["correcte","leurre1","leurre2","leurre3"]}]}]}`;
 
-    const result = await model.generateContent(prompt);
-    trackApiCall();
-    const text = result.response.text().trim();
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return null;
+  const result = await model.generateContent(prompt);
+  trackApiCall();
+  const text = result.response.text().trim();
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return [];
 
-    const data = JSON.parse(match[0]) as SentenceExercise;
-    if (!Array.isArray(data.words) || !data.words.some(w => w.isTarget)) return null;
+  const data = JSON.parse(match[0]) as { exercises: SentenceExercise[] };
+  if (!Array.isArray(data.exercises)) return [];
 
-    const words: SentenceWord[] = data.words.map(w => {
-      if (!w.isTarget || !w.options || w.options.length < 2) return w;
-      const correct = w.options[0];
-      const shuffled = [...w.options].sort(() => Math.random() - 0.5);
-      return { ...w, options: shuffled, correctOption: correct };
-    });
-
-    return { sentence: data.sentence, words };
-  } catch {
-    return null;
-  }
+  return data.exercises
+    .filter(ex => Array.isArray(ex.words) && ex.words.some(w => w.isTarget))
+    .map(ex => ({
+      sentence: ex.sentence,
+      words: ex.words.map(w => {
+        if (!w.isTarget || !w.options || w.options.length < 2) return w;
+        const correct = w.options[0];
+        const shuffledOpts = [...w.options].sort(() => Math.random() - 0.5);
+        return { ...w, options: shuffledOpts, correctOption: correct };
+      }),
+    }));
 }
 
 export function getApiKey(): string | null {

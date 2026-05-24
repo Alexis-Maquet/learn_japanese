@@ -61,6 +61,7 @@ export function TrainingPage() {
 
   const [trainingType, setTrainingType] = useState<'romaji' | 'sentence'>('romaji');
   const [sentenceMode, setSentenceMode] = useState<SentenceAnswerMode>('mcq');
+  const [sentenceCount, setSentenceCount] = useState(10);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [pausedInfo, setPausedInfo] = useState<{ listName: string; progress: number; total: number } | null>(() => {
@@ -134,7 +135,7 @@ export function TrainingPage() {
     const kanjis = resolveSelectedKanjis();
     if (kanjis.length === 0) return;
     navigate('/training/sentence-session', {
-      state: { kanjis, listName: buildListName(), mode: sentenceMode },
+      state: { kanjis, listName: buildListName(), mode: sentenceMode, count: sentenceCount },
     });
   };
 
@@ -187,22 +188,42 @@ export function TrainingPage() {
         </div>
 
         {trainingType === 'sentence' && (
-          <div className="space-y-2">
-            <p className="text-xs text-gray-500">Format des réponses</p>
-            <div className="flex gap-2">
-              {(['mcq', 'free'] as const).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setSentenceMode(m)}
-                  className={`flex-1 py-1.5 px-3 rounded-lg border text-xs font-medium transition-colors ${
-                    sentenceMode === m
-                      ? 'border-japan-red bg-japan-red/10 text-white'
-                      : 'border-[#30363d] text-gray-400 hover:border-gray-500'
-                  }`}
-                >
-                  {m === 'mcq' ? 'QCM (4 choix)' : 'Texte libre'}
-                </button>
-              ))}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Format des réponses</p>
+              <div className="flex gap-2">
+                {(['mcq', 'free'] as const).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setSentenceMode(m)}
+                    className={`flex-1 py-1.5 px-3 rounded-lg border text-xs font-medium transition-colors ${
+                      sentenceMode === m
+                        ? 'border-japan-red bg-japan-red/10 text-white'
+                        : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                    }`}
+                  >
+                    {m === 'mcq' ? 'QCM (4 choix)' : 'Texte libre'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Nombre de questions</p>
+              <div className="flex gap-2">
+                {[5, 10, 15, 20].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setSentenceCount(n)}
+                    className={`flex-1 py-1.5 px-3 rounded-lg border text-xs font-medium transition-colors ${
+                      sentenceCount === n
+                        ? 'border-japan-red bg-japan-red/10 text-white'
+                        : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </div>
             {!hasApiKey && (
               <p className="text-xs text-yellow-600">

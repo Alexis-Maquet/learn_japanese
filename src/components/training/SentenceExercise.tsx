@@ -80,10 +80,14 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
         {activeTooltipWord && (
           <div className="border-t border-[#30363d] pt-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">
             <span className="kanji-char text-base text-white">{activeTooltipWord.text}</span>
-            <span className="text-gray-400">{activeTooltipWord.reading}</span>
-            <span className="text-gray-300">{activeTooltipWord.meaning}</span>
+            {(!activeTooltipWord.isTarget || submitted) && (
+              <>
+                <span className="text-gray-400">{activeTooltipWord.reading}</span>
+                <span className="text-gray-300">{activeTooltipWord.meaning}</span>
+              </>
+            )}
             {activeTooltipWord.isTarget && !submitted && (
-              <span className="text-yellow-600 text-xs">mot cible</span>
+              <span className="text-yellow-600 text-xs">mot cible — définition masquée</span>
             )}
           </div>
         )}

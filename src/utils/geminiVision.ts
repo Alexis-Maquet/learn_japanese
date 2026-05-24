@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { SentenceExercise, SentenceWord } from '@/types';
+import type { SentenceExercise } from '@/types';
 
 export type SupportedMediaType = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif';
 

@@ -208,22 +208,15 @@ export function TrainingPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-xs text-gray-500">Nombre de questions</p>
-              <div className="flex gap-2">
-                {[5, 10, 15, 20].map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setSentenceCount(n)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg border text-xs font-medium transition-colors ${
-                      sentenceCount === n
-                        ? 'border-japan-red bg-japan-red/10 text-white'
-                        : 'border-[#30363d] text-gray-400 hover:border-gray-500'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
+              <p className="text-xs text-gray-500">Nombre de questions (1–100)</p>
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={sentenceCount}
+                onChange={e => setSentenceCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                className="w-full px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm outline-none focus:border-japan-red"
+              />
             </div>
             {!hasApiKey && (
               <p className="text-xs text-yellow-600">

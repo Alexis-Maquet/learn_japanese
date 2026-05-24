@@ -159,6 +159,7 @@ Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
     .filter(ex => Array.isArray(ex.words) && ex.words.some(w => w.isTarget))
     .map(ex => ({
       sentence: ex.sentence,
+      translation: ex.translation ?? '',
       words: ex.words.map(w => {
         if (!w.isTarget || !w.options || w.options.length < 2) return w;
         const correct = w.options[0];

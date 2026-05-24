@@ -36,6 +36,23 @@ export interface KanjiList {
 
 export type TrainingMode = 'flashcard' | 'multiple-choice' | 'writing' | 'romaji-input';
 
+export type SentenceAnswerMode = 'free' | 'mcq';
+
+export interface SentenceWord {
+  text: string;
+  reading: string;
+  meaning: string;
+  isTarget: boolean;
+  keywords?: string[];
+  options?: string[];
+  correctOption?: string;
+}
+
+export interface SentenceExercise {
+  sentence: string;
+  words: SentenceWord[];
+}
+
 export type ReadingType = 'on' | 'kun';
 
 export interface TrainingCard {

@@ -4,6 +4,8 @@ import { useListStore } from '@/store/listStore';
 import { useKanjiStore } from '@/store/kanjiStore';
 import { useTrainingStore } from '@/store/trainingStore';
 import { JLPT_PREDEFINED, FREQ_PREDEFINED, ALL_PREDEFINED, resolvePredefinedKanjis } from '@/utils/predefinedLists';
+import { getApiKey } from '@/utils/geminiVision';
+import type { SentenceAnswerMode } from '@/types';
 
 interface ListRowProps {
   id: string;
@@ -57,6 +59,8 @@ export function TrainingPage() {
   const { kanjiByLevel, kanjiByFrequency, loadAllLevels, loadFrequencyGroups, loadDetails, details } = useKanjiStore();
   const { startSession, resumePausedSession } = useTrainingStore();
 
+  const [trainingType, setTrainingType] = useState<'romaji' | 'sentence'>('romaji');
+  const [sentenceMode, setSentenceMode] = useState<SentenceAnswerMode>('mcq');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [pausedInfo, setPausedInfo] = useState<{ listName: string; progress: number; total: number } | null>(() => {
@@ -124,6 +128,16 @@ export function TrainingPage() {
     setPausedInfo(null);
   };
 
+  const hasApiKey = !!getApiKey();
+
+  const handleStartSentence = () => {
+    const kanjis = resolveSelectedKanjis();
+    if (kanjis.length === 0) return;
+    navigate('/training/sentence-session', {
+      state: { kanjis, listName: buildListName(), mode: sentenceMode },
+    });
+  };
+
   const handleStart = async () => {
     const kanjis = resolveSelectedKanjis();
     if (kanjis.length === 0 || loading) return;
@@ -147,7 +161,60 @@ export function TrainingPage() {
         </p>
       </div>
 
-      {pausedInfo && (
+      {/* Training type selector */}
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setTrainingType('romaji')}
+            className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+              trainingType === 'romaji'
+                ? 'border-japan-red bg-japan-red/10 text-white'
+                : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+            }`}
+          >
+            Prononciation
+          </button>
+          <button
+            onClick={() => setTrainingType('sentence')}
+            className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+              trainingType === 'sentence'
+                ? 'border-japan-red bg-japan-red/10 text-white'
+                : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+            }`}
+          >
+            Compréhension de phrases
+          </button>
+        </div>
+
+        {trainingType === 'sentence' && (
+          <div className="space-y-2">
+            <p className="text-xs text-gray-500">Format des réponses</p>
+            <div className="flex gap-2">
+              {(['mcq', 'free'] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setSentenceMode(m)}
+                  className={`flex-1 py-1.5 px-3 rounded-lg border text-xs font-medium transition-colors ${
+                    sentenceMode === m
+                      ? 'border-japan-red bg-japan-red/10 text-white'
+                      : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                  }`}
+                >
+                  {m === 'mcq' ? 'QCM (4 choix)' : 'Texte libre'}
+                </button>
+              ))}
+            </div>
+            {!hasApiKey && (
+              <p className="text-xs text-yellow-600">
+                Clé API Gemini requise —{' '}
+                <Link to="/scan" className="underline hover:text-yellow-400">configurer dans Scanner</Link>
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {trainingType === 'romaji' && pausedInfo && (
         <div className="card p-4 border-yellow-600/50 bg-yellow-900/10 flex items-center gap-3">
           <span className="text-yellow-400 text-xl shrink-0">⏸</span>
           <div className="flex-1 min-w-0">
@@ -155,12 +222,8 @@ export function TrainingPage() {
             <p className="text-xs text-gray-400">{pausedInfo.progress} / {pausedInfo.total} kanjis effectués</p>
           </div>
           <div className="flex gap-2 shrink-0">
-            <button onClick={handleResume} className="btn-primary text-sm py-1.5 px-3">
-              Reprendre
-            </button>
-            <button onClick={handleDiscardPaused} className="text-xs text-gray-600 hover:text-red-400 transition-colors px-1">
-              ✕
-            </button>
+            <button onClick={handleResume} className="btn-primary text-sm py-1.5 px-3">Reprendre</button>
+            <button onClick={handleDiscardPaused} className="text-xs text-gray-600 hover:text-red-400 transition-colors px-1">✕</button>
           </div>
         </div>
       )}
@@ -250,22 +313,36 @@ export function TrainingPage() {
       {/* Sticky start button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0d1117]/90 backdrop-blur border-t border-[#21262d]">
         <div className="max-w-2xl mx-auto">
-          <button
-            onClick={handleStart}
-            disabled={totalKanjis === 0 || loading}
-            className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2 disabled:opacity-40"
-          >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Chargement…
-              </>
-            ) : totalKanjis > 0 ? (
-              `▶ Commencer — ${totalKanjis} kanji${totalKanjis > 1 ? 's' : ''}`
-            ) : (
-              'Sélectionnez au moins une liste'
-            )}
-          </button>
+          {trainingType === 'romaji' ? (
+            <button
+              onClick={handleStart}
+              disabled={totalKanjis === 0 || loading}
+              className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2 disabled:opacity-40"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Chargement…
+                </>
+              ) : totalKanjis > 0 ? (
+                `▶ Commencer — ${totalKanjis} kanji${totalKanjis > 1 ? 's' : ''}`
+              ) : (
+                'Sélectionnez au moins une liste'
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleStartSentence}
+              disabled={totalKanjis === 0 || !hasApiKey}
+              className="btn-primary w-full py-3 text-base disabled:opacity-40"
+            >
+              {!hasApiKey
+                ? 'Clé API Gemini requise'
+                : totalKanjis > 0
+                ? `▶ Commencer — phrases (${totalKanjis} kanjis)`
+                : 'Sélectionnez au moins une liste'}
+            </button>
+          )}
         </div>
       </div>
     </div>

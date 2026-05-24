@@ -6,6 +6,7 @@ import { UserListsPage } from '@/pages/UserListsPage';
 import { ListDetailPage } from '@/pages/ListDetailPage';
 import { TrainingPage } from '@/pages/TrainingPage';
 import { TrainingSessionPage } from '@/pages/TrainingSessionPage';
+import { SentenceSessionPage } from '@/pages/SentenceSessionPage';
 import { StatsPage } from '@/pages/StatsPage';
 import { ScanPage } from '@/pages/ScanPage';
 
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/lists/:id" element={<ListDetailPage />} />
             <Route path="/training" element={<TrainingPage />} />
             <Route path="/training/session" element={<TrainingSessionPage />} />
+            <Route path="/training/sentence-session" element={<SentenceSessionPage />} />
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/scan" element={<ScanPage />} />
           </Routes>

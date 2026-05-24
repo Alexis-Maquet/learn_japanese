@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import type { SentenceExercise, SentenceWord } from '@/types';
 
 export type SupportedMediaType = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif';
 
@@ -102,6 +103,53 @@ export async function getWordDefinition(
     const match = text.match(/\{[\s\S]*?\}/);
     if (!match) return null;
     return JSON.parse(match[0]) as { reading: string; meaning: string };
+  } catch {
+    return null;
+  }
+}
+
+export async function generateSentenceExercise(
+  apiKey: string,
+  targetKanjis: string[],
+): Promise<SentenceExercise | null> {
+  try {
+    const sample = [...targetKanjis].sort(() => Math.random() - 0.5).slice(0, 5);
+    const modelName = await pickModel(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: modelName });
+
+    const prompt = `Tu es un professeur de japonais. Génère une phrase japonaise courte et naturelle (5 à 12 mots) contenant au moins un des kanjis suivants : ${sample.join('、')}.
+
+Découpe la phrase en mots. Pour chaque mot fournis :
+- text : mot tel qu'il apparaît
+- reading : lecture en hiragana (katakana pour mots d'origine étrangère)
+- meaning : traduction française (3 mots max)
+- isTarget : true uniquement si le mot contient l'un de ces caractères : ${sample.join('')}
+
+Pour chaque mot avec isTarget=true, ajoute également :
+- keywords : 4 à 7 mots-clés français minuscules validant une réponse correcte (synonymes inclus)
+- options : exactement 4 traductions françaises courtes — la BONNE réponse en première position, puis 3 leurres plausibles tirés d'autres mots japonais courants
+
+Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
+{"sentence":"...","words":[{"text":"...","reading":"...","meaning":"...","isTarget":false},{"text":"...","reading":"...","meaning":"...","isTarget":true,"keywords":["..."],"options":["correcte","leurre1","leurre2","leurre3"]}]}`;
+
+    const result = await model.generateContent(prompt);
+    trackApiCall();
+    const text = result.response.text().trim();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+
+    const data = JSON.parse(match[0]) as SentenceExercise;
+    if (!Array.isArray(data.words) || !data.words.some(w => w.isTarget)) return null;
+
+    const words: SentenceWord[] = data.words.map(w => {
+      if (!w.isTarget || !w.options || w.options.length < 2) return w;
+      const correct = w.options[0];
+      const shuffled = [...w.options].sort(() => Math.random() - 0.5);
+      return { ...w, options: shuffled, correctOption: correct };
+    });
+
+    return { sentence: data.sentence, words };
   } catch {
     return null;
   }

@@ -4,7 +4,7 @@ import { useListStore } from '@/store/listStore';
 import { useKanjiStore } from '@/store/kanjiStore';
 import { useTrainingStore } from '@/store/trainingStore';
 import { JLPT_PREDEFINED, FREQ_PREDEFINED, ALL_PREDEFINED, resolvePredefinedKanjis } from '@/utils/predefinedLists';
-import { getApiKey } from '@/utils/geminiVision';
+import { getApiKey, saveApiKey, clearApiKey } from '@/utils/geminiVision';
 import type { SentenceAnswerMode } from '@/types';
 
 interface ListRowProps {
@@ -62,6 +62,9 @@ export function TrainingPage() {
   const [trainingType, setTrainingType] = useState<'romaji' | 'sentence'>('romaji');
   const [sentenceMode, setSentenceMode] = useState<SentenceAnswerMode>('mcq');
   const [sentenceCount, setSentenceCount] = useState(10);
+  const [hasApiKey, setHasApiKey] = useState(!!getApiKey());
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [editingApiKey, setEditingApiKey] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [pausedInfo, setPausedInfo] = useState<{ listName: string; progress: number; total: number } | null>(() => {
@@ -129,7 +132,21 @@ export function TrainingPage() {
     setPausedInfo(null);
   };
 
-  const hasApiKey = !!getApiKey();
+  const handleSaveApiKey = () => {
+    const trimmed = apiKeyInput.trim();
+    if (!trimmed) return;
+    saveApiKey(trimmed);
+    setHasApiKey(true);
+    setApiKeyInput('');
+    setEditingApiKey(false);
+  };
+
+  const handleClearApiKey = () => {
+    clearApiKey();
+    setHasApiKey(false);
+    setEditingApiKey(false);
+    setApiKeyInput('');
+  };
 
   const handleStartSentence = () => {
     const kanjis = resolveSelectedKanjis();
@@ -228,12 +245,41 @@ export function TrainingPage() {
                 >+</button>
               </div>
             </div>
-            {!hasApiKey && (
-              <p className="text-xs text-yellow-600">
-                Clé API Gemini requise —{' '}
-                <Link to="/scan" className="underline hover:text-yellow-400">configurer dans Scanner</Link>
-              </p>
-            )}
+            <div className="space-y-1.5">
+              <p className="text-xs text-gray-500">Clé API Gemini</p>
+              {hasApiKey && !editingApiKey ? (
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22]">
+                  <span className="text-xs text-green-400">✓ Clé configurée</span>
+                  <div className="flex gap-3">
+                    <button onClick={() => setEditingApiKey(true)} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Modifier</button>
+                    <button onClick={handleClearApiKey} className="text-xs text-gray-500 hover:text-red-400 transition-colors">Supprimer</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={apiKeyInput}
+                    onChange={e => setApiKeyInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSaveApiKey(); }}
+                    placeholder="AIza…"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm outline-none focus:border-japan-red placeholder-gray-600"
+                  />
+                  <button
+                    onClick={handleSaveApiKey}
+                    disabled={!apiKeyInput.trim()}
+                    className="btn-primary text-sm py-1.5 px-3 disabled:opacity-40"
+                  >
+                    Enregistrer
+                  </button>
+                  {editingApiKey && (
+                    <button onClick={() => { setEditingApiKey(false); setApiKeyInput(''); }} className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-1">
+                      Annuler
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

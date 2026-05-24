@@ -22,11 +22,13 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [tooltipIdx, setTooltipIdx] = useState<number | null>(null);
+  const [revealedReadings, setRevealedReadings] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     setAnswers({});
     setSubmitted(false);
     setTooltipIdx(null);
+    setRevealedReadings(new Set());
   }, [exercise.sentence]);
 
   const targetWords = exercise.words
@@ -121,7 +123,16 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="kanji-char text-lg text-yellow-300">{word.text}</span>
-                <span className="text-gray-500 text-xs">{word.reading}</span>
+                {revealedReadings.has(index) ? (
+                  <span className="text-gray-500 text-xs">{word.reading}</span>
+                ) : (
+                  <button
+                    onClick={() => setRevealedReadings(r => new Set([...r, index]))}
+                    className="text-xs text-gray-600 hover:text-gray-400 border border-[#30363d] rounded px-1.5 py-0.5 transition-colors"
+                  >
+                    読み
+                  </button>
+                )}
                 {submitted && (
                   <span className={`ml-auto text-sm font-medium ${correct ? 'text-green-400' : 'text-red-400'}`}>
                     {correct ? '✓' : `✗ — ${word.meaning}`}

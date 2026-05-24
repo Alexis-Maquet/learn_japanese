@@ -279,6 +279,14 @@ export function TrainingPage() {
                   )}
                 </div>
               )}
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+              >
+                Obtenir une clé sur Google AI Studio →
+              </a>
             </div>
           </div>
         )}

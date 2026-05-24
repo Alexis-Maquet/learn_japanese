@@ -29,7 +29,7 @@ export const useListStore = create<ListStore>()(
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
-        set((s) => ({ lists: [...s.lists, list] }));
+        set((s) => ({ lists: [...s.lists, list].sort((a, b) => a.name.localeCompare(b.name, 'fr')) }));
         logger.info('listStore', `Liste créée : "${name}"`, { id: list.id });
         return list;
       },
@@ -42,7 +42,9 @@ export const useListStore = create<ListStore>()(
       renameList: (id, name, description) => {
         logger.info('listStore', `Liste renommée : "${name}"`, { id });
         set((s) => ({
-          lists: s.lists.map((l) => (l.id === id ? { ...l, name, description, updatedAt: Date.now() } : l)),
+          lists: s.lists
+            .map((l) => (l.id === id ? { ...l, name, description, updatedAt: Date.now() } : l))
+            .sort((a, b) => a.name.localeCompare(b.name, 'fr')),
         }));
       },
 
@@ -85,6 +87,11 @@ export const useListStore = create<ListStore>()(
         return list ? list.kanjis.includes(kanji) : false;
       },
     }),
-    { name: 'kanji-lists' }
+    {
+      name: 'kanji-lists',
+      onRehydrateStorage: () => (state) => {
+        if (state) state.lists = state.lists.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+      },
+    }
   )
 );

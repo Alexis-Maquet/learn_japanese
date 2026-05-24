@@ -76,6 +76,11 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
           ))}
         </div>
 
+        {/* Full translation after submission */}
+        {submitted && exercise.translation && (
+          <p className="text-sm text-gray-300 italic border-t border-[#30363d] pt-2">{exercise.translation}</p>
+        )}
+
         {/* Inline tooltip */}
         {activeTooltipWord && (
           <div className="border-t border-[#30363d] pt-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">

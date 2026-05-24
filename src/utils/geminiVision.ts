@@ -144,7 +144,7 @@ Pour chaque mot avec isTarget=true, ajoute également :
 - options : exactement 4 traductions françaises courtes — la BONNE réponse en première position, puis 3 leurres plausibles
 
 Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
-{"exercises":[{"sentence":"...","words":[{"text":"...","reading":"...","meaning":"...","isTarget":false},{"text":"...","reading":"...","meaning":"...","isTarget":true,"keywords":["..."],"options":["correcte","leurre1","leurre2","leurre3"]}]}]}`;
+{"exercises":[{"sentence":"...","translation":"traduction française complète de la phrase","words":[{"text":"...","reading":"...","meaning":"...","isTarget":false},{"text":"...","reading":"...","meaning":"...","isTarget":true,"keywords":["..."],"options":["correcte","leurre1","leurre2","leurre3"]}]}]}`;
 
   const result = await model.generateContent(prompt);
   trackApiCall();

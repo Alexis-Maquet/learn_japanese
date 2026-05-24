@@ -50,6 +50,7 @@ export interface SentenceWord {
 
 export interface SentenceExercise {
   sentence: string;
+  translation: string;
   words: SentenceWord[];
 }
 

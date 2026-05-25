@@ -108,46 +108,27 @@ export async function getWordDefinition(
   }
 }
 
-const BATCH_SIZE = 25;
-
-function buildAllKanjiGroups(shuffled: string[], count: number): string[][] {
+export async function generateSentenceExercises(
+  apiKey: string,
+  targetKanjis: string[],
+  count: number,
+): Promise<SentenceExercise[]> {
+  const shuffled = [...targetKanjis].sort(() => Math.random() - 0.5);
   const perGroup = Math.min(4, Math.max(1, Math.ceil(shuffled.length / count)));
-  return Array.from({ length: count }, (_, i) =>
+  const kanjiGroups = Array.from({ length: count }, (_, i) =>
     Array.from({ length: perGroup }, (_, j) => shuffled[(i * perGroup + j) % shuffled.length])
       .filter((k, idx, arr) => arr.indexOf(k) === idx)
   );
-}
 
-function parseExercises(text: string): SentenceExercise[] {
-  const match = text.trim().match(/\{[\s\S]*\}/);
-  if (!match) return [];
-  const data = JSON.parse(match[0]) as { exercises: SentenceExercise[] };
-  if (!Array.isArray(data.exercises)) return [];
-  return data.exercises
-    .filter(ex => Array.isArray(ex.words) && ex.words.some(w => w.isTarget))
-    .map(ex => ({
-      sentence: ex.sentence,
-      translation: ex.translation ?? '',
-      words: ex.words.map(w => {
-        if (!w.isTarget || !w.options || w.options.length < 2) return w;
-        const correct = w.options[0];
-        const shuffledOpts = [...w.options].sort(() => Math.random() - 0.5);
-        return { ...w, options: shuffledOpts, correctOption: correct };
-      }),
-    }));
-}
+  const modelName = await pickModel(apiKey);
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: modelName });
 
-async function generateBatch(
-  model: ReturnType<InstanceType<typeof GoogleGenerativeAI>['getGenerativeModel']>,
-  kanjiGroups: string[][],
-  globalOffset: number,
-): Promise<SentenceExercise[]> {
-  const batchCount = kanjiGroups.length;
   const groupsDesc = kanjiGroups
-    .map((g, i) => `Phrase ${globalOffset + i + 1} : ${g.join('、')} (isTarget=true pour les mots contenant ces kanjis : ${g.join('')})`)
+    .map((g, i) => `Phrase ${i + 1} : ${g.join('、')} (isTarget=true pour les mots contenant ces kanjis : ${g.join('')})`)
     .join('\n');
 
-  const prompt = `Tu es un professeur de japonais. Génère exactement ${batchCount} phrases japonaises courtes et naturelles (5 à 12 mots chacune). Varie les structures grammaticales et les sujets entre les phrases. Pour chaque phrase, utilise au moins un des kanjis indiqués.
+  const prompt = `Tu es un professeur de japonais. Génère exactement ${count} phrases japonaises courtes et naturelles (5 à 12 mots chacune). Varie les structures grammaticales et les sujets entre les phrases. Pour chaque phrase, utilise au moins un des kanjis indiqués.
 
 Répartition des kanjis par phrase :
 ${groupsDesc}
@@ -167,31 +148,25 @@ Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
 
   const result = await model.generateContent(prompt);
   trackApiCall();
-  return parseExercises(result.response.text());
-}
+  const text = result.response.text().trim();
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return [];
 
-export async function generateSentenceExercises(
-  apiKey: string,
-  targetKanjis: string[],
-  count: number,
-): Promise<SentenceExercise[]> {
-  const shuffled = [...targetKanjis].sort(() => Math.random() - 0.5);
-  const allGroups = buildAllKanjiGroups(shuffled, count);
+  const data = JSON.parse(match[0]) as { exercises: SentenceExercise[] };
+  if (!Array.isArray(data.exercises)) return [];
 
-  const modelName = await pickModel(apiKey);
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: modelName });
-
-  const allExercises: SentenceExercise[] = [];
-  let offset = 0;
-  while (offset < count) {
-    const batchGroups = allGroups.slice(offset, offset + BATCH_SIZE);
-    const batch = await generateBatch(model, batchGroups, offset);
-    allExercises.push(...batch);
-    offset += batchGroups.length;
-  }
-
-  return allExercises;
+  return data.exercises
+    .filter(ex => Array.isArray(ex.words) && ex.words.some(w => w.isTarget))
+    .map(ex => ({
+      sentence: ex.sentence,
+      translation: ex.translation ?? '',
+      words: ex.words.map(w => {
+        if (!w.isTarget || !w.options || w.options.length < 2) return w;
+        const correct = w.options[0];
+        const shuffledOpts = [...w.options].sort(() => Math.random() - 0.5);
+        return { ...w, options: shuffledOpts, correctOption: correct };
+      }),
+    }));
 }
 
 export function getApiKey(): string | null {

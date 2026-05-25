@@ -95,14 +95,10 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
         className="w-56 h-56 flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-2xl shadow-xl cursor-pointer hover:border-gray-500 transition-colors"
       >
         <span className="kanji-char text-8xl text-white select-none">{card.kanji}</span>
-        {revealedPronunciation || submitted ? (
-          <div className="flex flex-wrap justify-center gap-x-3 gap-y-0.5 mt-2 px-3">
-            {deduplicateReadings(allValidReadings).slice(0, 4).map((r, i) => (
-              <span key={i} className="text-gray-400 text-sm kanji-char">{stripOkurigana(r)}</span>
-            ))}
-          </div>
+        {revealedPronunciation ? (
+          <p className="text-xs text-gray-400 mt-2 px-3 text-center">{card.details.meanings.slice(0, 3).join(', ')}</p>
         ) : (
-          <p className="text-xs text-gray-600 mt-2">Appuyer pour la prononciation</p>
+          <p className="text-xs text-gray-600 mt-2">Appuyer pour la signification</p>
         )}
       </button>
 

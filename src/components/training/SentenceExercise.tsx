@@ -146,6 +146,10 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
                   value={ans}
                   disabled={submitted}
                   placeholder="Traduction en français…"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   onChange={e => setAnswers(a => ({ ...a, [index]: e.target.value }))}
                   onKeyDown={e => { if (e.key === 'Enter' && canSubmit) handleSubmit(); }}
                   className={`w-full px-3 py-2 rounded-lg border bg-[#161b22] text-white placeholder-gray-600 outline-none text-sm transition-colors disabled:cursor-default ${

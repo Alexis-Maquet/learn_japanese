@@ -115,6 +115,10 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
               value={value}
               placeholder={`Prononciation ${i + 1} en romaji…`}
               disabled={submitted}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               className={inputClass(value)}
               onChange={(e) => {
                 const next = [...inputs];

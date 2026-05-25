@@ -28,8 +28,9 @@ export function checkAnswer(input: string, readings: string[]): boolean {
   const normalized = normalizeAnswer(input);
   const hiragana = normalizeAnswer(toHiragana(input));
   return readings.some((r) => {
-    const stripped = stripOkurigana(r);
-    const full = fullReading(r);
+    const clean = r.replace(/^-|-$/g, '');
+    const stripped = stripOkurigana(clean);
+    const full = fullReading(clean);
     return (
       normalized === normalizeAnswer(toRomaji(stripped)) ||
       normalized === normalizeAnswer(toRomaji(full)) ||

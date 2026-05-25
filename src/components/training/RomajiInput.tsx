@@ -40,6 +40,7 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
   const [submitted, setSubmitted] = useState(false);
   const [sessionCorrect, setSessionCorrect] = useState(false);
   const [showKanjiModal, setShowKanjiModal] = useState(false);
+  const [revealedPronunciation, setRevealedPronunciation] = useState(false);
   const firstRef = useRef<HTMLInputElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
@@ -49,6 +50,7 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
     setSubmitted(false);
     setSessionCorrect(false);
     setShowKanjiModal(false);
+    setRevealedPronunciation(false);
     firstRef.current?.focus();
   }, [card.kanji]);
 
@@ -88,10 +90,21 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
   return (
     <div className="flex flex-col items-center gap-6 w-full">
       {/* Kanji card */}
-      <div className="w-56 h-56 flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-2xl shadow-xl">
+      <button
+        onClick={() => !submitted && setRevealedPronunciation(true)}
+        className="w-56 h-56 flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-2xl shadow-xl cursor-pointer hover:border-gray-500 transition-colors"
+      >
         <span className="kanji-char text-8xl text-white select-none">{card.kanji}</span>
-        <p className="text-xs text-gray-500 mt-2 px-3 text-center">{card.details.meanings.slice(0, 2).join(', ')}</p>
-      </div>
+        {revealedPronunciation || submitted ? (
+          <div className="flex flex-wrap justify-center gap-x-3 gap-y-0.5 mt-2 px-3">
+            {deduplicateReadings(allValidReadings).slice(0, 4).map((r, i) => (
+              <span key={i} className="text-gray-400 text-sm kanji-char">{stripOkurigana(r)}</span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-600 mt-2">Appuyer pour la prononciation</p>
+        )}
+      </button>
 
       {/* Input fields */}
       <div className="w-full max-w-sm space-y-2">

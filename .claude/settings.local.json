@@ -15,7 +15,16 @@
       "Bash(npx tsc *)",
       "Bash(npx vite *)",
       "Bash(node -e \"const p = require\\('./node_modules/zustand/package.json'\\); console.log\\(JSON.stringify\\(Object.keys\\(p.exports || {}\\), null, 2\\)\\)\")",
-      "Bash(node -e \"const s = require\\('./node_modules/zustand/shallow'\\); console.log\\(Object.keys\\(s\\)\\)\")"
+      "Bash(node -e \"const s = require\\('./node_modules/zustand/shallow'\\); console.log\\(Object.keys\\(s\\)\\)\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Alexis\\\\Documents\\\\projets_perso\\\\learn_japanese\" -Recurse -Filter \"*.json\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Head-Object -n 20)",
+      "PowerShell(Copy-Item \"c:\\\\Users\\\\Alexis\\\\Documents\\\\projets_perso\\\\learn_japanese\\\\resources\\\\kanjiapi_full.json\" \"c:\\\\Users\\\\Alexis\\\\Documents\\\\projets_perso\\\\learn_japanese\\\\public\\\\kanjiapi_full.json\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Alexis\\\\Documents\\\\projets_perso\\\\learn_japanese\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push*)"
     ]
   }
 }

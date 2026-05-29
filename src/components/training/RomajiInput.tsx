@@ -15,8 +15,9 @@ function deduplicateReadings(readings: string[]): string[] {
   const seenStems = new Set<string>();
   const seenFull = new Set<string>();
   return readings.filter((r) => {
-    const stem = r.split('.')[0];
-    const full = r.replace('.', '');
+    const clean = r.replace(/^-|-$/g, '');
+    const stem = clean.split('.')[0];
+    const full = clean.replace('.', '');
     if (seenStems.has(stem) || seenFull.has(full)) return false;
     seenStems.add(stem);
     seenFull.add(full);

@@ -162,7 +162,8 @@ export function TrainingPage() {
     setLoading(true);
     try {
       await Promise.all(kanjis.map((k) => loadDetails(k)));
-      const kanjisDetails = kanjis.map((k) => details[k]).filter(Boolean) as typeof details[string][];
+      const freshDetails = useKanjiStore.getState().details;
+      const kanjisDetails = kanjis.map((k) => freshDetails[k]).filter(Boolean) as typeof details[string][];
       startSession(Array.from(selected), buildListName(), kanjisDetails);
       navigate('/training/session');
     } finally {

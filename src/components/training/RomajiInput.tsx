@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import type { TrainingCard } from '@/types';
 import { checkAnswer, toRomaji, stripOkurigana } from '@/utils/romaji';
 import { KanjiDetailModal } from '@/components/scan/KanjiDetailModal';
+import { playCorrect } from '@/utils/sound';
 
 interface Props {
   card: TrainingCard;
@@ -67,6 +68,7 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
   const handleSubmit = () => {
     if (!canSubmit) return;
     const allValid = nonEmpty.every((input) => checkAnswer(input, allValidReadings));
+    if (allValid) playCorrect();
     setSessionCorrect(allValid);
     setSubmitted(true);
     onAnswer(allValid, nonEmpty.join(', '));

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { SentenceExercise, SentenceAnswerMode } from '@/types';
+import { playCorrect } from '@/utils/sound';
 
 interface Props {
   exercise: SentenceExercise;
@@ -47,6 +48,7 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
   const handleSubmit = () => {
     if (!canSubmit) return;
     const correct = targetWords.filter(w => checkAnswer(w.index)).length;
+    if (correct === targetWords.length) playCorrect();
     setSubmitted(true);
     onResult(correct, targetWords.length);
   };

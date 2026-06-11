@@ -6,7 +6,7 @@ const PAUSED_KEY = 'training_paused_session';
 
 interface TrainingStore {
   session: TrainingSession | null;
-  startSession: (listIds: string[], listName: string, kanjis: KanjiDetails[]) => void;
+  startSession: (listIds: string[], listName: string, kanjis: KanjiDetails[], preserveOrder?: boolean) => void;
   answerCard: (correct: boolean, selectedAnswer?: string) => void;
   nextCard: () => void;
   prevCard: () => void;
@@ -46,9 +46,9 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
     return true;
   },
 
-  startSession: (listIds, listName, kanjis) => {
+  startSession: (listIds, listName, kanjis, preserveOrder = false) => {
     localStorage.removeItem(PAUSED_KEY);
-    const cards: TrainingCard[] = shuffle(kanjis).map((d) => ({
+    const cards: TrainingCard[] = (preserveOrder ? kanjis : shuffle(kanjis)).map((d) => ({
       kanji: d.kanji,
       details: d,
       answered: false,

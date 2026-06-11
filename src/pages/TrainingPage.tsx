@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useListStore } from '@/store/listStore';
 import { useKanjiStore } from '@/store/kanjiStore';
 import { useTrainingStore } from '@/store/trainingStore';
+import { useStatsStore } from '@/store/statsStore';
 import { JLPT_PREDEFINED, FREQ_PREDEFINED, ALL_PREDEFINED, resolvePredefinedKanjis } from '@/utils/predefinedLists';
 import { getApiKey, saveApiKey, clearApiKey } from '@/utils/geminiVision';
 import type { SentenceAnswerMode } from '@/types';
@@ -57,11 +58,13 @@ export function TrainingPage() {
 
   const lists = useListStore((s) => s.lists);
   const { kanjiByLevel, kanjiByFrequency, loadAllLevels, loadFrequencyGroups, loadDetails, details } = useKanjiStore();
+  const kanjiStats = useStatsStore((s) => s.kanjiStats);
   const { startSession, resumePausedSession } = useTrainingStore();
 
-  const [trainingType, setTrainingType] = useState<'romaji' | 'sentence'>('romaji');
+  const [trainingType, setTrainingType] = useState<'romaji' | 'review' | 'sentence'>('romaji');
   const [sentenceMode, setSentenceMode] = useState<SentenceAnswerMode>('mcq');
   const [sentenceCount, setSentenceCount] = useState(10);
+  const [reviewCount, setReviewCount] = useState(20);
   const [hasApiKey, setHasApiKey] = useState(!!getApiKey());
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [editingApiKey, setEditingApiKey] = useState(false);
@@ -115,6 +118,17 @@ export function TrainingPage() {
 
   const totalKanjis = resolveSelectedKanjis().length;
 
+  const reviewableKanjis = resolveSelectedKanjis()
+    .filter(k => (kanjiStats[k]?.seen ?? 0) > 0)
+    .sort((a, b) => {
+      const rateA = (kanjiStats[a]?.correct ?? 0) / (kanjiStats[a]?.seen ?? 1);
+      const rateB = (kanjiStats[b]?.correct ?? 0) / (kanjiStats[b]?.seen ?? 1);
+      if (rateA !== rateB) return rateA - rateB;
+      return (kanjiStats[a]?.lastSeen ?? 0) - (kanjiStats[b]?.lastSeen ?? 0);
+    });
+
+  const effectiveReviewCount = Math.min(reviewCount, reviewableKanjis.length);
+
   const buildListName = () =>
     Array.from(selected)
       .map((id) => ALL_PREDEFINED.find((c) => c.id === id)?.name ?? lists.find((l) => l.id === id)?.name)
@@ -157,14 +171,16 @@ export function TrainingPage() {
   };
 
   const handleStart = async () => {
-    const kanjis = resolveSelectedKanjis();
+    const kanjis = trainingType === 'review'
+      ? reviewableKanjis.slice(0, effectiveReviewCount)
+      : resolveSelectedKanjis();
     if (kanjis.length === 0 || loading) return;
     setLoading(true);
     try {
       await Promise.all(kanjis.map((k) => loadDetails(k)));
       const freshDetails = useKanjiStore.getState().details;
       const kanjisDetails = kanjis.map((k) => freshDetails[k]).filter(Boolean) as typeof details[string][];
-      startSession(Array.from(selected), buildListName(), kanjisDetails);
+      startSession(Array.from(selected), buildListName(), kanjisDetails, trainingType === 'review');
       navigate('/training/session');
     } finally {
       setLoading(false);
@@ -194,6 +210,16 @@ export function TrainingPage() {
             Prononciation
           </button>
           <button
+            onClick={() => setTrainingType('review')}
+            className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+              trainingType === 'review'
+                ? 'border-japan-red bg-japan-red/10 text-white'
+                : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+            }`}
+          >
+            Révision
+          </button>
+          <button
             onClick={() => setTrainingType('sentence')}
             className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
               trainingType === 'sentence'
@@ -201,9 +227,49 @@ export function TrainingPage() {
                 : 'border-[#30363d] text-gray-400 hover:border-gray-500'
             }`}
           >
-            Compréhension de phrases
+            Phrases
           </button>
         </div>
+
+        {trainingType === 'review' && (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Nombre de kanjis à réviser</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setReviewCount(c => Math.max(1, c - 5))}
+                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                >−</button>
+                <input
+                  type="number"
+                  min={1}
+                  value={reviewCount}
+                  onChange={e => setReviewCount(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm text-center outline-none focus:border-japan-red"
+                />
+                <button
+                  onClick={() => setReviewCount(c => c + 5)}
+                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                >+</button>
+              </div>
+            </div>
+            {totalKanjis > 0 && (
+              <div className="px-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-xs text-gray-400 space-y-0.5">
+                <p>
+                  <span className="text-white font-medium">{reviewableKanjis.length}</span> kanjis entraînés sur {totalKanjis} sélectionnés
+                </p>
+                {reviewableKanjis.length > 0 && (
+                  <p>
+                    Les <span className="text-white font-medium">{effectiveReviewCount}</span> moins maîtrisés seront présentés dans l'ordre du plus difficile
+                  </p>
+                )}
+                {reviewableKanjis.length === 0 && (
+                  <p className="text-yellow-600">Aucun kanji entraîné dans cette sélection — commencez par le mode Prononciation.</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {trainingType === 'sentence' && (
           <div className="space-y-3">
@@ -392,10 +458,10 @@ export function TrainingPage() {
       {/* Sticky start button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0d1117]/90 backdrop-blur border-t border-[#21262d]">
         <div className="max-w-2xl mx-auto">
-          {trainingType === 'romaji' ? (
+          {trainingType === 'romaji' || trainingType === 'review' ? (
             <button
               onClick={handleStart}
-              disabled={totalKanjis === 0 || loading}
+              disabled={(trainingType === 'review' ? effectiveReviewCount === 0 : totalKanjis === 0) || loading}
               className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2 disabled:opacity-40"
             >
               {loading ? (
@@ -403,6 +469,10 @@ export function TrainingPage() {
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Chargement…
                 </>
+              ) : trainingType === 'review' ? (
+                effectiveReviewCount > 0
+                  ? `▶ Réviser — ${effectiveReviewCount} kanji${effectiveReviewCount > 1 ? 's' : ''}`
+                  : totalKanjis === 0 ? 'Sélectionnez au moins une liste' : 'Aucun kanji entraîné dans cette sélection'
               ) : totalKanjis > 0 ? (
                 `▶ Commencer — ${totalKanjis} kanji${totalKanjis > 1 ? 's' : ''}`
               ) : (

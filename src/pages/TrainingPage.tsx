@@ -178,10 +178,16 @@ export function TrainingPage() {
     setLoading(true);
     try {
       await Promise.all(kanjis.map((k) => loadDetails(k)));
-      const freshDetails = useKanjiStore.getState().details;
-      const kanjisDetails = kanjis.map((k) => freshDetails[k]).filter(Boolean) as typeof details[string][];
-      startSession(Array.from(selected), buildListName(), kanjisDetails, trainingType === 'review');
-      navigate('/training/session');
+      if (trainingType === 'review') {
+        navigate('/training/review-session', {
+          state: { kanjis, listName: buildListName() },
+        });
+      } else {
+        const freshDetails = useKanjiStore.getState().details;
+        const kanjisDetails = kanjis.map((k) => freshDetails[k]).filter(Boolean) as typeof details[string][];
+        startSession(Array.from(selected), buildListName(), kanjisDetails);
+        navigate('/training/session');
+      }
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { ListDetailPage } from '@/pages/ListDetailPage';
 import { TrainingPage } from '@/pages/TrainingPage';
 import { TrainingSessionPage } from '@/pages/TrainingSessionPage';
 import { SentenceSessionPage } from '@/pages/SentenceSessionPage';
+import { ReviewSessionPage } from '@/pages/ReviewSessionPage';
 import { StatsPage } from '@/pages/StatsPage';
 import { ScanPage } from '@/pages/ScanPage';
 
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="/training" element={<TrainingPage />} />
             <Route path="/training/session" element={<TrainingSessionPage />} />
             <Route path="/training/sentence-session" element={<SentenceSessionPage />} />
+            <Route path="/training/review-session" element={<ReviewSessionPage />} />
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/scan" element={<ScanPage />} />
           </Routes>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { useKanjiStore } from '@/store/kanjiStore';
 import { useStatsStore } from '@/store/statsStore';
@@ -18,14 +18,18 @@ export function KanjiDetailPage() {
   const [loading, setLoading] = useState(false);
   const [showAddToList, setShowAddToList] = useState(false);
 
+  const location = useLocation();
+  const listCtx = location.state as { listId: string; listName: string; kanjis: string[] } | null;
+
   const char = kanji ? decodeURIComponent(kanji) : '';
   const kanjiStat = useStatsStore((s) => s.kanjiStats[char]);
   const d = details[char];
   const words = kanjiWords[char] ?? [];
 
-  const idx = allKanji.indexOf(char);
-  const prevKanji = idx > 0 ? allKanji[idx - 1] : null;
-  const nextKanji = idx < allKanji.length - 1 ? allKanji[idx + 1] : null;
+  const navList = listCtx?.kanjis ?? allKanji;
+  const idx = navList.indexOf(char);
+  const prevKanji = idx > 0 ? navList[idx - 1] : null;
+  const nextKanji = idx < navList.length - 1 ? navList[idx + 1] : null;
 
   useEffect(() => {
     if (!char) return;
@@ -36,8 +40,8 @@ export function KanjiDetailPage() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'ArrowLeft' && prevKanji) navigate(`/kanji/${encodeURIComponent(prevKanji)}`);
-      if (e.key === 'ArrowRight' && nextKanji) navigate(`/kanji/${encodeURIComponent(nextKanji)}`);
+      if (e.key === 'ArrowLeft' && prevKanji) navigate(`/kanji/${encodeURIComponent(prevKanji)}`, { state: listCtx });
+      if (e.key === 'ArrowRight' && nextKanji) navigate(`/kanji/${encodeURIComponent(nextKanji)}`, { state: listCtx });
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -73,18 +77,27 @@ export function KanjiDetailPage() {
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       {/* Navigation bar */}
       <div className="flex items-center justify-between">
-        <Link to="/" className="text-sm text-gray-500 hover:text-white transition-colors flex items-center gap-1">
-          ← Retour à la liste
-        </Link>
+        {listCtx ? (
+          <Link
+            to={`/lists/${listCtx.listId}`}
+            className="text-sm text-gray-500 hover:text-white transition-colors"
+          >
+            ← {listCtx.listName}
+          </Link>
+        ) : (
+          <Link to="/" className="text-sm text-gray-500 hover:text-white transition-colors">
+            ← Retour à la liste
+          </Link>
+        )}
 
         <div className="flex items-center gap-2">
           {idx >= 0 && (
             <span className="text-xs text-gray-600">
-              {idx + 1} / {allKanji.length}
+              {idx + 1} / {navList.length}
             </span>
           )}
           <button
-            onClick={() => prevKanji && navigate(`/kanji/${encodeURIComponent(prevKanji)}`)}
+            onClick={() => prevKanji && navigate(`/kanji/${encodeURIComponent(prevKanji)}`, { state: listCtx })}
             disabled={!prevKanji}
             className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-30"
             title="Kanji précédent (←)"
@@ -92,7 +105,7 @@ export function KanjiDetailPage() {
             ← Préc.
           </button>
           <button
-            onClick={() => nextKanji && navigate(`/kanji/${encodeURIComponent(nextKanji)}`)}
+            onClick={() => nextKanji && navigate(`/kanji/${encodeURIComponent(nextKanji)}`, { state: listCtx })}
             disabled={!nextKanji}
             className="btn-secondary text-sm px-3 py-1.5 disabled:opacity-30"
             title="Kanji suivant (→)"

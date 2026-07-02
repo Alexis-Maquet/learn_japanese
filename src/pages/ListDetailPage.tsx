@@ -194,7 +194,11 @@ export function ListDetailPage() {
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-7 gap-3">
               {filteredKanjis.map((k) => (
                 <div key={k} className="relative group">
-                  <KanjiCard kanji={k} jlptLevel={jlptMap[k] ?? null} />
+                  <KanjiCard
+                    kanji={k}
+                    jlptLevel={jlptMap[k] ?? null}
+                    linkState={{ listId: list.id, listName: list.name, kanjis: filteredKanjis }}
+                  />
                   <button
                     onClick={() => removeKanjiFromList(list.id, k)}
                     className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-700 rounded-full text-white text-xs hidden group-hover:flex items-center justify-center hover:bg-red-600"

@@ -11,9 +11,10 @@ interface Props {
   listId?: string;
   selected?: boolean;
   onSelect?: (kanji: string) => void;
+  linkState?: object;
 }
 
-export function KanjiCard({ kanji, jlptLevel, listId, selected, onSelect }: Props) {
+export function KanjiCard({ kanji, jlptLevel, listId, selected, onSelect, linkState }: Props) {
   const { details, loadDetails, filters } = useKanjiStore();
   const { addKanjiToList, removeKanjiFromList, lists } = useListStore();
   const d = details[kanji];
@@ -105,7 +106,7 @@ export function KanjiCard({ kanji, jlptLevel, listId, selected, onSelect }: Prop
   }
 
   return (
-    <Link to={`/kanji/${encodeURIComponent(kanji)}`} className={className}>
+    <Link to={`/kanji/${encodeURIComponent(kanji)}`} state={linkState} className={className}>
       {cardContent}
     </Link>
   );

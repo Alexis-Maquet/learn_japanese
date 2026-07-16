@@ -30,6 +30,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Restore large data files from gh-pages branch
+        run: |
+          git fetch origin gh-pages
+          git show origin/gh-pages:kanjiapi_full.json > public/kanjiapi_full.json
+          git show origin/gh-pages:kanji_words.json > public/kanji_words.json
+
       - name: Build
         run: npm run build
 

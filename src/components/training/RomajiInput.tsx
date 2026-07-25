@@ -112,41 +112,8 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
         <p className="text-xs text-gray-500 text-center">
           {displayReadings.length} prononciation{displayReadings.length > 1 ? 's' : ''} — au moins une requise, toutes doivent être correctes
         </p>
-        {inputs.map((value, i) => (
-          <div key={i} className="relative">
-            <input
-              ref={i === 0 ? firstRef : undefined}
-              type="text"
-              value={value}
-              placeholder={`Prononciation ${i + 1} en romaji…`}
-              disabled={submitted}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              className={inputClass(value)}
-              onChange={(e) => {
-                const next = [...inputs];
-                next[i] = e.target.value;
-                setInputs(next);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  if (!submitted) handleSubmit();
-                  else onNext();
-                }
-              }}
-            />
-            {submitted && value.trim() && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
-                {inputState(value) === 'correct' ? '✓' : '✗'}
-              </span>
-            )}
-          </div>
-        ))}
-
         {/* Meaning input */}
-        <div className="relative pt-1">
+        <div className="relative">
           <input
             type="text"
             value={meaningInput}
@@ -174,6 +141,41 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
               {meaningCorrect ? '✓' : '✗'}
             </span>
           )}
+        </div>
+
+        <div className="pt-2 space-y-2">
+          {inputs.map((value, i) => (
+            <div key={i} className="relative">
+              <input
+                ref={i === 0 ? firstRef : undefined}
+                type="text"
+                value={value}
+                placeholder={`Prononciation ${i + 1} en romaji…`}
+                disabled={submitted}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                className={inputClass(value)}
+                onChange={(e) => {
+                  const next = [...inputs];
+                  next[i] = e.target.value;
+                  setInputs(next);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (!submitted) handleSubmit();
+                    else onNext();
+                  }
+                }}
+              />
+              {submitted && value.trim() && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
+                  {inputState(value) === 'correct' ? '✓' : '✗'}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 

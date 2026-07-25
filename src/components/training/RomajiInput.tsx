@@ -39,20 +39,22 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
   ];
 
   const [inputs, setInputs] = useState<string[]>(() => new Array(displayReadings.length).fill(''));
+  const [meaningInput, setMeaningInput] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [sessionCorrect, setSessionCorrect] = useState(false);
+  const [meaningCorrect, setMeaningCorrect] = useState(false);
   const [showKanjiModal, setShowKanjiModal] = useState(false);
-  const [revealedPronunciation, setRevealedPronunciation] = useState(false);
   const firstRef = useRef<HTMLInputElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const readings = buildReadings(card.details.on_readings, card.details.kun_readings);
     setInputs(new Array(readings.length).fill(''));
+    setMeaningInput('');
     setSubmitted(false);
     setSessionCorrect(false);
+    setMeaningCorrect(false);
     setShowKanjiModal(false);
-    setRevealedPronunciation(false);
     firstRef.current?.focus();
   }, [card.kanji]);
 
@@ -64,13 +66,21 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
   }, [submitted]);
 
   const nonEmpty = inputs.filter((v) => v.trim());
-  const canSubmit = nonEmpty.length > 0 && !submitted;
+  const canSubmit = nonEmpty.length > 0 && meaningInput.trim().length > 0 && !submitted;
+
+  const checkMeaning = (input: string, meanings: string[]): boolean => {
+    const normalized = input.trim().toLowerCase();
+    return meanings.some((m) => m.toLowerCase() === normalized);
+  };
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-    const allValid = nonEmpty.every((input) => checkAnswer(input, allValidReadings));
+    const romajiValid = nonEmpty.every((input) => checkAnswer(input, allValidReadings));
+    const isMeaningCorrect = checkMeaning(meaningInput, card.details.meanings);
+    const allValid = romajiValid && isMeaningCorrect;
     if (allValid) playCorrect();
     setSessionCorrect(allValid);
+    setMeaningCorrect(isMeaningCorrect);
     setSubmitted(true);
     onAnswer(allValid, nonEmpty.join(', '));
   };
@@ -93,17 +103,9 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
   return (
     <div className="flex flex-col items-center gap-6 w-full">
       {/* Kanji card */}
-      <button
-        onClick={() => !submitted && setRevealedPronunciation(true)}
-        className="w-56 h-56 flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-2xl shadow-xl cursor-pointer hover:border-gray-500 transition-colors"
-      >
+      <div className="w-56 h-56 flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-2xl shadow-xl">
         <span className="kanji-char text-8xl text-white select-none">{card.kanji}</span>
-        {revealedPronunciation ? (
-          <p className="text-xs text-gray-400 mt-2 px-3 text-center">{card.details.meanings.slice(0, 3).join(', ')}</p>
-        ) : (
-          <p className="text-xs text-gray-600 mt-2">Appuyer pour la signification</p>
-        )}
-      </button>
+      </div>
 
       {/* Input fields */}
       <div className="w-full max-w-sm space-y-2">
@@ -142,6 +144,37 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
             )}
           </div>
         ))}
+
+        {/* Meaning input */}
+        <div className="relative pt-1">
+          <input
+            type="text"
+            value={meaningInput}
+            placeholder="Signification en anglais…"
+            disabled={submitted}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            className={(() => {
+              const base = 'w-full px-4 py-2.5 rounded-lg border bg-[#161b22] text-white placeholder-gray-600 outline-none transition-colors disabled:cursor-default text-sm';
+              if (!submitted) return `${base} border-[#30363d] focus:border-japan-red`;
+              return meaningCorrect ? `${base} border-green-500 bg-green-900/10` : `${base} border-red-500 bg-red-900/10`;
+            })()}
+            onChange={(e) => setMeaningInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (!submitted) handleSubmit();
+                else onNext();
+              }
+            }}
+          />
+          {submitted && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
+              {meaningCorrect ? '✓' : '✗'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Correction panel */}
@@ -158,7 +191,9 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
               </span>
             ))}
           </div>
-          <p className="text-gray-500 text-xs">{card.details.meanings.slice(0, 3).join(', ')}</p>
+          <p className={`text-xs ${meaningCorrect ? 'text-gray-500' : 'text-red-400'}`}>
+            {card.details.meanings.slice(0, 4).join(', ')}
+          </p>
         </div>
       )}
 

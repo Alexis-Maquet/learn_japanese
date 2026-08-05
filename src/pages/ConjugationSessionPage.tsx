@@ -175,12 +175,17 @@ export function ConjugationSessionPage() {
           </div>
 
           {/* Prompt */}
-          <p className="text-center text-gray-300 text-sm">
-            Conjuguez à la{' '}
-            <span className="text-white font-medium">
-              {FORM_LABELS_FR[exercise.targetForm] ?? exercise.targetForm}
-            </span>
-          </p>
+          <div className="text-center space-y-1">
+            <p className="text-gray-300 text-sm">
+              Conjuguez{' '}
+              <span className="kanji-char text-white font-medium">{exercise.baseForm}</span>
+              {' '}pour…
+            </p>
+            <p className="text-white font-semibold text-base">{exercise.context}</p>
+            <p className="text-gray-600 text-xs">
+              ({FORM_LABELS_FR[exercise.targetForm] ?? exercise.targetForm})
+            </p>
+          </div>
 
           {/* Options 2×2 */}
           <div className="grid grid-cols-2 gap-2">

@@ -60,6 +60,7 @@ export interface ConjugationExercise {
   baseMeaning: string;
   targetForm: string;
   grammarPoint: string;
+  context: string;
   correctAnswer: string;
   options: string[];
   hint: string;

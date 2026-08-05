@@ -274,9 +274,10 @@ Pour chaque exercice :
 - Fournis la forme de base (辞書形) et sa conjugaison selon la règle choisie
 - Génère 3 leurres plausibles (vraies formes japonaises mais d'autres conjugaisons)
 - Le hint explique la règle de formation en une ligne concise
+- Le context est une courte phrase française décrivant l'usage de la forme demandée (ex : "pour formuler une demande polie") — ne révèle PAS la forme japonaise ni le pattern
 
 JSON attendu (sans markdown ni backticks) :
-{"exercises":[{"baseForm":"食べる","baseReading":"たべる","baseMeaning":"manger","targetForm":"て形","grammarPoint":"〜てください","correctAnswer":"食べて","options":["食べて","食べた","食べない","食べます"],"hint":"G2 : enlever る → 食べ + て"}]}
+{"exercises":[{"baseForm":"食べる","baseReading":"たべる","baseMeaning":"manger","targetForm":"て形","grammarPoint":"〜てください","context":"pour formuler une demande polie","correctAnswer":"食べて","options":["食べて","食べた","食べない","食べます"],"hint":"G2 : enlever る → 食べ + て"}]}
 
 ⚠ options[0] doit TOUJOURS être la bonne réponse (correctAnswer).
 ⚠ Génère exactement ${count} exercices.
@@ -296,7 +297,7 @@ JSON attendu (sans markdown ni backticks) :
   if (!Array.isArray(data.exercises)) return [];
 
   return data.exercises
-    .filter(ex => ex.baseForm && ex.correctAnswer && Array.isArray(ex.options) && ex.options.length >= 2)
+    .filter(ex => ex.baseForm && ex.correctAnswer && Array.isArray(ex.options) && ex.options.length >= 2 && ex.context)
     .map(ex => {
       const correct = ex.options[0];
       const shuffled = [...ex.options].sort(() => Math.random() - 0.5);

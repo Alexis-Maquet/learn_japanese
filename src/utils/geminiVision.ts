@@ -137,6 +137,57 @@ export async function getWordDefinition(
   }
 }
 
+const SENTENCE_THEMES = [
+  'restaurant / repas au restaurant',
+  'école / cours en classe',
+  'transports en commun / train / bus',
+  'météo / saisons / climate',
+  'famille / vie à la maison',
+  'shopping / magasins / vêtements',
+  'sport / gym / entraînement',
+  'musique / concert / chanter',
+  'voyage / tourisme / visiter',
+  'travail / bureau / collègues',
+  'santé / médecin / médicaments',
+  'animaux domestiques / chats / chiens',
+  'fêtes / célébrations / anniversaire',
+  'cuisine / préparer à manger / recette',
+  'technologie / smartphone / internet',
+  'cinéma / film / regarder une série',
+  'lecture / bibliothèque / livres',
+  'jardinage / plantes / fleurs',
+  'amis / rencontres / sortir ensemble',
+  'projets futurs / rêves / ambitions',
+  'photos / souvenirs / album',
+  'montagne / randonnée / camping',
+  'mer / plage / natation',
+  'quartier / voisinage / rue',
+  'marché / épicerie / courses',
+  'parc / promenade / pique-nique',
+  'café / thé / boissons',
+  'art / musée / exposition',
+  'jeux vidéo / console / jouer',
+  'nuit / sommeil / rêves',
+  'matin / réveil / routine du matin',
+  'week-end / vacances / repos',
+  'argent / budget / économies',
+  'courrier / lettre / message',
+  'université / études / examens',
+  'cadeau / surprise / fête',
+  'hôtel / hébergement / voyage',
+  'gare / aéroport / départ / arrivée',
+  'printemps / fleurs de cerisier / hanami',
+  'automne / feuilles colorées / koyo',
+  'neige / hiver / manteau',
+  'été / chaleur / plein air',
+  'soirée / dîner en famille',
+  'petit-déjeuner / matin calme',
+  'pêche / rivière / lac',
+  'temple / sanctuaire / visite culturelle',
+  'manga / anime / bande dessinée',
+  'arts martiaux / judo / kendo',
+];
+
 export async function generateSentenceExercises(
   apiKey: string,
   targetKanjis: string[],
@@ -149,15 +200,18 @@ export async function generateSentenceExercises(
       .filter((k, idx, arr) => arr.indexOf(k) === idx)
   );
 
+  const shuffledThemes = [...SENTENCE_THEMES].sort(() => Math.random() - 0.5);
+  const assignedThemes = kanjiGroups.map((_, i) => shuffledThemes[i % shuffledThemes.length]);
+
   const modelName = await pickModel(apiKey);
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: modelName });
 
   const groupsDesc = kanjiGroups
-    .map((g, i) => `Phrase ${i + 1} : ${g.join('、')} (isTarget=true pour les mots contenant ces kanjis : ${g.join('')})`)
+    .map((g, i) => `Phrase ${i + 1} [thème imposé : ${assignedThemes[i]}] : kanjis ${g.join('、')} (isTarget=true pour les mots contenant ces kanjis : ${g.join('')})`)
     .join('\n');
 
-  const prompt = `Tu es un professeur de japonais. Génère exactement ${count} phrases japonaises courtes et naturelles (5 à 12 mots chacune). Varie les structures grammaticales et les sujets entre les phrases. Pour chaque phrase, utilise au moins un des kanjis indiqués.
+  const prompt = `Tu es un professeur de japonais. Génère exactement ${count} phrases japonaises courtes et naturelles (5 à 12 mots chacune). Chaque phrase doit impérativement respecter son thème imposé. Varie les structures grammaticales entre les phrases. Pour chaque phrase, utilise au moins un des kanjis indiqués.
 
 Répartition des kanjis par phrase :
 ${groupsDesc}

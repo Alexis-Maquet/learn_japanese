@@ -8,6 +8,19 @@ interface SessionState {
   count: number;
 }
 
+const FORM_LABELS_FR: Record<string, string> = {
+  'ます形': 'forme polie (ます)',
+  'て形': 'forme en て',
+  'ない形': 'forme négative (ない)',
+  'た形': 'forme passée (た)',
+  'ます幹': 'radical de ます',
+  '辞書形': 'forme dictionnaire',
+  '短縮形': 'forme courte',
+  'く形 / に形': 'forme adverbiale',
+  '辞書形 / ない形': 'forme dictionnaire / négative',
+  'た形 / ない形': 'forme た / ない',
+};
+
 export function ConjugationSessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -153,7 +166,6 @@ export function ConjugationSessionPage() {
             <span className="kanji-char text-xs text-gray-400 bg-[#0d1117] border border-[#30363d] rounded px-2 py-0.5">
               {exercise.targetForm}
             </span>
-            <span className="text-sm text-gray-500">{exercise.grammarPoint}</span>
           </div>
 
           {/* Base form */}
@@ -165,7 +177,9 @@ export function ConjugationSessionPage() {
           {/* Prompt */}
           <p className="text-center text-gray-300 text-sm">
             Conjuguez à la{' '}
-            <span className="kanji-char text-white font-medium">{exercise.targetForm}</span>
+            <span className="text-white font-medium">
+              {FORM_LABELS_FR[exercise.targetForm] ?? exercise.targetForm}
+            </span>
           </p>
 
           {/* Options 2×2 */}
@@ -195,7 +209,10 @@ export function ConjugationSessionPage() {
 
           {/* Hint revealed after answer */}
           {answered && (
-            <div className="rounded-lg bg-[#161b22] border border-[#30363d] px-4 py-3 space-y-0.5">
+            <div className="rounded-lg bg-[#161b22] border border-[#30363d] px-4 py-3 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="kanji-char text-xs text-gray-500">{exercise.grammarPoint}</span>
+              </div>
               <p className="text-xs text-gray-600 uppercase tracking-wider">Règle</p>
               <p className="text-sm text-gray-300">{exercise.hint}</p>
             </div>

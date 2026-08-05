@@ -5,8 +5,14 @@ import { useKanjiStore } from '@/store/kanjiStore';
 import { useTrainingStore } from '@/store/trainingStore';
 import { useStatsStore } from '@/store/statsStore';
 import { JLPT_PREDEFINED, FREQ_PREDEFINED, ALL_PREDEFINED, resolvePredefinedKanjis } from '@/utils/predefinedLists';
-import { getApiKey, saveApiKey, clearApiKey } from '@/utils/geminiVision';
+import { getApiKey, saveApiKey, clearApiKey, CONJUGATION_CHAPTERS } from '@/utils/geminiVision';
 import type { SentenceAnswerMode } from '@/types';
+
+const CHAPTER_LABELS: Record<number, string> = {
+  3: 'L3 ます形', 4: 'L4 〜ました', 5: 'L5 ましょう',
+  6: 'L6 て形', 7: 'L7 〜ている', 8: 'L8 plain',
+  9: 'L9 た形', 10: 'L10 つもり', 11: 'L11 たい', 12: 'L12 すぎる',
+};
 
 interface ListRowProps {
   id: string;
@@ -61,9 +67,11 @@ export function TrainingPage() {
   const kanjiStats = useStatsStore((s) => s.kanjiStats);
   const { startSession, resumePausedSession } = useTrainingStore();
 
-  const [trainingType, setTrainingType] = useState<'romaji' | 'review' | 'sentence'>('romaji');
+  const [trainingType, setTrainingType] = useState<'romaji' | 'review' | 'sentence' | 'conjugation'>('romaji');
   const [sentenceMode, setSentenceMode] = useState<SentenceAnswerMode>('mcq');
   const [sentenceCount, setSentenceCount] = useState(10);
+  const [conjugationCount, setConjugationCount] = useState(10);
+  const [selectedChapters, setSelectedChapters] = useState<Set<number>>(new Set(CONJUGATION_CHAPTERS));
   const [reviewCount, setReviewCount] = useState(20);
   const [hasApiKey, setHasApiKey] = useState(!!getApiKey());
   const [apiKeyInput, setApiKeyInput] = useState('');
@@ -162,6 +170,18 @@ export function TrainingPage() {
     setApiKeyInput('');
   };
 
+  const toggleChapter = (n: number) => setSelectedChapters(prev => {
+    const next = new Set(prev);
+    if (next.has(n)) next.delete(n); else next.add(n);
+    return next;
+  });
+
+  const handleStartConjugation = () => {
+    navigate('/training/conjugation-session', {
+      state: { chapters: Array.from(selectedChapters), count: conjugationCount },
+    });
+  };
+
   const handleStartSentence = () => {
     const kanjis = resolveSelectedKanjis();
     if (kanjis.length === 0) return;
@@ -204,37 +224,25 @@ export function TrainingPage() {
 
       {/* Training type selector */}
       <div className="space-y-3">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setTrainingType('romaji')}
-            className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-              trainingType === 'romaji'
-                ? 'border-japan-red bg-japan-red/10 text-white'
-                : 'border-[#30363d] text-gray-400 hover:border-gray-500'
-            }`}
-          >
-            Prononciation
-          </button>
-          <button
-            onClick={() => setTrainingType('review')}
-            className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-              trainingType === 'review'
-                ? 'border-japan-red bg-japan-red/10 text-white'
-                : 'border-[#30363d] text-gray-400 hover:border-gray-500'
-            }`}
-          >
-            Révision
-          </button>
-          <button
-            onClick={() => setTrainingType('sentence')}
-            className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-              trainingType === 'sentence'
-                ? 'border-japan-red bg-japan-red/10 text-white'
-                : 'border-[#30363d] text-gray-400 hover:border-gray-500'
-            }`}
-          >
-            Phrases
-          </button>
+        <div className="grid grid-cols-2 gap-2">
+          {([
+            ['romaji', 'Prononciation'],
+            ['review', 'Révision'],
+            ['sentence', 'Phrases'],
+            ['conjugation', 'Conjugaison'],
+          ] as const).map(([type, label]) => (
+            <button
+              key={type}
+              onClick={() => setTrainingType(type)}
+              className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                trainingType === type
+                  ? 'border-japan-red bg-japan-red/10 text-white'
+                  : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {trainingType === 'review' && (
@@ -274,6 +282,93 @@ export function TrainingPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {trainingType === 'conjugation' && (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Chapitres Genki I</p>
+              <div className="flex flex-wrap gap-1.5">
+                {CONJUGATION_CHAPTERS.map(n => (
+                  <button
+                    key={n}
+                    onClick={() => toggleChapter(n)}
+                    className={`px-2.5 py-1 rounded-lg border text-xs transition-colors ${
+                      selectedChapters.has(n)
+                        ? 'border-japan-red bg-japan-red/10 text-white'
+                        : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                    }`}
+                  >
+                    {CHAPTER_LABELS[n]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Nombre de questions (1–30)</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setConjugationCount(c => Math.max(1, c - 5))}
+                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                >−</button>
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={conjugationCount}
+                  onChange={e => setConjugationCount(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm text-center outline-none focus:border-japan-red"
+                />
+                <button
+                  onClick={() => setConjugationCount(c => Math.min(30, c + 5))}
+                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                >+</button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs text-gray-500">Clé API Gemini</p>
+              {hasApiKey && !editingApiKey ? (
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22]">
+                  <span className="text-xs text-green-400">✓ Clé configurée</span>
+                  <div className="flex gap-3">
+                    <button onClick={() => setEditingApiKey(true)} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Modifier</button>
+                    <button onClick={handleClearApiKey} className="text-xs text-gray-500 hover:text-red-400 transition-colors">Supprimer</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={apiKeyInput}
+                    onChange={e => setApiKeyInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSaveApiKey(); }}
+                    placeholder="AIza…"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm outline-none focus:border-japan-red placeholder-gray-600"
+                  />
+                  <button
+                    onClick={handleSaveApiKey}
+                    disabled={!apiKeyInput.trim()}
+                    className="btn-primary text-sm py-1.5 px-3 disabled:opacity-40"
+                  >
+                    Enregistrer
+                  </button>
+                  {editingApiKey && (
+                    <button onClick={() => { setEditingApiKey(false); setApiKeyInput(''); }} className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-1">
+                      Annuler
+                    </button>
+                  )}
+                </div>
+              )}
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+              >
+                Obtenir une clé sur Google AI Studio →
+              </a>
+            </div>
           </div>
         )}
 
@@ -380,7 +475,7 @@ export function TrainingPage() {
       )}
 
       {/* User lists */}
-      {lists.length > 0 && (
+      {trainingType !== 'conjugation' && lists.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Mes listes</h2>
           <div className="space-y-2">
@@ -399,57 +494,59 @@ export function TrainingPage() {
         </section>
       )}
 
-      {/* JLPT predefined */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Par niveau JLPT</h2>
-        <div className="space-y-2">
-          {JLPT_PREDEFINED.map((cfg) => {
-            const kanjis = resolvePredefinedKanjis(cfg.id, kanjiByLevel, kanjiByFrequency);
-            const [borderColor, badgeColor] = cfg.color.split(' ');
-            return (
-              <ListRow
-                key={cfg.id}
-                id={cfg.id}
-                name={cfg.name}
-                description={cfg.description}
-                count={kanjis?.length}
-                badge={cfg.badge}
-                badgeColor={badgeColor}
-                borderColor={borderColor}
-                isSelected={selected.has(cfg.id)}
-                onToggle={toggle}
-              />
-            );
-          })}
-        </div>
-      </section>
+      {trainingType !== 'conjugation' && <>
+        {/* JLPT predefined */}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Par niveau JLPT</h2>
+          <div className="space-y-2">
+            {JLPT_PREDEFINED.map((cfg) => {
+              const kanjis = resolvePredefinedKanjis(cfg.id, kanjiByLevel, kanjiByFrequency);
+              const [borderColor, badgeColor] = cfg.color.split(' ');
+              return (
+                <ListRow
+                  key={cfg.id}
+                  id={cfg.id}
+                  name={cfg.name}
+                  description={cfg.description}
+                  count={kanjis?.length}
+                  badge={cfg.badge}
+                  badgeColor={badgeColor}
+                  borderColor={borderColor}
+                  isSelected={selected.has(cfg.id)}
+                  onToggle={toggle}
+                />
+              );
+            })}
+          </div>
+        </section>
 
-      {/* Frequency predefined */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Par fréquence (presse écrite)</h2>
-        <div className="space-y-2">
-          {FREQ_PREDEFINED.map((cfg) => {
-            const kanjis = resolvePredefinedKanjis(cfg.id, kanjiByLevel, kanjiByFrequency);
-            const [borderColor] = cfg.color.split(' ');
-            return (
-              <ListRow
-                key={cfg.id}
-                id={cfg.id}
-                name={cfg.name}
-                description={cfg.description}
-                count={kanjis?.length}
-                badge={cfg.badge}
-                borderColor={borderColor}
-                isSelected={selected.has(cfg.id)}
-                onToggle={toggle}
-              />
-            );
-          })}
-        </div>
-      </section>
+        {/* Frequency predefined */}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Par fréquence (presse écrite)</h2>
+          <div className="space-y-2">
+            {FREQ_PREDEFINED.map((cfg) => {
+              const kanjis = resolvePredefinedKanjis(cfg.id, kanjiByLevel, kanjiByFrequency);
+              const [borderColor] = cfg.color.split(' ');
+              return (
+                <ListRow
+                  key={cfg.id}
+                  id={cfg.id}
+                  name={cfg.name}
+                  description={cfg.description}
+                  count={kanjis?.length}
+                  badge={cfg.badge}
+                  borderColor={borderColor}
+                  isSelected={selected.has(cfg.id)}
+                  onToggle={toggle}
+                />
+              );
+            })}
+          </div>
+        </section>
+      </>}
 
       {/* User lists fallback when empty */}
-      {lists.length === 0 && (
+      {trainingType !== 'conjugation' && lists.length === 0 && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Mes listes</h2>
           <div className="card p-6 text-center space-y-2">
@@ -485,7 +582,7 @@ export function TrainingPage() {
                 'Sélectionnez au moins une liste'
               )}
             </button>
-          ) : (
+          ) : trainingType === 'sentence' ? (
             <button
               onClick={handleStartSentence}
               disabled={totalKanjis === 0 || !hasApiKey}
@@ -496,6 +593,18 @@ export function TrainingPage() {
                 : totalKanjis > 0
                 ? `▶ Commencer — phrases (${totalKanjis} kanjis)`
                 : 'Sélectionnez au moins une liste'}
+            </button>
+          ) : (
+            <button
+              onClick={handleStartConjugation}
+              disabled={selectedChapters.size === 0 || !hasApiKey}
+              className="btn-primary w-full py-3 text-base disabled:opacity-40"
+            >
+              {!hasApiKey
+                ? 'Clé API Gemini requise'
+                : selectedChapters.size > 0
+                ? `▶ Commencer — ${conjugationCount} exercice${conjugationCount > 1 ? 's' : ''}`
+                : 'Sélectionnez au moins un chapitre'}
             </button>
           )}
         </div>

@@ -1,5 +1,34 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { SentenceExercise } from '@/types';
+import type { SentenceExercise, ConjugationExercise } from '@/types';
+
+const CONJUGATION_RULES: { chapterNum: number; form: string; label: string; rule: string }[] = [
+  { chapterNum: 3, form: 'ます形', label: '〜ます / 〜ません', rule: 'Présent poli. G1: く→きます む→みます ぬ→にます ぶ→びます う→います つ→ちます る→ります す→します. G2: る→ます. する→します くる→きます' },
+  { chapterNum: 3, form: 'ます形', label: '〜ませんか', rule: 'Invitation. Stem ます + ませんか' },
+  { chapterNum: 4, form: 'ます形', label: '〜ました / 〜ませんでした', rule: 'Passé poli. Stem ます + ました (affirmatif) / ませんでした (négatif)' },
+  { chapterNum: 5, form: 'ます形', label: '〜ましょう / 〜ましょうか', rule: 'Suggestion ou offre. Stem ます + ましょう / ましょうか' },
+  { chapterNum: 6, form: 'て形', label: 'Formation て', rule: 'く→いて ぐ→いで す→して つ/る/う→って ぬ/ぶ/む→んで. G2: る→て. いく→いって する→して くる→きて' },
+  { chapterNum: 6, form: 'て形', label: '〜てください', rule: 'Demande polie. Forme て + ください' },
+  { chapterNum: 6, form: 'て形', label: '〜てもいいです', rule: 'Permission. Forme て + もいいです' },
+  { chapterNum: 6, form: 'て形', label: '〜てはいけません', rule: 'Interdiction. Forme て + はいけません' },
+  { chapterNum: 7, form: 'て形', label: '〜ています', rule: 'Progressif ou état résultant. Forme て + います' },
+  { chapterNum: 7, form: 'て形', label: 'い-adj くて / な-adj で', rule: 'Enchaînement descriptif. い-adj: い→くて. な-adj/N: + で' },
+  { chapterNum: 7, form: 'ます幹', label: 'V-stem に 行く/来る', rule: 'But du déplacement. Stem ます + に + verbe de mouvement' },
+  { chapterNum: 8, form: 'ない形', label: '〜ないでください', rule: 'Négation request. G1: く→かない む→まない ぬ→なない ぶ→ばない う→わない つ→たない る→らない す→さない. G2: る→ない. する→しない くる→こない. + でください' },
+  { chapterNum: 8, form: '辞書形', label: 'V の が 好き / 上手', rule: 'Nominalisation verbale. Forme dict. + の が + adjectif' },
+  { chapterNum: 8, form: '短縮形', label: '〜と思います', rule: 'Opinion. Forme courte (dict./ない/た/なかった) + と思います' },
+  { chapterNum: 9, form: 'た形', label: '〜たことがあります', rule: 'Expérience passée. G1: く→いた ぐ→いだ す→した つ/る/う→った ぬ/ぶ/む→んだ. G2: る→た. する→した くる→きた. + ことがあります' },
+  { chapterNum: 9, form: 'た形', label: '〜たり〜たりします', rule: 'Liste non exhaustive. Forme た + り (pour chaque verbe) + します' },
+  { chapterNum: 9, form: '短縮形', label: 'V/Adj (forme courte) + Nom', rule: 'Proposition relative. Forme courte (dict./た/ない/なかった) placée avant le nom' },
+  { chapterNum: 10, form: '辞書形 / ない形', label: '〜つもりです', rule: 'Intention. Forme dict. + つもりです (affirmatif). ない形 + つもりです (négatif)' },
+  { chapterNum: 10, form: 'く形 / に形', label: 'Adj + なる', rule: 'Devenir. い-adj: い→く + なる. な-adj: に + なる. N: N + になる' },
+  { chapterNum: 11, form: 'ます幹', label: '〜たいです', rule: 'Désir. Stem ます + たいです (se conjugue comme un い-adj)' },
+  { chapterNum: 11, form: 'た形', label: '〜たことがあります', rule: 'Expérience de vie. Forme た + ことがあります / ことがありません' },
+  { chapterNum: 12, form: 'ます幹', label: '〜すぎる', rule: 'Excès. Stem ます (verbe) + すぎる. い-adj: い→すぎる. な-adj: +すぎる' },
+  { chapterNum: 12, form: 'た形 / ない形', label: '〜ほうがいいです', rule: 'Conseil. Forme た + ほうがいいです (agir). ない形 + ほうがいいです (ne pas agir)' },
+  { chapterNum: 12, form: 'ない形', label: '〜なければいけません', rule: 'Obligation. ない形 → ない→なければ + いけません' },
+];
+
+export const CONJUGATION_CHAPTERS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 
 export type SupportedMediaType = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif';
 
@@ -167,6 +196,58 @@ Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
         return { ...w, options: shuffledOpts, correctOption: correct };
       }),
     }));
+}
+
+export async function generateConjugationExercises(
+  apiKey: string,
+  selectedChapters: number[],
+  count: number,
+): Promise<ConjugationExercise[]> {
+  const rules = CONJUGATION_RULES.filter(r => selectedChapters.includes(r.chapterNum));
+  if (rules.length === 0) return [];
+
+  const rulesText = rules
+    .map((r, i) => `${i + 1}. [${r.form}] ${r.label} — ${r.rule}`)
+    .join('\n');
+
+  const prompt = `Tu es un professeur de japonais Genki I. Génère exactement ${count} exercices de conjugaison variés de niveau N5/N4.
+
+Règles disponibles (varie-les de façon équilibrée) :
+${rulesText}
+
+Pour chaque exercice :
+- Choisis un verbe ou adjectif japonais courant (N5/N4), varié entre G1, G2, する/くる et adjectifs い/な
+- Fournis la forme de base (辞書形) et sa conjugaison selon la règle choisie
+- Génère 3 leurres plausibles (vraies formes japonaises mais d'autres conjugaisons)
+- Le hint explique la règle de formation en une ligne concise
+
+JSON attendu (sans markdown ni backticks) :
+{"exercises":[{"baseForm":"食べる","baseReading":"たべる","baseMeaning":"manger","targetForm":"て形","grammarPoint":"〜てください","correctAnswer":"食べて","options":["食べて","食べた","食べない","食べます"],"hint":"G2 : enlever る → 食べ + て"}]}
+
+⚠ options[0] doit TOUJOURS être la bonne réponse (correctAnswer).
+⚠ Génère exactement ${count} exercices.
+⚠ Réponds UNIQUEMENT avec le JSON, sans texte avant ni après.`;
+
+  const modelName = await pickModel(apiKey);
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: modelName });
+  const result = await model.generateContent(prompt);
+  trackApiCall();
+
+  const text = result.response.text().trim();
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return [];
+
+  const data = JSON.parse(match[0]) as { exercises: ConjugationExercise[] };
+  if (!Array.isArray(data.exercises)) return [];
+
+  return data.exercises
+    .filter(ex => ex.baseForm && ex.correctAnswer && Array.isArray(ex.options) && ex.options.length >= 2)
+    .map(ex => {
+      const correct = ex.options[0];
+      const shuffled = [...ex.options].sort(() => Math.random() - 0.5);
+      return { ...ex, options: shuffled, correctAnswer: correct };
+    });
 }
 
 export function getApiKey(): string | null {

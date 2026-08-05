@@ -54,6 +54,17 @@ export interface SentenceExercise {
   words: SentenceWord[];
 }
 
+export interface ConjugationExercise {
+  baseForm: string;
+  baseReading: string;
+  baseMeaning: string;
+  targetForm: string;
+  grammarPoint: string;
+  correctAnswer: string;
+  options: string[];
+  hint: string;
+}
+
 export type ReadingType = 'on' | 'kun';
 
 export interface TrainingCard {

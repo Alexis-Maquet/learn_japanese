@@ -11,6 +11,7 @@ import { ReviewSessionPage } from '@/pages/ReviewSessionPage';
 import { StatsPage } from '@/pages/StatsPage';
 import { ScanPage } from '@/pages/ScanPage';
 import { GrammarPage } from '@/pages/GrammarPage';
+import { ConjugationSessionPage } from '@/pages/ConjugationSessionPage';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/scan" element={<ScanPage />} />
             <Route path="/grammar" element={<GrammarPage />} />
+            <Route path="/training/conjugation-session" element={<ConjugationSessionPage />} />
           </Routes>
         </main>
       </div>

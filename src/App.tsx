@@ -10,6 +10,7 @@ import { SentenceSessionPage } from '@/pages/SentenceSessionPage';
 import { ReviewSessionPage } from '@/pages/ReviewSessionPage';
 import { StatsPage } from '@/pages/StatsPage';
 import { ScanPage } from '@/pages/ScanPage';
+import { GrammarPage } from '@/pages/GrammarPage';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/training/review-session" element={<ReviewSessionPage />} />
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/scan" element={<ScanPage />} />
+            <Route path="/grammar" element={<GrammarPage />} />
           </Routes>
         </main>
       </div>

@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { to: '/training', label: 'Entraînement', icon: '✏️' },
   { to: '/stats', label: 'Statistiques', icon: '📊' },
   { to: '/scan', label: 'Scanner', icon: '📷' },
+  { to: '/grammar', label: 'Grammaire', icon: '文' },
 ];
 
 export function Navigation() {

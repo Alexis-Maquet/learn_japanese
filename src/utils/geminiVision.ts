@@ -272,14 +272,14 @@ ${rulesText}
 Pour chaque exercice :
 - Choisis un verbe ou adjectif japonais courant (N5/N4), varié entre G1, G2, する/くる et adjectifs い/な
 - Fournis la forme de base (辞書形) et sa conjugaison selon la règle choisie
-- Génère 3 leurres plausibles (vraies formes japonaises mais d'autres conjugaisons)
+- correctAnswer : la forme conjuguée (peut contenir des kanji)
+- correctAnswerKana : la même forme entièrement en hiragana/katakana (sans kanji)
 - Le hint explique la règle de formation en une ligne concise
-- Le context est une courte phrase française décrivant l'usage de la forme demandée (ex : "pour formuler une demande polie") — ne révèle PAS la forme japonaise ni le pattern
+- Le context est une courte phrase française décrivant l'usage (ex : "pour formuler une demande polie") — ne révèle PAS la forme japonaise ni le pattern
 
 JSON attendu (sans markdown ni backticks) :
-{"exercises":[{"baseForm":"食べる","baseReading":"たべる","baseMeaning":"manger","targetForm":"て形","grammarPoint":"〜てください","context":"pour formuler une demande polie","correctAnswer":"食べて","options":["食べて","食べた","食べない","食べます"],"hint":"G2 : enlever る → 食べ + て"}]}
+{"exercises":[{"baseForm":"食べる","baseReading":"たべる","baseMeaning":"manger","targetForm":"て形","grammarPoint":"〜てください","context":"pour formuler une demande polie","correctAnswer":"食べて","correctAnswerKana":"たべて","hint":"G2 : enlever る → 食べ + て"}]}
 
-⚠ options[0] doit TOUJOURS être la bonne réponse (correctAnswer).
 ⚠ Génère exactement ${count} exercices.
 ⚠ Réponds UNIQUEMENT avec le JSON, sans texte avant ni après.`;
 
@@ -297,12 +297,7 @@ JSON attendu (sans markdown ni backticks) :
   if (!Array.isArray(data.exercises)) return [];
 
   return data.exercises
-    .filter(ex => ex.baseForm && ex.correctAnswer && Array.isArray(ex.options) && ex.options.length >= 2 && ex.context)
-    .map(ex => {
-      const correct = ex.options[0];
-      const shuffled = [...ex.options].sort(() => Math.random() - 0.5);
-      return { ...ex, options: shuffled, correctAnswer: correct };
-    });
+    .filter(ex => ex.baseForm && ex.correctAnswer && ex.correctAnswerKana && ex.context);
 }
 
 export function getApiKey(): string | null {

@@ -62,7 +62,7 @@ export interface ConjugationExercise {
   grammarPoint: string;
   context: string;
   correctAnswer: string;
-  options: string[];
+  correctAnswerKana: string;
   hint: string;
 }
 

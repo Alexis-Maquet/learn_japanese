@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { toHiragana } from 'wanakana';
 import { generateConjugationExercises, getApiKey } from '@/utils/geminiVision';
 import type { ConjugationExercise } from '@/types';
 
@@ -8,6 +9,16 @@ interface SessionState {
   count: number;
 }
 
+function checkAnswer(input: string, exercise: ConjugationExercise): boolean {
+  const trimmed = input.trim();
+  if (!trimmed) return false;
+  const normalized = toHiragana(trimmed.toLowerCase());
+  return (
+    trimmed === exercise.correctAnswer ||
+    trimmed === exercise.correctAnswerKana ||
+    normalized === exercise.correctAnswerKana
+  );
+}
 
 export function ConjugationSessionPage() {
   const navigate = useNavigate();
@@ -16,12 +27,15 @@ export function ConjugationSessionPage() {
 
   const [exercises, setExercises] = useState<ConjugationExercise[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
 
+  const inputRef = useRef<HTMLInputElement>(null);
   const apiKey = getApiKey();
   const count = state?.count ?? 10;
 
@@ -37,17 +51,24 @@ export function ConjugationSessionPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const exercise = exercises[currentIndex];
-  const answered = selected !== null;
+  useEffect(() => {
+    if (!submitted) inputRef.current?.focus();
+  }, [currentIndex, submitted]);
 
-  const handleSelect = useCallback((option: string) => {
-    if (answered || !exercise) return;
-    setSelected(option);
-    if (option === exercise.correctAnswer) setCorrectCount(c => c + 1);
-  }, [answered, exercise]);
+  const exercise = exercises[currentIndex];
+
+  const handleSubmit = useCallback(() => {
+    if (submitted || !exercise || !inputValue.trim()) return;
+    const correct = checkAnswer(inputValue, exercise);
+    setSubmitted(true);
+    setIsCorrect(correct);
+    if (correct) setCorrectCount(c => c + 1);
+  }, [submitted, exercise, inputValue]);
 
   const handleNext = useCallback(() => {
-    setSelected(null);
+    setInputValue('');
+    setSubmitted(false);
+    setIsCorrect(null);
     if (currentIndex + 1 >= exercises.length) {
       setShowSummary(true);
     } else {
@@ -57,11 +78,11 @@ export function ConjugationSessionPage() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && answered) handleNext();
+      if (e.key === 'Enter' && submitted) handleNext();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [answered, handleNext]);
+  }, [submitted, handleNext]);
 
   if (!state) {
     return (
@@ -161,33 +182,56 @@ export function ConjugationSessionPage() {
             <p className="text-white font-semibold text-base">{exercise.context}</p>
           </div>
 
-          {/* Options 2×2 */}
-          <div className="grid grid-cols-2 gap-2">
-            {exercise.options.map((option) => {
-              const isSelected = selected === option;
-              const isCorrect = option === exercise.correctAnswer;
-              let cls = 'py-3 px-3 rounded-lg border kanji-char text-base transition-all text-center ';
-              if (!answered) {
-                cls += 'border-[#30363d] text-gray-200 hover:border-gray-400 hover:bg-[#21262d] cursor-pointer';
-              } else if (isCorrect) {
-                cls += 'border-green-500 bg-green-500/10 text-green-300 cursor-default';
-              } else if (isSelected) {
-                cls += 'border-red-500 bg-red-500/10 text-red-300 cursor-default';
-              } else {
-                cls += 'border-[#30363d] text-gray-600 cursor-default';
-              }
-              return (
-                <button key={option} onClick={() => handleSelect(option)} disabled={answered} className={cls}>
-                  {answered && isCorrect && <span className="text-green-400 text-xs mr-1">✓</span>}
-                  {answered && isSelected && !isCorrect && <span className="text-red-400 text-xs mr-1">✗</span>}
-                  {option}
+          {/* Free text input */}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !submitted) handleSubmit(); }}
+                disabled={submitted}
+                placeholder="たべて ou tabete…"
+                className={[
+                  'flex-1 px-4 py-3 rounded-lg border bg-[#0d1117] kanji-char text-lg text-white placeholder:text-gray-600 outline-none transition-colors',
+                  !submitted
+                    ? 'border-[#30363d] focus:border-gray-400'
+                    : isCorrect
+                      ? 'border-green-500 bg-green-500/5 text-green-300'
+                      : 'border-red-500 bg-red-500/5 text-red-300',
+                ].join(' ')}
+              />
+              {!submitted && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={!inputValue.trim()}
+                  className="btn-primary px-5 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  →
                 </button>
-              );
-            })}
+              )}
+            </div>
+
+            {submitted && (
+              <div className={`flex items-center gap-2 text-sm px-1 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                {isCorrect ? (
+                  <span>✓ Bonne réponse !</span>
+                ) : (
+                  <span>
+                    ✗ Réponse correcte :{' '}
+                    <span className="kanji-char text-white font-medium">{exercise.correctAnswer}</span>
+                    {exercise.correctAnswerKana !== exercise.correctAnswer && (
+                      <span className="text-gray-500"> ({exercise.correctAnswerKana})</span>
+                    )}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Hint revealed after answer */}
-          {answered && (
+          {submitted && (
             <div className="rounded-lg bg-[#161b22] border border-[#30363d] px-4 py-3 space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="kanji-char text-xs text-gray-400 bg-[#0d1117] border border-[#30363d] rounded px-2 py-0.5">
@@ -201,7 +245,7 @@ export function ConjugationSessionPage() {
           )}
 
           {/* Next */}
-          {answered && (
+          {submitted && (
             <button onClick={handleNext} className="btn-primary w-full">
               {currentIndex + 1 >= exercises.length ? 'Voir les résultats' : 'Suivant →'}
             </button>
@@ -212,7 +256,7 @@ export function ConjugationSessionPage() {
       <div className="flex items-center justify-center">
         <button
           onClick={() => setShowSummary(true)}
-          disabled={currentIndex === 0 && !answered}
+          disabled={currentIndex === 0 && !submitted}
           className="text-xs text-gray-600 hover:text-red-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Terminer la session

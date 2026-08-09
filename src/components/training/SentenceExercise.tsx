@@ -137,29 +137,37 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
                 )}
                 {submitted && (
                   <span className={`ml-auto text-sm font-medium ${correct ? 'text-green-400' : 'text-red-400'}`}>
-                    {correct ? '✓' : `✗ — ${word.meaning}`}
+                    {correct ? '✓' : '✗'}
                   </span>
                 )}
               </div>
 
               {mode === 'free' ? (
-                <input
-                  type="text"
-                  value={ans}
-                  disabled={submitted}
-                  placeholder="Traduction en français…"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  onChange={e => setAnswers(a => ({ ...a, [index]: e.target.value }))}
-                  onKeyDown={e => { if (e.key === 'Enter' && canSubmit) handleSubmit(); }}
-                  className={`w-full px-3 py-2 rounded-lg border bg-[#161b22] text-white placeholder-gray-600 outline-none text-sm transition-colors disabled:cursor-default ${
-                    submitted
-                      ? correct ? 'border-green-500 bg-green-900/10' : 'border-red-500 bg-red-900/10'
-                      : 'border-[#30363d] focus:border-japan-red'
-                  }`}
-                />
+                <>
+                  <input
+                    type="text"
+                    value={ans}
+                    disabled={submitted}
+                    placeholder="Traduction en français…"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    onChange={e => setAnswers(a => ({ ...a, [index]: e.target.value }))}
+                    onKeyDown={e => { if (e.key === 'Enter' && canSubmit) handleSubmit(); }}
+                    className={`w-full px-3 py-2 rounded-lg border bg-[#161b22] text-white placeholder-gray-600 outline-none text-sm transition-colors disabled:cursor-default ${
+                      submitted
+                        ? correct ? 'border-green-500 bg-green-900/10' : 'border-red-500 bg-red-900/10'
+                        : 'border-[#30363d] focus:border-japan-red'
+                    }`}
+                  />
+                  {submitted && correct === false && (
+                    <p className="text-sm text-red-400">
+                      Réponse attendue :{' '}
+                      <span className="text-white font-medium">{word.meaning}</span>
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="space-y-1.5">
                   {(word.options ?? []).map((opt, oi) => (

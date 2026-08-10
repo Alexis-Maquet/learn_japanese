@@ -252,6 +252,57 @@ Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
     }));
 }
 
+const VERB_POOL: string[] = [
+  // G1
+  '書く(かく·écrire)', '聞く(きく·écouter)', '泳ぐ(およぐ·nager)',
+  '話す(はなす·parler)', '待つ(まつ·attendre)', '遊ぶ(あそぶ·jouer)',
+  '帰る(かえる·rentrer)', '乗る(のる·monter dans)', '走る(はしる·courir)',
+  '作る(つくる·créer)', '歌う(うたう·chanter)', '買う(かう·acheter)',
+  '洗う(あらう·laver)', '会う(あう·rencontrer)', '使う(つかう·utiliser)',
+  '習う(ならう·apprendre)', '急ぐ(いそぐ·se dépêcher)', '消す(けす·éteindre)',
+  '出す(だす·envoyer/sortir)', '押す(おす·pousser)', '貸す(かす·prêter)',
+  '立つ(たつ·se lever/se tenir debout)', '勝つ(かつ·gagner)', '持つ(もつ·tenir/avoir)',
+  '送る(おくる·envoyer)', '取る(とる·prendre)', '困る(こまる·être gêné)',
+  '頑張る(がんばる·persévérer)', '売る(うる·vendre)', '知る(しる·savoir)',
+  '切る(きる·couper)', '通る(とおる·passer par)', '始まる(はじまる·commencer)',
+  '終わる(おわる·finir)', '泣く(なく·pleurer)', '笑う(わらう·rire)',
+  '働く(はたらく·travailler)', '歩く(あるく·marcher)', '引く(ひく·tirer)',
+  // G2
+  '起きる(おきる·se lever)', '寝る(ねる·dormir)', '教える(おしえる·enseigner)',
+  '覚える(おぼえる·mémoriser)', '忘れる(わすれる·oublier)', '借りる(かりる·emprunter)',
+  '着る(きる·porter un vêtement)', '降りる(おりる·descendre)', '閉める(しめる·fermer)',
+  '開ける(あける·ouvrir)', '見せる(みせる·montrer)', '疲れる(つかれる·se fatiguer)',
+  '調べる(しらべる·rechercher)', '答える(こたえる·répondre)', '続ける(つづける·continuer)',
+  '集める(あつめる·collecter)', '決める(きめる·décider)', 'あげる(あげる·donner)',
+  '生まれる(うまれる·naître)', '考える(かんがえる·réfléchir)', '起こす(おこす·réveiller)',
+  // する
+  '運動する(うんどうする·faire du sport)', '掃除する(そうじする·nettoyer)',
+  '料理する(りょうりする·cuisiner)', '散歩する(さんぽする·se promener)',
+  '旅行する(りょこうする·voyager)', '練習する(れんしゅうする·pratiquer)',
+  '説明する(せつめいする·expliquer)', '電話する(でんわする·téléphoner)',
+  '心配する(しんぱいする·s\'inquiéter)', '紹介する(しょうかいする·présenter)',
+  '準備する(じゅんびする·préparer)', '相談する(そうだんする·consulter)',
+  '確認する(かくにんする·vérifier)', '参加する(さんかする·participer)',
+  // い-adj
+  '難しい(むずかしい·difficile)', 'やさしい(やさしい·gentil/facile)',
+  'おいしい(おいしい·délicieux)', 'たのしい(たのしい·amusant)',
+  'いそがしい(いそがしい·occupé)', 'さびしい(さびしい·solitaire)',
+  'こわい(こわい·effrayant)', 'うれしい(うれしい·heureux)',
+  'かなしい(かなしい·triste)', 'ねむい(ねむい·somnolent)',
+  'つめたい(つめたい·froid au toucher)', 'あぶない(あぶない·dangereux)',
+  'すごい(すごい·incroyable)', 'かわいい(かわいい·mignon)',
+  'おもしろい(おもしろい·intéressant)', 'つまらない(つまらない·ennuyeux)',
+  // な-adj
+  '元気な(げんきな·en forme)', '親切な(しんせつな·gentil)',
+  '便利な(べんりな·pratique)', '大切な(たいせつな·important)',
+  '有名な(ゆうめいな·célèbre)', '特別な(とくべつな·spécial)',
+  '安全な(あんぜんな·sûr)', '不思議な(ふしぎな·mystérieux)',
+  '丁寧な(ていねいな·poli)', '静かな(しずかな·calme)',
+  'にぎやかな(にぎやかな·animé)', 'まじめな(まじめな·sérieux)',
+  '大変な(たいへんな·difficile)', '複雑な(ふくざつな·complexe)',
+  '素直な(すなおな·docile/sincère)', '正直な(しょうじきな·honnête)',
+];
+
 export async function generateConjugationExercises(
   apiKey: string,
   selectedChapters: number[],
@@ -264,13 +315,20 @@ export async function generateConjugationExercises(
     .map((r, i) => `${i + 1}. [${r.form}] ${r.label} — ${r.rule}`)
     .join('\n');
 
+  const shuffledPool = [...VERB_POOL].sort(() => Math.random() - 0.5);
+  const suggestedWords = shuffledPool.slice(0, Math.min(count * 2, 24)).join('、');
+
   const prompt = `Tu es un professeur de japonais Genki I. Génère exactement ${count} exercices de conjugaison variés de niveau N5/N4.
 
 Règles disponibles (varie-les de façon équilibrée) :
 ${rulesText}
 
+Mots suggérés (liste aléatoire — utilise-les en priorité, dans un ordre varié) :
+${suggestedWords}
+
 Pour chaque exercice :
-- Choisis un verbe ou adjectif japonais courant (N5/N4), varié entre G1, G2, する/くる et adjectifs い/な
+- Utilise de préférence un mot de la liste ci-dessus ; ne répète jamais deux fois le même baseForm
+- Varie les types : G1, G2, する, adjectifs い et な
 - Fournis la forme de base (辞書形) et sa conjugaison selon la règle choisie
 - correctAnswer : la forme conjuguée (peut contenir des kanji)
 - correctAnswerKana : la même forme entièrement en hiragana/katakana (sans kanji)
@@ -278,7 +336,7 @@ Pour chaque exercice :
 - Le context est une courte phrase française décrivant l'usage (ex : "pour formuler une demande polie") — ne révèle PAS la forme japonaise ni le pattern
 
 JSON attendu (sans markdown ni backticks) :
-{"exercises":[{"baseForm":"食べる","baseReading":"たべる","baseMeaning":"manger","targetForm":"て形","grammarPoint":"〜てください","context":"pour formuler une demande polie","correctAnswer":"食べて","correctAnswerKana":"たべて","hint":"G2 : enlever る → 食べ + て"}]}
+{"exercises":[{"baseForm":"書く","baseReading":"かく","baseMeaning":"écrire","targetForm":"て形","grammarPoint":"〜てください","context":"pour donner une instruction poliment","correctAnswer":"書いて","correctAnswerKana":"かいて","hint":"G1 く→いて : 書く → 書いて"}]}
 
 ⚠ Génère exactement ${count} exercices.
 ⚠ Réponds UNIQUEMENT avec le JSON, sans texte avant ni après.`;
@@ -297,7 +355,8 @@ JSON attendu (sans markdown ni backticks) :
   if (!Array.isArray(data.exercises)) return [];
 
   return data.exercises
-    .filter(ex => ex.baseForm && ex.correctAnswer && ex.correctAnswerKana && ex.context);
+    .filter(ex => ex.baseForm && ex.correctAnswer && ex.correctAnswerKana && ex.context)
+    .sort(() => Math.random() - 0.5);
 }
 
 export function getApiKey(): string | null {

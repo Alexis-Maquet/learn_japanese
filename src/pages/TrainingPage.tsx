@@ -12,6 +12,7 @@ const CHAPTER_LABELS: Record<number, string> = {
   3: 'L3 ます形', 4: 'L4 〜ました', 5: 'L5 ましょう',
   6: 'L6 て形', 7: 'L7 〜ている', 8: 'L8 plain',
   9: 'L9 た形', 10: 'L10 つもり', 11: 'L11 たい', 12: 'L12 すぎる',
+  13: 'L13 可能形',
 };
 
 interface ListRowProps {
@@ -306,7 +307,7 @@ export function TrainingPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-xs text-gray-500">Nombre de questions (1–30)</p>
+              <p className="text-xs text-gray-500">Nombre de questions (1–70)</p>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setConjugationCount(c => Math.max(1, c - 5))}
@@ -315,13 +316,13 @@ export function TrainingPage() {
                 <input
                   type="number"
                   min={1}
-                  max={30}
+                  max={70}
                   value={conjugationCount}
-                  onChange={e => setConjugationCount(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
+                  onChange={e => setConjugationCount(Math.min(70, Math.max(1, parseInt(e.target.value) || 1)))}
                   className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm text-center outline-none focus:border-japan-red"
                 />
                 <button
-                  onClick={() => setConjugationCount(c => Math.min(30, c + 5))}
+                  onClick={() => setConjugationCount(c => Math.min(70, c + 5))}
                   className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
                 >+</button>
               </div>

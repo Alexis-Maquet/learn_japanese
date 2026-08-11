@@ -26,9 +26,15 @@ const CONJUGATION_RULES: { chapterNum: number; form: string; label: string; rule
   { chapterNum: 12, form: 'ます幹', label: '〜すぎる', rule: 'Excès. Stem ます (verbe) + すぎる. い-adj: い→すぎる. な-adj: +すぎる' },
   { chapterNum: 12, form: 'た形 / ない形', label: '〜ほうがいいです', rule: 'Conseil. Forme た + ほうがいいです (agir). ない形 + ほうがいいです (ne pas agir)' },
   { chapterNum: 12, form: 'ない形', label: '〜なければいけません', rule: 'Obligation. ない形 → ない→なければ + いけません' },
+  { chapterNum: 13, form: '可能形', label: 'Forme potentielle', rule: 'Capacité/possibilité. G1: く→ける む→める ぬ→ねる ぶ→べる う→える つ→てる る→れる す→せる. G2: る→られる. する→できる くる→こられる. Objet en が.' },
+  { chapterNum: 13, form: '短縮形', label: '〜し (raisons)', rule: 'Cumul de raisons. [Raison₁ plain] し、[Raison₂] し、[Conclusion]. V/adj (forme courte) + し. な-adj/N + だし.' },
+  { chapterNum: 13, form: 'ます幹 / adj', label: '〜そうです (apparence)', rule: 'Apparence visible. V: stem ます + そう. い-adj: drop い + そう (いい→よさそう). な-adj: drop な + そう.' },
+  { chapterNum: 13, form: 'て形', label: '〜てみる', rule: 'Essai expérimental. Forme て + みる/みます. Exprime qu\'on tente qqch pour voir le résultat.' },
+  { chapterNum: 13, form: '短縮形', label: 'Conditionnel なら', rule: 'Condition basée sur info connue. V/adj (forme courte) + なら. N + なら (sans だ). Suivi d\'un conseil ou résultat.' },
+  { chapterNum: 13, form: '〜に〜回', label: 'Fréquence sur période', rule: '[Période] に [nombre] 回/度. 週に三回 / 一日に二度 / 月に一度. に = par (unité temporelle).' },
 ];
 
-export const CONJUGATION_CHAPTERS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+export const CONJUGATION_CHAPTERS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as const;
 
 export type SupportedMediaType = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif';
 

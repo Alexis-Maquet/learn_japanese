@@ -574,6 +574,58 @@ const CHAPTERS: Chapter[] = [
       },
     ],
   },
+  {
+    num: 13, kanji: '十三', title: 'Potentiel & nuances',
+    cards: [
+      {
+        label: 'Forme potentielle',
+        form: '可能形',
+        front: '可能形 — pouvoir faire…',
+        meaning: 'Pouvoir faire… / Être capable de…',
+        rule: 'G1: く→ける む→める ぬ→ねる ぶ→べる う→える つ→てる る→れる す→せる\nG2: る→られる  する→できる  くる→こられる\nL\'objet prend が (pas を).',
+        example: '漢字が読めます。日本語が話せます。', trans: 'Je peux lire les kanji. Je peux parler japonais.',
+      },
+      {
+        label: 'Cumul de raisons',
+        form: '短縮形',
+        front: '〜し、〜し、…',
+        meaning: 'D\'un côté…, d\'un autre côté… (cumul)',
+        rule: '[Raison₁ (forme courte)] し、[Raison₂] し、[Résultat/Opinion].\nNon exhaustif : sous-entend d\'autres raisons.\nVerbe/adj plain + し  /  N・な-adj + だし',
+        example: '安いし、おいしいし、このお店が好きです。', trans: 'C\'est pas cher, c\'est bon, j\'aime ce restaurant.',
+      },
+      {
+        label: 'Apparence — そうです',
+        form: 'ます幹 / adj',
+        front: '〜そうです (apparence visible)',
+        meaning: 'On dirait que… / Ça a l\'air de…',
+        rule: 'V: stem ます + そう  (⚠ basé sur observation)\nい-adj: drop い + そう  ⚠ いい→よさそう、ない→なさそう\nな-adj: drop な + そう\n≠ 〜そうです (ouï-dire, voir 伝聞)',
+        example: '雨が降りそうです。このケーキはおいしそうです。', trans: 'On dirait qu\'il va pleuvoir. Ce gâteau a l\'air délicieux.',
+      },
+      {
+        label: 'Essayer — てみる',
+        form: 'て形',
+        front: '〜てみる',
+        meaning: 'Essayer de faire… (pour voir)',
+        rule: 'Forme て + みる/みます.\nExprime une tentative expérimentale.\nSous-entend : on ne sait pas à l\'avance le résultat.',
+        example: '日本料理を作ってみました。着てみてください。', trans: 'J\'ai essayé de faire de la cuisine japonaise. Essayez de le porter.',
+      },
+      {
+        label: 'Conditionnel なら',
+        form: '短縮形',
+        front: '〜なら',
+        meaning: 'Si c\'est le cas de… / Si tu parles de…',
+        rule: '[Thème/Condition] + なら + [Conseil ou résultat].\nBasé sur une info déjà connue ou mentionnée.\nV/adj (forme courte) + なら  /  N + なら (sans だ)',
+        example: '日本に行くなら、京都に寄ってください。', trans: 'Si tu vas au Japon, passe par Kyoto.',
+      },
+      {
+        label: 'Fréquence sur période',
+        front: '[Période] に [Nombre] 回 / 度',
+        meaning: '[X] fois par [période]',
+        rule: '回 (かい) et 度 (ど) = "fois".\n[Période] + に = par (unité de temps).\n例: 週に三回 / 一日に二度 / 月に一度',
+        example: '週に三回ジムに行きます。一日に二度歯を磨きます。', trans: 'Je vais à la salle 3 fois par semaine. Je me brosse les dents 2 fois par jour.',
+      },
+    ],
+  },
 ];
 
 function multiline(text: string) {

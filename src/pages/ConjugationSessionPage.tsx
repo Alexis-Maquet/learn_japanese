@@ -36,6 +36,7 @@ export function ConjugationSessionPage() {
   const [showSummary, setShowSummary] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const nextBtnRef = useRef<HTMLButtonElement>(null);
   const apiKey = getApiKey();
   const count = state?.count ?? 10;
 
@@ -51,8 +52,13 @@ export function ConjugationSessionPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Focus input on new exercise, focus "Suivant" button after submission
   useEffect(() => {
-    if (!submitted) inputRef.current?.focus();
+    if (submitted) {
+      nextBtnRef.current?.focus();
+    } else {
+      inputRef.current?.focus();
+    }
   }, [currentIndex, submitted]);
 
   const exercise = exercises[currentIndex];
@@ -75,14 +81,6 @@ export function ConjugationSessionPage() {
       setCurrentIndex(i => i + 1);
     }
   }, [currentIndex, exercises.length]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && submitted) handleNext();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [submitted, handleNext]);
 
   if (!state) {
     return (
@@ -246,7 +244,7 @@ export function ConjugationSessionPage() {
 
           {/* Next */}
           {submitted && (
-            <button onClick={handleNext} className="btn-primary w-full">
+            <button ref={nextBtnRef} onClick={handleNext} className="btn-primary w-full">
               {currentIndex + 1 >= exercises.length ? 'Voir les résultats' : 'Suivant →'}
             </button>
           )}

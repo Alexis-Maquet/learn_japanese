@@ -327,49 +327,6 @@ export function TrainingPage() {
                 >+</button>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <p className="text-xs text-gray-500">Clé API Gemini</p>
-              {hasApiKey && !editingApiKey ? (
-                <div className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22]">
-                  <span className="text-xs text-green-400">✓ Clé configurée</span>
-                  <div className="flex gap-3">
-                    <button onClick={() => setEditingApiKey(true)} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Modifier</button>
-                    <button onClick={handleClearApiKey} className="text-xs text-gray-500 hover:text-red-400 transition-colors">Supprimer</button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    value={apiKeyInput}
-                    onChange={e => setApiKeyInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleSaveApiKey(); }}
-                    placeholder="AIza…"
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm outline-none focus:border-japan-red placeholder-gray-600"
-                  />
-                  <button
-                    onClick={handleSaveApiKey}
-                    disabled={!apiKeyInput.trim()}
-                    className="btn-primary text-sm py-1.5 px-3 disabled:opacity-40"
-                  >
-                    Enregistrer
-                  </button>
-                  {editingApiKey && (
-                    <button onClick={() => { setEditingApiKey(false); setApiKeyInput(''); }} className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-1">
-                      Annuler
-                    </button>
-                  )}
-                </div>
-              )}
-              <a
-                href="https://aistudio.google.com/app/apikey"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
-              >
-                Obtenir une clé sur Google AI Studio →
-              </a>
-            </div>
           </div>
         )}
 
@@ -598,12 +555,10 @@ export function TrainingPage() {
           ) : (
             <button
               onClick={handleStartConjugation}
-              disabled={selectedChapters.size === 0 || !hasApiKey}
+              disabled={selectedChapters.size === 0}
               className="btn-primary w-full py-3 text-base disabled:opacity-40"
             >
-              {!hasApiKey
-                ? 'Clé API Gemini requise'
-                : selectedChapters.size > 0
+              {selectedChapters.size > 0
                 ? `▶ Commencer — ${conjugationCount} exercice${conjugationCount > 1 ? 's' : ''}`
                 : 'Sélectionnez au moins un chapitre'}
             </button>

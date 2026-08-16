@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { toHiragana } from 'wanakana';
-import { generateConjugationExercises, getApiKey } from '@/utils/geminiVision';
+import { generateConjugationExercisesLocal } from '@/utils/conjugationLocal';
 import type { ConjugationExercise } from '@/types';
 
 interface SessionState {
@@ -12,11 +12,12 @@ interface SessionState {
 function checkAnswer(input: string, exercise: ConjugationExercise): boolean {
   const trimmed = input.trim();
   if (!trimmed) return false;
-  const normalized = toHiragana(trimmed.toLowerCase());
+  const normalized = toHiragana(trimmed.toLowerCase()).replace(/\s+/g, '');
+  const kana = exercise.correctAnswerKana.replace(/\s+/g, '');
   return (
     trimmed === exercise.correctAnswer ||
-    trimmed === exercise.correctAnswerKana ||
-    normalized === exercise.correctAnswerKana
+    trimmed === kana ||
+    normalized === kana
   );
 }
 
@@ -34,21 +35,18 @@ export function ConjugationSessionPage() {
   const [error, setError] = useState<string | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const nextBtnRef = useRef<HTMLButtonElement>(null);
-  const apiKey = getApiKey();
   const count = state?.count ?? 10;
 
   useEffect(() => {
-    if (!state || !apiKey) return;
-    generateConjugationExercises(apiKey, state.chapters, count)
-      .then(exs => {
-        if (exs.length === 0) setError('Impossible de générer les exercices. Vérifiez votre connexion et réessayez.');
-        else setExercises(exs);
-      })
-      .catch(() => setError('Impossible de générer les exercices. Vérifiez votre connexion et réessayez.'))
-      .finally(() => setLoading(false));
+    if (!state) return;
+    const exs = generateConjugationExercisesLocal(state.chapters, count);
+    if (exs.length === 0) setError('Impossible de générer les exercices. Vérifiez les chapitres sélectionnés.');
+    else setExercises(exs);
+    setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -75,6 +73,7 @@ export function ConjugationSessionPage() {
     setInputValue('');
     setSubmitted(false);
     setIsCorrect(null);
+    setShowHint(false);
     if (currentIndex + 1 >= exercises.length) {
       setShowSummary(true);
     } else {
@@ -91,22 +90,11 @@ export function ConjugationSessionPage() {
     );
   }
 
-  if (!apiKey) {
-    return (
-      <div className="max-w-xl mx-auto px-4 py-6 text-center space-y-3">
-        <p className="text-gray-400">Clé API Gemini requise pour cet exercice.</p>
-        <Link to="/scan" className="text-japan-red hover:underline text-sm">
-          Configurer la clé dans Scanner →
-        </Link>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="max-w-xl mx-auto px-4 py-6 flex flex-col items-center justify-center gap-4" style={{ minHeight: '60vh' }}>
         <div className="w-10 h-10 border-2 border-japan-red border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-400 text-sm">Génération de {count} exercices…</p>
+        <p className="text-gray-400 text-sm">Préparation de {count} exercices…</p>
       </div>
     );
   }
@@ -175,10 +163,32 @@ export function ConjugationSessionPage() {
           </div>
 
           {/* Prompt */}
-          <div className="text-center space-y-1">
+          <div className="text-center space-y-2">
             <p className="text-gray-300 text-sm">Conjuguez ce verbe pour…</p>
             <p className="text-white font-semibold text-base">{exercise.context}</p>
+            <div className="flex items-center justify-center gap-2 flex-wrap pt-0.5">
+              <span className="kanji-char text-xs text-gray-400 bg-[#0d1117] border border-[#30363d] rounded px-2 py-0.5">
+                {exercise.grammarPoint}
+              </span>
+            </div>
           </div>
+
+          {/* Hint toggle (before answering) */}
+          {!submitted && (
+            <div className="space-y-1.5">
+              <button
+                onClick={() => setShowHint(v => !v)}
+                className="w-full text-xs text-gray-500 hover:text-yellow-400 border border-dashed border-[#30363d] hover:border-yellow-500/40 rounded-lg py-1.5 transition-colors"
+              >
+                {showHint ? 'Masquer l\'indice' : 'Voir un indice'}
+              </button>
+              {showHint && (
+                <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 px-4 py-2.5">
+                  <p className="text-xs text-yellow-300/80">{exercise.hint}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Free text input */}
           <div className="space-y-2">
@@ -214,7 +224,13 @@ export function ConjugationSessionPage() {
             {submitted && (
               <div className={`flex items-center gap-2 text-sm px-1 ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
                 {isCorrect ? (
-                  <span>✓ Bonne réponse !</span>
+                  <span className="flex items-center gap-1.5 flex-wrap">
+                    <span>✓ Bonne réponse !</span>
+                    <span className="kanji-char text-white font-medium">{exercise.correctAnswer}</span>
+                    {exercise.correctAnswerKana !== exercise.correctAnswer && (
+                      <span className="text-gray-400">({exercise.correctAnswerKana})</span>
+                    )}
+                  </span>
                 ) : (
                   <span>
                     ✗ Réponse correcte :{' '}

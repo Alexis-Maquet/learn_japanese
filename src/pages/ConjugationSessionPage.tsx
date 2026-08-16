@@ -166,11 +166,6 @@ export function ConjugationSessionPage() {
           <div className="text-center space-y-2">
             <p className="text-gray-300 text-sm">Conjuguez ce verbe pour…</p>
             <p className="text-white font-semibold text-base">{exercise.context}</p>
-            <div className="flex items-center justify-center gap-2 flex-wrap pt-0.5">
-              <span className="kanji-char text-xs text-gray-400 bg-[#0d1117] border border-[#30363d] rounded px-2 py-0.5">
-                {exercise.grammarPoint}
-              </span>
-            </div>
           </div>
 
           {/* Hint toggle (before answering) */}
@@ -183,7 +178,10 @@ export function ConjugationSessionPage() {
                 {showHint ? 'Masquer l\'indice' : 'Voir un indice'}
               </button>
               {showHint && (
-                <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 px-4 py-2.5">
+                <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 px-4 py-2.5 space-y-1.5">
+                  <span className="kanji-char text-xs text-yellow-400/70 bg-yellow-500/10 border border-yellow-500/20 rounded px-2 py-0.5 inline-block">
+                    {exercise.grammarPoint}
+                  </span>
                   <p className="text-xs text-yellow-300/80">{exercise.hint}</p>
                 </div>
               )}

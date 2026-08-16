@@ -178,11 +178,10 @@ export function ConjugationSessionPage() {
                 {showHint ? 'Masquer l\'indice' : 'Voir un indice'}
               </button>
               {showHint && (
-                <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 px-4 py-2.5 space-y-1.5">
+                <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 px-4 py-2.5">
                   <span className="kanji-char text-xs text-yellow-400/70 bg-yellow-500/10 border border-yellow-500/20 rounded px-2 py-0.5 inline-block">
                     {exercise.grammarPoint}
                   </span>
-                  <p className="text-xs text-yellow-300/80">{exercise.hint}</p>
                 </div>
               )}
             </div>

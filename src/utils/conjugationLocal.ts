@@ -383,6 +383,13 @@ TEMPLATES[0] = {
 
 // ── Main generator ────────────────────────────────────────────────────────────
 
+function shuffle<T>(arr: T[]): void {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
 export function generateConjugationExercisesLocal(
   selectedChapters: number[],
   count: number,
@@ -390,45 +397,52 @@ export function generateConjugationExercisesLocal(
   const templates = TEMPLATES.filter(t => selectedChapters.includes(t.chapter));
   if (templates.length === 0) return [];
 
-  // Build all valid (word × template) pairs
-  const candidates: Array<{ w: WordEntry; t: Template }> = [];
-  for (const w of LOCAL_WORD_LIST) {
-    for (const t of templates) {
-      if (t.applicable(w) && t.generate(w) !== null) {
-        candidates.push({ w, t });
+  // Shuffle templates so the round-robin order is random each session
+  const shuffledTemplates = [...templates];
+  shuffle(shuffledTemplates);
+
+  // For each template, pre-build a shuffled list of applicable words
+  const pools = shuffledTemplates.map(t => {
+    const words = LOCAL_WORD_LIST.filter(w => t.applicable(w) && t.generate(w) !== null);
+    shuffle(words);
+    return { t, words, idx: 0 };
+  });
+
+  // Round-robin: one exercise per template per round until count is reached.
+  // This guarantees each grammar pattern appears roughly the same number of times.
+  const exercises: ConjugationExercise[] = [];
+  const usedPairs = new Set<string>(); // `${baseForm}|${grammarPoint}`
+
+  outer: while (exercises.length < count) {
+    let anyProgress = false;
+    for (const pool of pools) {
+      if (exercises.length >= count) break outer;
+      while (pool.idx < pool.words.length) {
+        const w = pool.words[pool.idx++];
+        const key = `${w.baseForm}|${pool.t.grammarPoint}`;
+        if (usedPairs.has(key)) continue;
+        const ans = pool.t.generate(w);
+        if (!ans) continue;
+        usedPairs.add(key);
+        anyProgress = true;
+        exercises.push({
+          baseForm: w.baseForm,
+          baseReading: w.baseReading,
+          baseMeaning: w.baseMeaning,
+          targetForm: pool.t.targetForm,
+          grammarPoint: pool.t.grammarPoint,
+          context: pool.t.ctx(w),
+          correctAnswer: ans.kanji,
+          correctAnswerKana: ans.kana,
+          hint: pool.t.hint(w, ans),
+        });
+        break;
       }
     }
+    if (!anyProgress) break;
   }
 
-  // Fisher-Yates shuffle
-  for (let i = candidates.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-  }
-
-  const exercises: ConjugationExercise[] = [];
-  const used = new Set<string>();
-
-  for (const { w, t } of candidates) {
-    if (exercises.length >= count) break;
-    if (used.has(w.baseForm)) continue;
-
-    const ans = t.generate(w);
-    if (!ans) continue;
-
-    used.add(w.baseForm);
-    exercises.push({
-      baseForm: w.baseForm,
-      baseReading: w.baseReading,
-      baseMeaning: w.baseMeaning,
-      targetForm: t.targetForm,
-      grammarPoint: t.grammarPoint,
-      context: t.ctx(w),
-      correctAnswer: ans.kanji,
-      correctAnswerKana: ans.kana,
-      hint: t.hint(w, ans),
-    });
-  }
-
+  // Final shuffle so the round-robin grouping isn't visible to the learner
+  shuffle(exercises);
   return exercises;
 }

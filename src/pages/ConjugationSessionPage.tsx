@@ -36,6 +36,7 @@ export function ConjugationSessionPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [wrongAnswers, setWrongAnswers] = useState<Array<{ exercise: ConjugationExercise; userAnswer: string }>>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const nextBtnRef = useRef<HTMLButtonElement>(null);
@@ -50,13 +51,9 @@ export function ConjugationSessionPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Focus input on new exercise, focus "Suivant" button after submission
+  // Always keep focus on the input so Enter works for both submit and advance
   useEffect(() => {
-    if (submitted) {
-      nextBtnRef.current?.focus();
-    } else {
-      inputRef.current?.focus();
-    }
+    inputRef.current?.focus();
   }, [currentIndex, submitted]);
 
   const exercise = exercises[currentIndex];
@@ -66,7 +63,11 @@ export function ConjugationSessionPage() {
     const correct = checkAnswer(inputValue, exercise);
     setSubmitted(true);
     setIsCorrect(correct);
-    if (correct) setCorrectCount(c => c + 1);
+    if (correct) {
+      setCorrectCount(c => c + 1);
+    } else {
+      setWrongAnswers(wa => [...wa, { exercise, userAnswer: inputValue.trim() }]);
+    }
   }, [submitted, exercise, inputValue]);
 
   const handleNext = useCallback(() => {
@@ -111,8 +112,8 @@ export function ConjugationSessionPage() {
   if (showSummary) {
     const pct = exercises.length > 0 ? Math.round((correctCount / exercises.length) * 100) : 0;
     return (
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-6 text-center">
-        <div className="card p-8 space-y-5">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+        <div className="card p-8 space-y-5 text-center">
           <div className="text-5xl">{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚'}</div>
           <h1 className="text-2xl font-bold text-white">Session terminée !</h1>
           <div
@@ -123,6 +124,36 @@ export function ConjugationSessionPage() {
           </div>
           <p className="text-gray-300">{correctCount} / {exercises.length} bonnes réponses</p>
         </div>
+
+        {wrongAnswers.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Erreurs à revoir ({wrongAnswers.length})
+            </p>
+            {wrongAnswers.map((wa, i) => (
+              <div key={i} className="card p-4 space-y-2.5">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="kanji-char text-xl text-white">{wa.exercise.baseForm}</span>
+                  <span className="text-gray-500 text-xs">{wa.exercise.baseReading} • {wa.exercise.baseMeaning}</span>
+                </div>
+                <p className="text-xs text-gray-500">{wa.exercise.context}</p>
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  <span className="kanji-char text-red-400 line-through">{wa.userAnswer}</span>
+                  <span className="text-gray-600">→</span>
+                  <span className="kanji-char text-green-400 font-medium">{wa.exercise.correctAnswer}</span>
+                  {wa.exercise.correctAnswerKana !== wa.exercise.correctAnswer && (
+                    <span className="text-gray-500 text-xs">({wa.exercise.correctAnswerKana})</span>
+                  )}
+                </div>
+                <div className="rounded bg-[#0d1117] px-3 py-2 text-xs text-gray-400">
+                  <span className="kanji-char text-yellow-400/70 mr-2">{wa.exercise.grammarPoint}</span>
+                  {wa.exercise.hint}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-3">
           <button onClick={() => navigate('/training')} className="btn-secondary flex-1">Retour</button>
           <button onClick={() => navigate(0)} className="btn-primary flex-1">Recommencer</button>
@@ -194,17 +225,21 @@ export function ConjugationSessionPage() {
                 ref={inputRef}
                 type="text"
                 value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !submitted) handleSubmit(); }}
-                disabled={submitted}
+                onChange={e => { if (!submitted) setInputValue(e.target.value); }}
+                onKeyDown={e => {
+                  if (e.key !== 'Enter') return;
+                  if (!submitted) handleSubmit();
+                  else handleNext();
+                }}
+                readOnly={submitted}
                 placeholder="たべて ou tabete…"
                 className={[
                   'flex-1 px-4 py-3 rounded-lg border bg-[#0d1117] kanji-char text-lg text-white placeholder:text-gray-600 outline-none transition-colors',
                   !submitted
                     ? 'border-[#30363d] focus:border-gray-400'
                     : isCorrect
-                      ? 'border-green-500 bg-green-500/5 text-green-300'
-                      : 'border-red-500 bg-red-500/5 text-red-300',
+                      ? 'border-green-500 bg-green-500/5 text-green-300 cursor-default'
+                      : 'border-red-500 bg-red-500/5 text-red-300 cursor-default',
                 ].join(' ')}
               />
               {!submitted && (

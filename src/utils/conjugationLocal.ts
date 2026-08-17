@@ -401,6 +401,21 @@ function shuffle<T>(arr: T[]): void {
   }
 }
 
+// Map each template to a conjugation family so the round-robin distributes
+// across distinct base forms (masu-stem, te-form…) not just grammar points.
+function getFamily(t: Template): string {
+  const gp = t.grammarPoint;
+  if (gp.includes('い-adj') || t.targetForm === 'い-adj くて' || t.targetForm === 'く形') return 'i-adj';
+  if (gp.includes('な-adj') || t.targetForm === 'な-adj で' || t.targetForm === 'に形') return 'na-adj';
+  if (t.targetForm === 'ます形' || t.targetForm === 'ます幹') return 'masu';
+  if (t.targetForm === 'て形') return 'te';
+  if (t.targetForm === 'ない形') return 'nai';
+  if (t.targetForm === 'た形') return 'ta';
+  if (t.targetForm === '辞書形') return 'dict';
+  if (t.targetForm === '可能形') return 'pot';
+  return t.targetForm;
+}
+
 export function generateConjugationExercisesLocal(
   selectedChapters: number[],
   count: number,
@@ -408,52 +423,75 @@ export function generateConjugationExercisesLocal(
   const templates = TEMPLATES.filter(t => selectedChapters.includes(t.chapter));
   if (templates.length === 0) return [];
 
-  // Shuffle templates so the round-robin order is random each session
-  const shuffledTemplates = [...templates];
-  shuffle(shuffledTemplates);
+  // Group templates by family; shuffle within each group and across groups
+  const byFamily = new Map<string, Template[]>();
+  for (const t of templates) {
+    const fam = getFamily(t);
+    if (!byFamily.has(fam)) byFamily.set(fam, []);
+    byFamily.get(fam)!.push(t);
+  }
+  const families = [...byFamily.values()];
+  families.forEach(f => shuffle(f));
+  shuffle(families);
 
-  // For each template, pre-build a shuffled list of applicable words
-  const pools = shuffledTemplates.map(t => {
-    const words = LOCAL_WORD_LIST.filter(w => t.applicable(w) && t.generate(w) !== null);
-    shuffle(words);
-    return { t, words, idx: 0 };
-  });
+  // Pre-build a shuffled word pool for every template
+  type Pool = { words: WordEntry[]; idx: number };
+  const poolMap = new Map<Template, Pool>();
+  for (const fam of families)
+    for (const t of fam) {
+      const words = LOCAL_WORD_LIST.filter(w => t.applicable(w) && t.generate(w) !== null);
+      shuffle(words);
+      poolMap.set(t, { words, idx: 0 });
+    }
 
-  // Round-robin: one exercise per template per round until count is reached.
-  // This guarantees each grammar pattern appears roughly the same number of times.
+  // Track which template within each family is up next
+  const famCursor = new Array(families.length).fill(0);
   const exercises: ConjugationExercise[] = [];
-  const usedPairs = new Set<string>(); // `${baseForm}|${grammarPoint}`
+  const usedPairs = new Set<string>();
 
   outer: while (exercises.length < count) {
     let anyProgress = false;
-    for (const pool of pools) {
+    for (let fi = 0; fi < families.length; fi++) {
       if (exercises.length >= count) break outer;
-      while (pool.idx < pool.words.length) {
-        const w = pool.words[pool.idx++];
-        const key = `${w.baseForm}|${pool.t.grammarPoint}`;
-        if (usedPairs.has(key)) continue;
-        const ans = pool.t.generate(w);
-        if (!ans) continue;
-        usedPairs.add(key);
-        anyProgress = true;
-        exercises.push({
-          baseForm: w.baseForm,
-          baseReading: w.baseReading,
-          baseMeaning: w.baseMeaning,
-          targetForm: pool.t.targetForm,
-          grammarPoint: pool.t.grammarPoint,
-          context: pool.t.ctx(w),
-          correctAnswer: ans.kanji,
-          correctAnswerKana: ans.kana,
-          hint: pool.t.hint(w, ans),
-        });
-        break;
+      const fam = families[fi];
+      // Cycle through this family's templates until one produces an exercise
+      let attempts = 0;
+      while (attempts < fam.length) {
+        const t = fam[famCursor[fi] % fam.length];
+        const pool = poolMap.get(t)!;
+        let found = false;
+        while (pool.idx < pool.words.length) {
+          const w = pool.words[pool.idx++];
+          const key = `${w.baseForm}|${t.grammarPoint}`;
+          if (usedPairs.has(key)) continue;
+          const ans = t.generate(w);
+          if (!ans) continue;
+          usedPairs.add(key);
+          found = true;
+          anyProgress = true;
+          famCursor[fi]++;
+          exercises.push({
+            baseForm: w.baseForm,
+            baseReading: w.baseReading,
+            baseMeaning: w.baseMeaning,
+            targetForm: t.targetForm,
+            grammarPoint: t.grammarPoint,
+            context: t.ctx(w),
+            correctAnswer: ans.kanji,
+            correctAnswerKana: ans.kana,
+            hint: t.hint(w, ans),
+          });
+          break;
+        }
+        if (found) break;
+        famCursor[fi]++;
+        attempts++;
       }
     }
     if (!anyProgress) break;
   }
 
-  // Final shuffle so the round-robin grouping isn't visible to the learner
+  // Final shuffle so the family order isn't visible to the learner
   shuffle(exercises);
   return exercises;
 }

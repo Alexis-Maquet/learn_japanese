@@ -279,9 +279,18 @@ const TEMPLATES: Template[] = [
     ctx: w => `pour enchaîner une description (adjectif "${w.baseMeaning}")`,
     hint: (_, a) => `な-adj な→で : ${a.kanji}` },
   { chapter:7, targetForm:'ます幹', grammarPoint:'V-stem に行く', applicable:isVerb,
-    generate: w => { const s = masuStem(w); return s ? { kanji: s.kanji+'に行きます', kana: s.kana+'にいきます' } : null; },
+    generate: w => {
+      if (w.type === 'suru') {
+        // する verbs: use the noun part directly (運動に行きます, not 運動しに行きます)
+        return { kanji: w.baseForm.slice(0, -2)+'に行きます', kana: w.baseReading.slice(0, -2)+'にいきます' };
+      }
+      const s = masuStem(w);
+      return s ? { kanji: s.kanji+'に行きます', kana: s.kana+'にいきます' } : null;
+    },
     ctx: w => `pour exprimer le but d'un déplacement (aller pour "${w.baseMeaning}")`,
-    hint: (w, a) => hMasu(w, a.kanji) + ' → stem + に行きます' },
+    hint: (w, a) => w.type === 'suru'
+      ? `する verbe : retirer する, ajouter に行きます → ${a.kanji}`
+      : hMasu(w, a.kanji) + ' → stem + に行きます' },
   // Ch. 8
   { chapter:8, targetForm:'ない形', grammarPoint:'〜ない', applicable:isVerb,
     generate: w => naiForm(w),
@@ -349,7 +358,9 @@ const TEMPLATES: Template[] = [
     ctx: w => `pour exprimer l'obligation de "${w.baseMeaning}"`,
     hint: (w, a) => hNai(w, a.kanji) + ' → ない→なければいけません' },
   // Ch. 13
-  { chapter:13, targetForm:'可能形', grammarPoint:'可能形 (potentiel)', applicable:isVerb,
+  { chapter:13, targetForm:'可能形', grammarPoint:'可能形 (potentiel)',
+    // Exclude intransitive state verbs whose potential form is semantically odd
+    applicable: w => isVerb(w) && !['困る','始まる','帰る'].includes(w.baseForm),
     generate: w => potential(w),
     ctx: w => `pour dire qu'on peut "${w.baseMeaning}"`,
     hint: (w, a) => hPot(w, a.kanji) },

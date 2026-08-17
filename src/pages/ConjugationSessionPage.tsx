@@ -195,7 +195,7 @@ export function ConjugationSessionPage() {
 
           {/* Prompt */}
           <div className="text-center space-y-2">
-            <p className="text-gray-300 text-sm">Conjuguez ce verbe pour…</p>
+            <p className="text-gray-300 text-sm">Transformez ce mot pour…</p>
             <p className="text-white font-semibold text-base">{exercise.context}</p>
           </div>
 

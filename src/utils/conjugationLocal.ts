@@ -197,9 +197,9 @@ function hTa(w: WordEntry, full: string): string {
   return `する→した : ${w.baseForm} → ${full}`;
 }
 function hPot(w: WordEntry, full: string): string {
-  if (w.type === 'g1') return `G1 ${lk(w)}→${G1_POT[lk(w)]} : ${w.baseForm} → ${full}`;
-  if (w.type === 'g2') return `G2 る→られる : ${w.baseForm} → ${full}`;
-  return `する→できる : ${w.baseForm} → ${full}`;
+  if (w.type === 'g1') return `G1 ${lk(w)}→${G1_POT[lk(w)].slice(0,-1)}ます : ${w.baseForm} → ${full}`;
+  if (w.type === 'g2') return `G2 る→られます : ${w.baseForm} → ${full}`;
+  return `する→できます : ${w.baseForm} → ${full}`;
 }
 
 // ── Exercise templates ────────────────────────────────────────────────────────
@@ -361,7 +361,9 @@ const TEMPLATES: Template[] = [
   { chapter:13, targetForm:'可能形', grammarPoint:'可能形 (potentiel)',
     // Exclude intransitive state verbs whose potential form is semantically odd
     applicable: w => isVerb(w) && !['困る','始まる','帰る'].includes(w.baseForm),
-    generate: w => potential(w),
+    // Generate polite potential (起きられます) to match the ます-form register
+    // used by all other templates — potential plain form ends in る, swap for ます
+    generate: w => { const p = potential(w); return p ? { kanji: p.kanji.slice(0,-1)+'ます', kana: p.kana.slice(0,-1)+'ます' } : null; },
     ctx: w => `pour dire qu'on peut "${w.baseMeaning}"`,
     hint: (w, a) => hPot(w, a.kanji) },
   { chapter:13, targetForm:'ます幹', grammarPoint:'〜そうです (verbe)', applicable:isVerb,

@@ -51,10 +51,12 @@ export function ConjugationSessionPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Always keep focus on the input so Enter works for both submit and advance
+  // Pre-fill input with the base form on each new question; keep input focused
   useEffect(() => {
+    const ex = exercises[currentIndex];
+    if (!submitted && ex) setInputValue(ex.baseForm);
     inputRef.current?.focus();
-  }, [currentIndex, submitted]);
+  }, [currentIndex, submitted, exercises]);
 
   const exercise = exercises[currentIndex];
 

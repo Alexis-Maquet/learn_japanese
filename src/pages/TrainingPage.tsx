@@ -15,6 +15,11 @@ const CHAPTER_LABELS: Record<number, string> = {
   13: 'L13 可能形',
 };
 
+const CHAPTER_FREQ: Record<number, number> = {
+  3: 98, 4: 95, 5: 72, 6: 99, 7: 97,
+  8: 96, 9: 94, 10: 68, 11: 82, 12: 74, 13: 88,
+};
+
 interface ListRowProps {
   id: string;
   name: string;
@@ -291,19 +296,24 @@ export function TrainingPage() {
             <div className="space-y-2">
               <p className="text-xs text-gray-500">Chapitres Genki I</p>
               <div className="flex flex-wrap gap-1.5">
-                {CONJUGATION_CHAPTERS.map(n => (
-                  <button
-                    key={n}
-                    onClick={() => toggleChapter(n)}
-                    className={`px-2.5 py-1 rounded-lg border text-xs transition-colors ${
-                      selectedChapters.has(n)
-                        ? 'border-japan-red bg-japan-red/10 text-white'
-                        : 'border-[#30363d] text-gray-400 hover:border-gray-500'
-                    }`}
-                  >
-                    {CHAPTER_LABELS[n]}
-                  </button>
-                ))}
+                {CONJUGATION_CHAPTERS.map(n => {
+                  const freq = CHAPTER_FREQ[n];
+                  const freqColor = freq >= 90 ? 'text-green-400' : freq >= 75 ? 'text-yellow-400' : 'text-orange-400';
+                  return (
+                    <button
+                      key={n}
+                      onClick={() => toggleChapter(n)}
+                      className={`px-2.5 py-1 rounded-lg border text-xs transition-colors flex items-center gap-1.5 ${
+                        selectedChapters.has(n)
+                          ? 'border-japan-red bg-japan-red/10 text-white'
+                          : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                      }`}
+                    >
+                      {CHAPTER_LABELS[n]}
+                      <span className={`font-mono font-semibold ${freqColor} opacity-80`}>{freq}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="space-y-2">

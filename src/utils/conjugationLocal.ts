@@ -396,6 +396,12 @@ TEMPLATES[0] = {
 
 // ── Main generator ────────────────────────────────────────────────────────────
 
+// Frequency scores (1-100) matching TrainingPage — higher = appears more in Japanese
+const CHAPTER_FREQ: Record<number, number> = {
+  3: 98, 4: 95, 5: 72, 6: 99, 7: 97,
+  8: 96, 9: 94, 10: 68, 11: 82, 12: 74, 13: 88,
+};
+
 function shuffle<T>(arr: T[]): void {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -403,8 +409,7 @@ function shuffle<T>(arr: T[]): void {
   }
 }
 
-// Map each template to a conjugation family so the round-robin distributes
-// across distinct base forms (masu-stem, te-form…) not just grammar points.
+// Groups templates by conjugation family to keep variety across base forms.
 function getFamily(t: Template): string {
   const gp = t.grammarPoint;
   if (gp.includes('い-adj') || t.targetForm === 'い-adj くて' || t.targetForm === 'く形') return 'i-adj';
@@ -418,6 +423,16 @@ function getFamily(t: Template): string {
   return t.targetForm;
 }
 
+// Weighted random index — returns null when all weights are zero.
+function weightedPick(weights: number[]): number | null {
+  const total = weights.reduce((s, w) => s + w, 0);
+  if (total === 0) return null;
+  let r = Math.random() * total;
+  for (let i = 0; i < weights.length; i++) { r -= weights[i]; if (r <= 0) return i; }
+  for (let i = weights.length - 1; i >= 0; i--) { if (weights[i] > 0) return i; }
+  return null;
+}
+
 export function generateConjugationExercisesLocal(
   selectedChapters: number[],
   count: number,
@@ -425,75 +440,75 @@ export function generateConjugationExercisesLocal(
   const templates = TEMPLATES.filter(t => selectedChapters.includes(t.chapter));
   if (templates.length === 0) return [];
 
-  // Group templates by family; shuffle within each group and across groups
-  const byFamily = new Map<string, Template[]>();
+  // Group by form family; each entry carries the template + its chapter frequency.
+  type FamEntry = { t: Template; freq: number };
+  const byFamily = new Map<string, FamEntry[]>();
   for (const t of templates) {
     const fam = getFamily(t);
     if (!byFamily.has(fam)) byFamily.set(fam, []);
-    byFamily.get(fam)!.push(t);
+    byFamily.get(fam)!.push({ t, freq: CHAPTER_FREQ[t.chapter] });
   }
-  const families = [...byFamily.values()];
-  families.forEach(f => shuffle(f));
-  shuffle(families);
 
-  // Pre-build a shuffled word pool for every template
-  type Pool = { words: WordEntry[]; idx: number };
-  const poolMap = new Map<Template, Pool>();
+  const families = [...byFamily.values()];
+  // Family base weight = average chapter-frequency of its templates
+  const famBaseWeights = families.map(
+    fam => fam.reduce((s, e) => s + e.freq, 0) / fam.length,
+  );
+
+  // Build per-template shuffled word pools
+  const poolMap = new Map<Template, { words: WordEntry[]; idx: number }>();
   for (const fam of families)
-    for (const t of fam) {
+    for (const { t } of fam) {
       const words = LOCAL_WORD_LIST.filter(w => t.applicable(w) && t.generate(w) !== null);
       shuffle(words);
       poolMap.set(t, { words, idx: 0 });
     }
 
-  // Track which template within each family is up next
-  const famCursor = new Array(families.length).fill(0);
-  const exercises: ConjugationExercise[] = [];
   const usedPairs = new Set<string>();
+  const exercises: ConjugationExercise[] = [];
 
-  outer: while (exercises.length < count) {
-    let anyProgress = false;
-    for (let fi = 0; fi < families.length; fi++) {
-      if (exercises.length >= count) break outer;
-      const fam = families[fi];
-      // Cycle through this family's templates until one produces an exercise
-      let attempts = 0;
-      while (attempts < fam.length) {
-        const t = fam[famCursor[fi] % fam.length];
-        const pool = poolMap.get(t)!;
-        let found = false;
-        while (pool.idx < pool.words.length) {
-          const w = pool.words[pool.idx++];
-          const key = `${w.baseForm}|${t.grammarPoint}`;
-          if (usedPairs.has(key)) continue;
-          const ans = t.generate(w);
-          if (!ans) continue;
-          usedPairs.add(key);
-          found = true;
-          anyProgress = true;
-          famCursor[fi]++;
-          exercises.push({
-            baseForm: w.baseForm,
-            baseReading: w.baseReading,
-            baseMeaning: w.baseMeaning,
-            targetForm: t.targetForm,
-            grammarPoint: t.grammarPoint,
-            context: t.ctx(w),
-            correctAnswer: ans.kanji,
-            correctAnswerKana: ans.kana,
-            hint: t.hint(w, ans),
-          });
-          break;
-        }
-        if (found) break;
-        famCursor[fi]++;
-        attempts++;
-      }
+  while (exercises.length < count) {
+    // Pick a family weighted by frequency; zero out exhausted families
+    const famWeights = families.map((fam, fi) =>
+      fam.some(({ t }) => { const p = poolMap.get(t)!; return p.idx < p.words.length; })
+        ? famBaseWeights[fi] : 0,
+    );
+    const fi = weightedPick(famWeights);
+    if (fi === null) break;
+
+    // Within the family, pick a template weighted by its chapter frequency
+    const fam = families[fi];
+    const tWeights = fam.map(({ t, freq }) => {
+      const p = poolMap.get(t)!;
+      return p.idx < p.words.length ? freq : 0;
+    });
+    const ti = weightedPick(tWeights);
+    if (ti === null) continue;
+
+    const { t } = fam[ti];
+    const pool = poolMap.get(t)!;
+    while (pool.idx < pool.words.length) {
+      const w = pool.words[pool.idx++];
+      const key = `${w.baseForm}|${t.grammarPoint}`;
+      if (usedPairs.has(key)) continue;
+      const ans = t.generate(w);
+      if (!ans) continue;
+      usedPairs.add(key);
+      exercises.push({
+        baseForm: w.baseForm,
+        baseReading: w.baseReading,
+        baseMeaning: w.baseMeaning,
+        targetForm: t.targetForm,
+        grammarPoint: t.grammarPoint,
+        context: t.ctx(w),
+        correctAnswer: ans.kanji,
+        correctAnswerKana: ans.kana,
+        hint: t.hint(w, ans),
+      });
+      break;
     }
-    if (!anyProgress) break;
   }
 
-  // Final shuffle so the family order isn't visible to the learner
   shuffle(exercises);
   return exercises;
 }

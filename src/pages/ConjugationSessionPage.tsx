@@ -5,7 +5,7 @@ import { generateConjugationExercisesLocal } from '@/utils/conjugationLocal';
 import type { ConjugationExercise } from '@/types';
 
 interface SessionState {
-  chapters: number[];
+  categories: string[];
   count: number;
 }
 
@@ -44,7 +44,7 @@ export function ConjugationSessionPage() {
 
   useEffect(() => {
     if (!state) return;
-    const exs = generateConjugationExercisesLocal(state.chapters, count);
+    const exs = generateConjugationExercisesLocal(state.categories, count);
     if (exs.length === 0) setError('Impossible de générer les exercices. Vérifiez les chapitres sélectionnés.');
     else setExercises(exs);
     setLoading(false);

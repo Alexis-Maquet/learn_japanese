@@ -5,20 +5,16 @@ import { useKanjiStore } from '@/store/kanjiStore';
 import { useTrainingStore } from '@/store/trainingStore';
 import { useStatsStore } from '@/store/statsStore';
 import { JLPT_PREDEFINED, FREQ_PREDEFINED, ALL_PREDEFINED, resolvePredefinedKanjis } from '@/utils/predefinedLists';
-import { getApiKey, saveApiKey, clearApiKey, CONJUGATION_CHAPTERS } from '@/utils/geminiVision';
+import { getApiKey, saveApiKey, clearApiKey } from '@/utils/geminiVision';
+import { GRAMMAR_CATEGORIES } from '@/utils/conjugationLocal';
 import type { SentenceAnswerMode } from '@/types';
 
-const CHAPTER_LABELS: Record<number, string> = {
-  3: 'L3 ます形', 4: 'L4 〜ました', 5: 'L5 ましょう',
-  6: 'L6 て形', 7: 'L7 〜ている', 8: 'L8 plain',
-  9: 'L9 た形', 10: 'L10 つもり', 11: 'L11 たい', 12: 'L12 すぎる',
-  13: 'L13 可能形',
-};
+const ALL_CATEGORY_IDS = GRAMMAR_CATEGORIES.map(c => c.id);
 
-const CHAPTER_FREQ: Record<number, number> = {
-  3: 98, 4: 95, 5: 72, 6: 99, 7: 97,
-  8: 96, 9: 94, 10: 68, 11: 82, 12: 74, 13: 88,
-};
+// Preset selections by JLPT level
+const N5_IDS = new Set(GRAMMAR_CATEGORIES.filter(c => c.level.startsWith('N5')).map(c => c.id));
+const N4_IDS = new Set(GRAMMAR_CATEGORIES.filter(c => c.level.includes('N4')).map(c => c.id));
+const N3_IDS = new Set(GRAMMAR_CATEGORIES.filter(c => c.level.includes('N3')).map(c => c.id));
 
 interface ListRowProps {
   id: string;
@@ -77,7 +73,7 @@ export function TrainingPage() {
   const [sentenceMode, setSentenceMode] = useState<SentenceAnswerMode>('mcq');
   const [sentenceCount, setSentenceCount] = useState(10);
   const [conjugationCount, setConjugationCount] = useState(10);
-  const [selectedChapters, setSelectedChapters] = useState<Set<number>>(new Set(CONJUGATION_CHAPTERS));
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set(ALL_CATEGORY_IDS));
   const [reviewCount, setReviewCount] = useState(20);
   const [hasApiKey, setHasApiKey] = useState(!!getApiKey());
   const [apiKeyInput, setApiKeyInput] = useState('');
@@ -176,15 +172,22 @@ export function TrainingPage() {
     setApiKeyInput('');
   };
 
-  const toggleChapter = (n: number) => setSelectedChapters(prev => {
+  const toggleCategory = (id: string) => setSelectedCategories(prev => {
     const next = new Set(prev);
-    if (next.has(n)) next.delete(n); else next.add(n);
+    if (next.has(id)) next.delete(id); else next.add(id);
     return next;
   });
 
+  const applyPreset = (preset: 'all' | 'n5' | 'n4' | 'n3') => {
+    if (preset === 'all') setSelectedCategories(new Set(ALL_CATEGORY_IDS));
+    else if (preset === 'n5') setSelectedCategories(new Set(N5_IDS));
+    else if (preset === 'n4') setSelectedCategories(new Set([...N5_IDS, ...N4_IDS]));
+    else setSelectedCategories(new Set([...N5_IDS, ...N4_IDS, ...N3_IDS]));
+  };
+
   const handleStartConjugation = () => {
     navigate('/training/conjugation-session', {
-      state: { chapters: Array.from(selectedChapters), count: conjugationCount },
+      state: { categories: Array.from(selectedCategories), count: conjugationCount },
     });
   };
 
@@ -294,23 +297,33 @@ export function TrainingPage() {
         {trainingType === 'conjugation' && (
           <div className="space-y-3">
             <div className="space-y-2">
-              <p className="text-xs text-gray-500">Chapitres Genki I</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-gray-500">Catégories de grammaire</p>
+                <div className="flex gap-1">
+                  {(['all','n5','n4','n3'] as const).map(p => (
+                    <button key={p} onClick={() => applyPreset(p)}
+                      className="px-2 py-0.5 rounded text-xs border border-[#30363d] text-gray-500 hover:text-white hover:border-gray-400 transition-colors">
+                      {p === 'all' ? 'Tout' : p.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="flex flex-wrap gap-1.5">
-                {CONJUGATION_CHAPTERS.map(n => {
-                  const freq = CHAPTER_FREQ[n];
-                  const freqColor = freq >= 90 ? 'text-green-400' : freq >= 75 ? 'text-yellow-400' : 'text-orange-400';
+                {GRAMMAR_CATEGORIES.map(cat => {
+                  const on = selectedCategories.has(cat.id);
+                  const freqColor = cat.freq >= 90 ? 'text-green-400' : cat.freq >= 80 ? 'text-yellow-400' : 'text-orange-400';
+                  const levelColor = cat.level === 'N5' ? 'text-green-500' : cat.level.includes('N3') ? 'text-purple-400' : 'text-blue-400';
                   return (
                     <button
-                      key={n}
-                      onClick={() => toggleChapter(n)}
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)}
                       className={`px-2.5 py-1 rounded-lg border text-xs transition-colors flex items-center gap-1.5 ${
-                        selectedChapters.has(n)
-                          ? 'border-japan-red bg-japan-red/10 text-white'
-                          : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                        on ? 'border-japan-red bg-japan-red/10 text-white' : 'border-[#30363d] text-gray-400 hover:border-gray-500'
                       }`}
                     >
-                      {CHAPTER_LABELS[n]}
-                      <span className={`font-mono font-semibold ${freqColor} opacity-80`}>{freq}</span>
+                      <span className={`text-[10px] font-semibold ${levelColor} opacity-75`}>{cat.level.split('–')[0]}</span>
+                      {cat.nameFR}
+                      <span className={`font-mono font-semibold text-[10px] ${freqColor} opacity-70`}>{cat.freq}</span>
                     </button>
                   );
                 })}
@@ -565,12 +578,12 @@ export function TrainingPage() {
           ) : (
             <button
               onClick={handleStartConjugation}
-              disabled={selectedChapters.size === 0}
+              disabled={selectedCategories.size === 0}
               className="btn-primary w-full py-3 text-base disabled:opacity-40"
             >
-              {selectedChapters.size > 0
+              {selectedCategories.size > 0
                 ? `▶ Commencer — ${conjugationCount} exercice${conjugationCount > 1 ? 's' : ''}`
-                : 'Sélectionnez au moins un chapitre'}
+                : 'Sélectionnez au moins une catégorie'}
             </button>
           )}
         </div>

@@ -490,6 +490,18 @@ const TEMPLATES: Template[] = [
     ctx: w => `pour demander de ne pas "${w.baseMeaning}"`,
     hint: (w, a) => `${hNai(w)} + でください : ${w.baseForm} → ${a.kanji}` },
 
+  { categoryId:'permission', targetForm:'た形', grammarPoint:'〜たほうがいいです',
+    applicable: isVerb,
+    generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'ほうがいいです', kana:t.kana+'ほうがいいです' } : null; },
+    ctx: w => `pour conseiller de "${w.baseMeaning}" (tu ferais mieux de…)`,
+    hint: (w, a) => `${hTa(w)} + ほうがいいです : ${w.baseForm} → ${a.kanji}` },
+
+  { categoryId:'permission', targetForm:'ない形', grammarPoint:'〜ないほうがいいです',
+    applicable: isVerb,
+    generate: w => { const n = naiForm(w); return n ? { kanji:n.kanji+'ほうがいいです', kana:n.kana+'ほうがいいです' } : null; },
+    ctx: w => `pour conseiller de ne pas "${w.baseMeaning}" (tu ferais mieux de ne pas…)`,
+    hint: (w, a) => `${hNai(w)} + ほうがいいです : ${w.baseForm} → ${a.kanji}` },
+
   // ── CATEGORY: potential ───────────────────────────────────────────────────
 
   { categoryId:'potential', targetForm:'可能形', grammarPoint:'可能形 (potentiel)',
@@ -640,6 +652,12 @@ const TEMPLATES: Template[] = [
     generate: w => ({ kanji:w.baseForm+'までに', kana:w.baseReading+'までに' }),
     ctx: w => `pour exprimer une deadline (avant de "${w.baseMeaning}")`,
     hint: (w, a) => `辞書形 + までに : ${w.baseForm} → ${a.kanji}` },
+
+  { categoryId:'time-seq', targetForm:'た形', grammarPoint:'〜たことがあります',
+    applicable: isVerb,
+    generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'ことがあります', kana:t.kana+'ことがあります' } : null; },
+    ctx: w => `pour dire qu'on a déjà eu l'expérience de "${w.baseMeaning}"`,
+    hint: (w, a) => `${hTa(w)} + ことがあります : ${w.baseForm} → ${a.kanji}` },
 
   // ── CATEGORY: intention ───────────────────────────────────────────────────
 

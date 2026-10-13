@@ -971,23 +971,11 @@ const TEMPLATES: Template[] = [
     ctx: w => `pour nominaliser "${w.baseMeaning}" (の — concret/observable)`,
     hint: (w, a) => `辞書形 + のが好きです : ${w.baseForm} → ${a.kanji}` },
 
-  { categoryId:'nominalizer', targetForm:'た形', grammarPoint:'〜たことがあります (expérience)',
-    applicable: isVerb,
-    generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'ことがあります', kana:t.kana+'ことがあります' } : null; },
-    ctx: w => `pour dire qu'on a déjà "${w.baseMeaning}" (expérience passée)`,
-    hint: (w, a) => `${hTa(w)} + ことがあります : ${w.baseForm} → ${a.kanji}` },
-
   { categoryId:'nominalizer', targetForm:'辞書形', grammarPoint:'〜ことがあります (habitude)',
     applicable: isVerb,
     generate: w => ({ kanji:w.baseForm+'ことがあります', kana:w.baseReading+'ことがあります' }),
     ctx: w => `pour dire qu'il arrive parfois de "${w.baseMeaning}"`,
     hint: (w, a) => `辞書形 + ことがあります : ${w.baseForm} → ${a.kanji}` },
-
-  { categoryId:'nominalizer', targetForm:'た形', grammarPoint:'〜たほうがいいです',
-    applicable: isVerb,
-    generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'ほうがいいです', kana:t.kana+'ほうがいいです' } : null; },
-    ctx: w => `pour conseiller de "${w.baseMeaning}" (il vaut mieux)`,
-    hint: (w, a) => `${hTa(w)} + ほうがいいです : ${w.baseForm} → ${a.kanji}` },
 
 ];
 

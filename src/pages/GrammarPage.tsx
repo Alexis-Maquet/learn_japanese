@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { GRAMMAR_CATEGORIES } from '@/utils/conjugationLocal';
 
 interface Card {
@@ -109,10 +109,10 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
       rule: '形ない + でください\nOpposé de 〜てください.',
       example: 'ここで写真を撮らないでください。', trans: 'Merci de ne pas prendre de photos ici.' },
     { label: 'Conseil positif', form: 'た形', front: '〜たほうがいいです', meaning: 'Tu ferais mieux de [V]',
-      rule: '形た + ほうがいいです\nConseille d\'agir.',
+      rule: '形た + ほうがいいです\n⚠ いく→いった (exception)  する→した  くる→きた\nConseille d\'agir.',
       example: '早く寝たほうがいいです。', trans: 'Tu ferais mieux de te coucher tôt.' },
     { label: 'Conseil négatif', form: 'ない形', front: '〜ないほうがいいです', meaning: 'Tu ferais mieux de ne pas [V]',
-      rule: '形ない + ほうがいいです\nConseille de s\'abstenir.',
+      rule: '形ない + ほうがいいです\n⚠ ある→ない (pas あらない)  する→しない  くる→こない\nConseille de s\'abstenir.',
       example: '無理しないほうがいいです。', trans: "Tu ferais mieux de ne pas te forcer." },
   ],
   'potential': [
@@ -155,8 +155,8 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
     { label: 'Dans le but de', form: '辞書形', front: '〜ために', meaning: 'Dans le but de [V] (intentionnel)',
       rule: '辞書形 + ために\nBut délibéré.',
       example: '健康のために、毎日運動します。', trans: 'Je fais du sport tous les jours pour ma santé.' },
-    { label: 'Pour pouvoir', form: '可能形', front: '〜ように', meaning: 'Pour que [V] soit possible',
-      rule: '可能形 + ように\nBut progressif ou non-intentionnel.',
+    { label: 'Pour que / afin de', form: '辞書形 / ない形 / 可能形', front: '〜ように', meaning: 'Pour que [V] (but non-intentionnel)',
+      rule: '辞書形・ない形・可能形 + ように\n例 忘れないように  話せるように\nBut progressif ou non-intentionnel.',
       example: '日本語が話せるように、勉強しています。', trans: "J'étudie pour pouvoir parler japonais." },
   ],
   'time-seq': [
@@ -198,8 +198,8 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
     { label: 'Décision externe', form: '辞書形', front: '〜ことになりました', meaning: "Il a été décidé de [V] (circonstances)",
       rule: '辞書形 + ことになりました\nDécision prise par les circonstances ou par autrui.',
       example: '来月から東京で働くことになりました。', trans: "Il a été décidé que je travaillerai à Tokyo." },
-    { label: 'Changement de capacité', form: '可能形', front: '〜ようになりました', meaning: 'Être maintenant capable de [V]',
-      rule: '可能形 + ようになりました\nChangement progressif vers une capacité.',
+    { label: 'Changement de capacité / habitude', form: '辞書形 / 可能形', front: '〜ようになりました', meaning: 'Être maintenant capable de [V] / se mettre à [V]',
+      rule: '可能形 ou 辞書形 + ようになりました\n例 読めるようになった  毎日食べるようになった\nNégatif : ない形 + ようになりました.',
       example: '漢字が読めるようになりました。', trans: "Je suis maintenant capable de lire les kanji." },
     { label: 'Effort / habitude', form: '辞書形', front: '〜ようにします', meaning: "S'efforcer de [V]",
       rule: '辞書形 + ようにします\nEffort conscient et répété.',
@@ -229,28 +229,28 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
       example: '試験は難しかったようです。', trans: "Il semble que l'examen était difficile." },
   ],
   'quotation': [
-    { label: 'Penser que', form: '辞書形', front: '〜と思います', meaning: 'Je pense que [V]',
+    { label: 'Penser que', form: '短縮形', front: '〜と思います', meaning: 'Je pense que [V]',
       rule: 'Forme courte (plain) + と思います\nPassé : 〜たと思います.',
       example: '明日は雨が降ると思います。', trans: "Je pense qu'il va pleuvoir demain." },
-    { label: 'Dire que', form: '辞書形', front: '〜と言いました', meaning: "Quelqu'un a dit que [V]",
+    { label: 'Dire que', form: '短縮形', front: '〜と言いました', meaning: "Quelqu'un a dit que [V]",
       rule: 'Forme courte + と言いました\nRapport de paroles au passé.',
       example: '田中さんは来ると言いました。', trans: "Tanaka a dit qu'il/elle viendrait." },
-    { label: 'Avoir entendu que', form: '辞書形', front: '〜と聞きました', meaning: "J'ai entendu dire que [V]",
+    { label: 'Avoir entendu que', form: '短縮形', front: '〜と聞きました', meaning: "J'ai entendu dire que [V]",
       rule: 'Forme courte + と聞きました',
       example: '田中さんは転職すると聞きました。', trans: "J'ai entendu que Tanaka allait changer d'emploi." },
   ],
   'cause': [
-    { label: 'Parce que (subjectif)', form: 'た形', front: '〜から', meaning: 'Parce que [V] (raison subjective)',
-      rule: '形た + から\nDirect, expressif — plus courant à l\'oral.',
+    { label: 'Parce que (subjectif)', form: '短縮形', front: '〜から', meaning: 'Parce que [V] (raison subjective)',
+      rule: 'Forme courte (tout temps) + から\n例 行くから  行ったから  雨だから\nDirect, expressif — plus courant à l\'oral.',
       example: '眠かったから、早く寝ました。', trans: "J'étais fatigué(e), donc je me suis couché(e) tôt." },
-    { label: 'Parce que (objectif)', form: 'た形', front: '〜ので', meaning: 'Parce que [V] (raison polie)',
-      rule: '形た + ので\nPlus poli et neutre que から.',
+    { label: 'Parce que (objectif)', form: '短縮形', front: '〜ので', meaning: 'Parce que [V] (raison polie)',
+      rule: 'Forme courte + ので  (な-adj・N : 〜なので)\n例 行くので  雨なので\nPlus poli et neutre que から.',
       example: '雨が降っているので、傘を持っていきます。', trans: 'Comme il pleut, je prends un parapluie.' },
-    { label: 'Bien que / pourtant', form: 'た形', front: '〜のに', meaning: 'Bien que [V] (déception)',
-      rule: '形た + のに\nExprime une déception ou une surprise.',
+    { label: 'Bien que / pourtant', form: '短縮形', front: '〜のに', meaning: 'Bien que [V] (déception)',
+      rule: 'Forme courte + のに  (な-adj・N : 〜なのに)\n例 高いのに  勉強したのに\nExprime une déception ou une surprise.',
       example: '一生懸命勉強したのに、失敗しました。', trans: "J'ai travaillé dur, et pourtant j'ai échoué." },
-    { label: 'Mais / nuance', form: 'た形', front: '〜けど', meaning: 'Mais / bien que [V]',
-      rule: '形た + けど\nIntroduit une nuance ou un contraste (informel).',
+    { label: 'Mais / nuance', form: '短縮形', front: '〜けど', meaning: 'Mais / bien que [V]',
+      rule: 'Forme courte (tout temps) + けど\n例 行きたいけど  行ったけど\nIntroduit une nuance ou un contraste (informel).',
       example: '行きたいけど、時間がありません。', trans: "Je voudrais y aller, mais je n'ai pas le temps." },
     { label: 'Trop (verbe)', form: 'ます幹', front: '〜すぎます', meaning: 'Faire trop de [V]',
       rule: 'ます-stem + すぎます\nい-adj: い→すぎます  な-adj: な→すぎます.',
@@ -349,14 +349,137 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
     { label: 'Nominalisation の', form: 'の', front: '〜の (concret)', meaning: 'Le fait de [V] (observable)',
       rule: '辞書形 + の\nPour ce qu\'on peut voir ou percevoir directement.',
       example: '歌うのが上手です。', trans: 'Il/elle chante bien.' },
-    { label: 'Expérience passée', form: 'た形', front: '〜たことがあります', meaning: "Avoir déjà fait [V]",
-      rule: '形た + ことがあります\nNégatif : 〜たことがありません.',
-      example: '富士山に登ったことがあります。', trans: "J'ai déjà gravi le mont Fuji." },
     { label: 'Habitude occasionnelle', form: '辞書形', front: '〜ことがあります (habitude)', meaning: "Il m'arrive parfois de [V]",
       rule: '辞書形 + ことがあります\n⚠ ≠ たことがあります (expérience ponctuelle).',
       example: '忙しい時、朝ご飯を食べないことがあります。', trans: "Quand je suis occupé(e), il m'arrive de sauter le petit-déj." },
   ],
 };
+
+const BASE_CARDS: Card[] = [
+  { label: 'Copule affirmative', front: 'X は Y です', meaning: 'X est Y',
+    rule: 'Structure de base pour identifier ou décrire.\nFormel : です ; dictionnaire : だ',
+    example: '私は学生です。', trans: 'Je suis étudiant(e).' },
+  { label: 'Marqueur de question', front: '〜か', meaning: 'Transforme une phrase en question',
+    rule: 'Se place en fin de phrase, à la place du point.\nPas d\'inversion sujet-verbe.',
+    example: 'これは本ですか。', trans: 'Est-ce un livre ?' },
+  { label: 'Possession / modification', front: 'N₁ の N₂', meaning: 'Le N₂ de N₁',
+    rule: 'の relie deux noms : possession, appartenance,\ncatégorie, contenu…',
+    example: '私の本 / 田中さんの車', trans: 'mon livre / la voiture de Tanaka' },
+  { label: 'Pronoms démonstratifs', front: 'これ / それ / あれ / どれ', meaning: 'ceci / cela / cela là-bas / lequel',
+    rule: 'Pronoms seuls (sans nom après).\nこ = près du locuteur, そ = près de l\'interlocuteur, あ = loin des deux.',
+    example: 'これはいくらですか。', trans: 'Combien coûte ceci ?' },
+  { label: 'Adjectifs démonstratifs', front: 'この / その / あの / どの + N', meaning: 'ce N-ci / ce N-là / ce N là-bas / quel N',
+    rule: 'Toujours suivis d\'un nom.\nMême logique de distance que これ/それ/あれ.',
+    example: 'このかばんは高いです。', trans: 'Ce sac est cher.' },
+  { label: 'Lieux démonstratifs', front: 'ここ / そこ / あそこ / どこ', meaning: 'ici / là / là-bas / où',
+    rule: 'Désignent un lieu.\nどこ peut être suivi de に、で、へ、の…',
+    example: 'トイレはどこですか。', trans: 'Où sont les toilettes ?' },
+  { label: 'Appartenance interrogative', front: 'だれの + N', meaning: 'le N de qui ?',
+    rule: 'だれ = qui (personnes). どの + N = quel N.\nRéponse : [personne] の + N です。',
+    example: 'これはだれのかさですか。', trans: 'À qui est ce parapluie ?' },
+  { label: 'Inclusion — aussi / même', front: 'N + も', meaning: 'N également, N aussi',
+    rule: 'Remplace は, が ou を.\nAvec négatif : 何も食べない = ne rien manger.',
+    example: '私も学生です。', trans: 'Moi aussi je suis étudiant(e).' },
+  { label: 'Copule négative', front: 'N じゃないです', meaning: 'N n\'est pas le cas',
+    rule: 'じゃ = contraction de では (plus formel).\nPassé négatif : じゃなかったです',
+    example: '山田さんは先生じゃないです。', trans: 'Yamada n\'est pas professeur.' },
+  { label: 'Particules finales', front: 'ね / よ', meaning: 'ね = confirmation / よ = assertion',
+    rule: 'ね cherche l\'accord de l\'interlocuteur.\nよ informe ou insiste sur quelque chose.',
+    example: 'そうですね。/ 大丈夫ですよ。', trans: 'C\'est bien ça. / C\'est bon, je t\'assure.' },
+  { label: 'Particules essentielles', front: 'を / で / に・へ / と', meaning: 'objet / lieu d\'action / destination / avec',
+    rule: 'を = objet direct  で = lieu où se passe l\'action\nに・へ = destination  と = avec quelqu\'un',
+    example: '友達と図書館で日本語を勉強します。', trans: 'J\'étudie le japonais à la biblio. avec un ami.' },
+  { label: 'Référence temporelle', front: 'に + heure / jour', meaning: 'à [heure] / le [jour de la semaine]',
+    rule: 'Avec heures et jours de la semaine.\n⚠ Pas de に avec : 今日、明日、来週、毎〜, etc.',
+    example: '７時に起きます。月曜日に授業があります。', trans: 'Je me lève à 7h. Le cours est le lundi.' },
+  { label: 'Particule で — moyen', front: 'で (moyen / instrument / langue)', meaning: 'par, avec, en (moyen utilisé)',
+    rule: 'Transport : バスで行く\nInstrument : はしで食べる\nLangue : 日本語で話す',
+    example: 'バスで行きます。日本語で話しましょう。', trans: 'J\'y vais en bus. Parlons en japonais.' },
+  { label: 'Particule が — sujet', front: 'が (sujet mis en valeur)', meaning: 'Identifie ou met en relief le sujet',
+    rule: 'Vs は (thème) : が souligne QUI ou QUOI,\nrépondant à une question implicite.',
+    example: '私が行きます。（pas quelqu\'un d\'autre）', trans: 'C\'est moi qui y vais.' },
+  { label: 'Aimer / ne pas aimer', front: '好き（な）/ 嫌い（な）', meaning: 'aimer / ne pas aimer',
+    rule: 'Se comportent comme des な-adj.\nLa chose aimée est sujet avec が.',
+    example: '私は寿司が好きです。音楽が嫌いです。', trans: 'J\'aime les sushis. Je n\'aime pas la musique.' },
+  { label: 'Adjectif épithète', front: 'い-adj + N  /  な-adj + な + N', meaning: 'Adjectif placé avant le nom',
+    rule: 'い-adj : directement devant le nom\nな-adj : ajouter な avant le nom',
+    example: '高い山 / 静かな図書館', trans: 'une haute montagne / une bibliothèque calme' },
+];
+
+const COUNT_CARDS: Card[] = [
+  { label: 'Existence — inanimé', front: 'X が あります', meaning: 'Il y a X / X existe (objet, chose, événement)',
+    rule: 'Pour les objets, plantes, événements.\nLieu : [Lieu] に X が あります。',
+    example: '机の上に本があります。', trans: 'Il y a un livre sur le bureau.' },
+  { label: 'Existence — animé', front: 'X が います', meaning: 'Il y a X / X est là (être vivant)',
+    rule: 'Pour personnes, animaux, insectes…\nLieu : [Lieu] に X が います。',
+    example: '部屋に猫がいます。', trans: 'Il y a un chat dans la chambre.' },
+  { label: 'Localisation', front: '[Lieu] に あります / います', meaning: 'X se trouve à / dans [lieu]',
+    rule: 'Question : X はどこにありますか / いますか。\nRéponse : [Lieu] にあります。',
+    example: '銀行は駅の前にあります。', trans: 'La banque est devant la gare.' },
+  { label: 'Passé de です', front: 'でした / じゃなかったです', meaning: 'était / n\'était pas',
+    rule: 'でした = passé affirmatif\nじゃなかったです = passé négatif (formel : ではありませんでした)',
+    example: '昨日は月曜日でした。', trans: 'Hier c\'était lundi.' },
+  { label: 'も et と (nominaux)', front: 'Q + も + nég  /  N と N', meaning: 'rien / personne / nulle part  //  X et Y',
+    rule: '何も・誰も・どこにも + nég = rien/personne/nulle part\nN と N = liste exhaustive de noms',
+    example: '何も食べませんでした。本とペンを買いました。', trans: 'Je n\'ai rien mangé. J\'ai acheté un livre et un stylo.' },
+  { label: 'Liste non exhaustive de noms', front: 'N₁ や N₂', meaning: 'N₁ et N₂ (entre autres)',
+    rule: 'や ≠ と : と est exhaustif (X et Y, point final)\nや implique qu\'il y a d\'autres éléments non mentionnés.',
+    example: 'りんごやバナナを買いました。', trans: 'J\'ai acheté des pommes, des bananes et d\'autres choses.' },
+  { label: 'Quelque part / Nulle part', front: 'どこかに / どこにも〜ない', meaning: 'quelque part / nulle part',
+    rule: '〜か + に/を = quelque chose / quelque part (aff.)\n〜にも + nég = rien, nulle part (aussi : 何も、誰にも)',
+    example: '週末どこかに行きましたか。→ どこにも行きませんでした。', trans: 'Tu es allé(e) quelque part ? → Non, nulle part.' },
+  { label: 'Adverbes de fréquence', front: 'いつも→よく→たいてい\nときどき→あまり→ぜんぜん', meaning: 'toujours → souvent → généralement\nparfois → peu → pas du tout',
+    rule: 'あまり et ぜんぜん se construisent avec un verbe négatif.',
+    example: 'あまりテレビを見ません。', trans: 'Je ne regarde pas souvent la télé.' },
+  { label: 'Fréquence sur période', front: '[Période] に [Nombre] 回 / 度', meaning: '[X] fois par [période]',
+    rule: '回 (かい) et 度 (ど) = "fois".\n[Période] + に = par (unité de temps).\n例 週に三回 / 一日に二度 / 月に一度',
+    example: '週に三回ジムに行きます。一日に二度歯を磨きます。', trans: 'Je vais à la salle 3 fois par semaine. Je me brosse les dents 2 fois par jour.' },
+  { label: 'Compteurs courants', front: '〜つ / 〜人 / 〜枚 / 〜本 / 〜冊', meaning: 'objets (1-9) / personnes / plats / longs / livres',
+    rule: '〜つ: ひとつ ふたつ みっつ よっつ いつつ…\n〜人: ひとり ふたり さんにん…',
+    example: 'みかんをふたつください。', trans: 'Donnez-moi deux mandarines, s.v.p.' },
+  { label: 'Celui qui est [adj]', front: 'Adj / N + の', meaning: 'Celui / celle qui est [adj]',
+    rule: 'の remplace un nom déjà mentionné.\nÉvite la répétition : 大きいかばん → 大きいの',
+    example: '大きいのをください。赤いのはいくらですか。', trans: 'Donnez-moi le grand. Combien coûte le rouge ?' },
+];
+
+const PLAIN_CARDS: Card[] = [
+  { label: 'Formes courtes — présent', form: '辞書形 / ない形', front: 'Plain forms (présent)', meaning: 'Formes de base non polies',
+    rule: 'V : forme dict. / ない  adj-い : 〜い / 〜くない\nな-adj / N + だ / じゃない\nUsages : subordonnées, conversation naturelle.',
+    example: '食べる / 食べない / 高い / 静かだ', trans: '(formes utilisées dans la langue courante)' },
+  { label: 'Formes courtes — passé', form: 'た形 / なかった形', front: 'Plain forms (passé)', meaning: 'Formes de base passées',
+    rule: 'V : forme た / なかった  adj-い : 〜かった / 〜くなかった\nな-adj / N + だった / じゃなかった',
+    example: '食べた / 食べなかった / 高かった / 静かだった', trans: '(formes passées courtes)' },
+  { label: 'Opinion sur le passé', form: 'た形', front: '〜たと思います', meaning: 'Je pense que (il/elle) a fait…',
+    rule: '[Forme た] + と思います.\nPour exprimer une opinion sur un fait passé.',
+    example: '田中さんはもう行ったと思います。', trans: 'Je pense que Tanaka est déjà parti(e).' },
+  { label: 'Discours indirect', form: '短縮形', front: '〜と言っていました', meaning: '(Il/elle) a dit que…',
+    rule: '[Forme courte] + と言っていました.\nPassé : [Forme た] + と言っていました.',
+    example: '田中さんは来ると言っていました。行ったと言っていました。', trans: 'Tanaka a dit qu\'il/elle viendrait. / qu\'il/elle y était allé(e).' },
+  { label: 'Qualification d\'un nom', form: '短縮形', front: 'V / Adj (forme courte) + Nom', meaning: 'Proposition relative avant un nom',
+    rule: 'La forme courte (présent ou passé) se place\ndirectement avant le nom qu\'elle qualifie.',
+    example: '昨日食べたケーキ / 背が高い人', trans: 'le gâteau que j\'ai mangé hier / une grande personne' },
+  { label: 'Déjà / Pas encore', form: 'ます形 / て形', front: 'もう〜ました / まだ〜ていません', meaning: 'Déjà fait / Pas encore fait',
+    rule: 'もう + passé poli = action accomplie\nまだ + ていません = action non encore accomplie',
+    example: 'もう宿題をしました。まだしていません。', trans: 'J\'ai déjà fait mes devoirs. / Je ne les ai pas encore faits.' },
+  { label: 'Invitation polie', form: 'ます形', front: '〜ませんか', meaning: 'Ne voulez-vous pas… ?',
+    rule: 'Proposition à faire quelque chose ensemble.\nPlus indirect et poli que ましょう.',
+    example: '一緒に映画を見ませんか。', trans: 'On va voir un film ensemble ?' },
+  { label: 'Offre', form: 'ます形', front: '〜ましょうか', meaning: 'Voulez-vous que je… ?',
+    rule: 'ましょうか = offre de faire qqch pour l\'autre\n(ましょう seul = suggestion collective).',
+    example: '手伝いましょうか。', trans: 'Puis-je vous aider ?' },
+  { label: 'Enchaînement d\'actions', form: 'て形', front: 'V₁ て + V₂', meaning: 'Faire V₁ puis V₂',
+    rule: 'Relie deux actions successives.\nL\'ordre des verbes = ordre réel des actions.',
+    example: '朝起きて、シャワーを浴びます。', trans: 'Le matin je me lève et prends une douche.' },
+  { label: 'Explication / mise en contexte', form: '短縮形', front: '〜んです / のです', meaning: 'Le fait est que… / C\'est que…',
+    rule: 'Fournit ou sollicite une explication.\nV/adj (plain) + んです  /  な-adj・N + なんです',
+    example: '頭が痛いんです。— そうなんですか。', trans: 'Le fait est que j\'ai mal à la tête. — Ah bon !' },
+  { label: 'Question polie / doute', form: '短縮形', front: '〜でしょうか', meaning: 'Je me demande si… / Serait-il possible que… ?',
+    rule: 'Plus poli et incertain que ですか.\nIndique une hésitation ou une question rhétorique.',
+    example: '明日は雨でしょうか。', trans: 'Je me demande s\'il va pleuvoir demain.' },
+  { label: 'Cumul de raisons', form: '短縮形', front: '〜し、〜し、…', meaning: 'D\'un côté…, d\'un autre côté… (cumul)',
+    rule: '[Raison₁ (forme courte)] し、[Raison₂] し、[Résultat/Opinion].\nNon exhaustif : sous-entend d\'autres raisons.\nV/adj plain + し  /  N・な-adj + だし',
+    example: '安いし、おいしいし、このお店が好きです。', trans: 'C\'est pas cher, c\'est bon, j\'aime ce restaurant.' },
+];
 
 const LEVEL_STYLE: Record<string, { tab: string; badge: string }> = {
   N5:     { tab: 'border-green-600/60 text-green-300',   badge: 'bg-green-900/40 text-green-300 border-green-600/50' },
@@ -365,6 +488,20 @@ const LEVEL_STYLE: Record<string, { tab: string; badge: string }> = {
   'N4–N3':{ tab: 'border-purple-600/60 text-purple-300',badge: 'bg-purple-900/40 text-purple-300 border-purple-600/50' },
   N3:     { tab: 'border-purple-600/60 text-purple-300',badge: 'bg-purple-900/40 text-purple-300 border-purple-600/50' },
 };
+
+interface Tab { id: string; nameFR: string; nameJP: string; level: string; freq?: number; }
+
+// Fiches de cours sans exercice associé : reprennent l'ancien contenu par leçons
+const REFERENCE_TABS: Tab[] = [
+  { id: 'ref-basics', nameFR: 'Bases et particules', nameJP: '基本・助詞', level: 'N5' },
+  { id: 'ref-count',  nameFR: 'Existence et quantité', nameJP: '存在・数量', level: 'N5' },
+  { id: 'ref-plain',  nameFR: 'Formes courtes et discours', nameJP: '普通形・会話', level: 'N4' },
+];
+CATEGORY_CARDS['ref-basics'] = BASE_CARDS;
+CATEGORY_CARDS['ref-count'] = COUNT_CARDS;
+CATEGORY_CARDS['ref-plain'] = PLAIN_CARDS;
+
+const TABS: Tab[] = [...REFERENCE_TABS, ...GRAMMAR_CATEGORIES];
 
 function multiline(text: string) {
   return text.split('\n').map((line, i, arr) => (
@@ -376,9 +513,12 @@ export function GrammarPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState<Set<number>>(new Set());
 
-  useEffect(() => { setFlipped(new Set()); }, [currentIdx]);
+  const selectTab = (i: number) => {
+    setFlipped(new Set());
+    setCurrentIdx(i);
+  };
 
-  const cat = GRAMMAR_CATEGORIES[currentIdx];
+  const cat = TABS[currentIdx];
   const cards = CATEGORY_CARDS[cat.id] ?? [];
   const style = LEVEL_STYLE[cat.level] ?? LEVEL_STYLE['N4'];
 
@@ -395,13 +535,13 @@ export function GrammarPage() {
       {/* Category tabs */}
       <div className="overflow-x-auto -mx-4 px-4 mb-6" style={{ scrollbarWidth: 'none' }}>
         <div className="flex gap-1 min-w-max">
-          {GRAMMAR_CATEGORIES.map((c, i) => {
+          {TABS.map((c, i) => {
             const s = LEVEL_STYLE[c.level] ?? LEVEL_STYLE['N4'];
             const active = i === currentIdx;
             return (
               <button
                 key={c.id}
-                onClick={() => setCurrentIdx(i)}
+                onClick={() => selectTab(i)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap border ${
                   active
                     ? `${s.tab} bg-[#21262d]`
@@ -428,7 +568,7 @@ export function GrammarPage() {
             </span>
           </div>
           <p className="text-xs text-gray-600">
-            {cards.length} fiche{cards.length > 1 ? 's' : ''} · fréquence {cat.freq}/100
+            {cards.length} fiche{cards.length > 1 ? 's' : ''}{cat.freq !== undefined && ` · fréquence ${cat.freq}/100`}
           </p>
         </div>
       </div>
@@ -439,6 +579,7 @@ export function GrammarPage() {
 
       {/* Cards grid */}
       <div
+        key={cat.id}
         className="grid gap-3"
         style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}
       >
@@ -453,7 +594,7 @@ export function GrammarPage() {
               onClick={() => toggle(i)}
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(i); } }}
               className="cursor-pointer rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-japan-red focus-visible:outline-offset-2"
-              style={{ height: '240px', perspective: '900px' }}
+              style={{ height: '280px', perspective: '900px' }}
             >
               <div
                 style={{
@@ -486,7 +627,7 @@ export function GrammarPage() {
 
                 {/* Back */}
                 <div
-                  className="absolute inset-0 rounded-xl p-4 flex flex-col bg-[#0f1929] border border-[#30363d] shadow-lg overflow-hidden"
+                  className="absolute inset-0 rounded-xl p-4 flex flex-col bg-[#0f1929] border border-[#30363d] shadow-lg overflow-y-auto"
                   style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderLeftWidth: '3px', borderLeftColor: '#c84535' }}
                 >
                   <p className="text-sm font-bold text-white mb-1.5 leading-snug">

@@ -1,8 +1,8 @@
-name: Revue automatique des PR
+name: Revue des PR sur mention
 
 on:
-  pull_request:
-    types: [opened, reopened]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
@@ -11,18 +11,23 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pr-review-${{ github.event.pull_request.number }}
+  group: pr-review-${{ github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
   review:
-    # Les PR venant d'un fork n'ont pas accès aux secrets
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Uniquement sur une PR, quand le commentaire mentionne @claude,
+    # et seulement si son auteur a des droits sur le dépôt (le workflow utilise un secret)
+    if: >-
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout de la PR
         uses: actions/checkout@v4
         with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
           fetch-depth: 0
 
       - name: Revue par le sous-agent pr-reviewer
@@ -32,11 +37,17 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+            PR NUMBER: ${{ github.event.issue.number }}
 
-            Utilise le sous-agent `pr-reviewer` pour relire cette pull request,
+            Un commentaire de ${{ github.event.comment.user.login }} t'a mentionné sur cette pull request :
+            ---
+            ${{ github.event.comment.body }}
+            ---
+
+            Utilise le sous-agent `pr-reviewer` pour relire cette pull request
+            (en tenant compte des précisions éventuelles du commentaire ci-dessus),
             puis publie son compte rendu tel quel en commentaire de la PR avec
-            `gh pr comment ${{ github.event.pull_request.number }} --body-file <fichier>`.
+            `gh pr comment ${{ github.event.issue.number }} --body-file <fichier>`.
             Ne modifie aucun fichier du dépôt.
           claude_args: |
             --allowedTools "Agent,Read,Grep,Glob,Write,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"

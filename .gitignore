@@ -19,7 +19,7 @@ public/svg/
 resources/
 
 # Claude Code local settings
-.claude/
+.claude/settings.local.json
 
 # Editor directories and files
 .vscode/*

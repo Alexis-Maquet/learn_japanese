@@ -16,7 +16,7 @@ import { ConjugationSessionPage } from '@/pages/ConjugationSessionPage';
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <div className="min-h-screen bg-[#0d1117] text-gray-100">
+      <div className="min-h-[100dvh] bg-[#0d1117] text-gray-100">
         <Navigation />
         <main className="[padding-bottom:env(safe-area-inset-bottom)]">
           <Routes>

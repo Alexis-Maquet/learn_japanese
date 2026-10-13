@@ -3,13 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  html, body {
+    touch-action: manipulation;      /* pas de zoom au double-tap */
+    -webkit-text-size-adjust: 100%;  /* iOS ne regrossit pas le texte en paysage */
+    text-size-adjust: 100%;
+    overscroll-behavior: none;       /* pas de rebond de la page */
+  }
+
   body {
     @apply bg-[#0d1117] text-gray-100 font-japanese;
     font-family: 'Noto Sans JP', sans-serif;
   }
 
   #root {
-    @apply min-h-screen;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+/* iOS Safari zoome sur les champs dont la police fait moins de 16 px */
+@media (pointer: coarse) {
+  input, textarea, select {
+    font-size: 16px !important;
   }
 }
 

@@ -1,0 +1,42 @@
+name: Revue automatique des PR
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Les PR venant d'un fork n'ont pas accès aux secrets
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Revue par le sous-agent pr-reviewer
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Utilise le sous-agent `pr-reviewer` pour relire cette pull request,
+            puis publie son compte rendu tel quel en commentaire de la PR avec
+            `gh pr comment ${{ github.event.pull_request.number }} --body-file <fichier>`.
+            Ne modifie aucun fichier du dépôt.
+          claude_args: |
+            --allowedTools "Agent,Read,Grep,Glob,Write,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"

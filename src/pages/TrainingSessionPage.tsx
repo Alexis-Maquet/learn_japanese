@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTrainingStore } from '@/store/trainingStore';
 import { useStatsStore } from '@/store/statsStore';
 import { RomajiInput } from '@/components/training/RomajiInput';
+import { ErrorDetails } from '@/components/training/ErrorDetails';
 
 function pct(correct: number, total: number) {
   if (total === 0) return 0;
@@ -131,7 +132,10 @@ export function TrainingSessionPage() {
           </div>
         )}
 
-        <div className="flex gap-3">
+        <ErrorDetails cards={failedCards} />
+
+        {/* Boutons toujours visibles : la liste des erreurs peut être longue */}
+        <div className="sticky bottom-0 -mx-4 px-4 py-3 flex gap-3 bg-japan-dark/95 backdrop-blur border-t border-japan-border">
           <button
             onClick={() => {
               endSession();
@@ -176,7 +180,7 @@ export function TrainingSessionPage() {
         {card && (
           <RomajiInput
             card={card}
-            onAnswer={(c, selected) => answerCard(c, selected)}
+            onAnswer={(c, selected, detail) => answerCard(c, selected, detail)}
             onNext={nextCard}
             isLastCard={session.currentIndex === session.cards.length - 1}
           />

@@ -61,7 +61,7 @@ Créer ou modifier le jeton dans `tailwind.config.js` (`japan.*`), puis l'utilis
 ## Contexte indispensable
 
 - **Taxonomie partagée** : `GRAMMAR_CATEGORIES` alimente à la fois les boutons de `TrainingPage`, les onglets de `GrammarPage` et la pondération du tirage de conjugaison. `GrammarPage` ajoute des onglets de référence (`REFERENCE_TABS`) sans exercice associé.
-- **Conjugaison** : 100 % locale (`conjugationLocal.ts`, sans API). **Phrases, scan d'image et définitions de mots** passent par Gemini avec la clé de l'utilisateur (`localStorage`, `gemini_api_key`) ; le quota de 1500 appels par jour est compté côté client (`trackApiCall`). `generateConjugationExercises` et `CONJUGATION_RULES` dans `geminiVision.ts` ne sont plus utilisés : ne pas y modifier de règles.
+- **Conjugaison** : 100 % locale (`conjugationLocal.ts`, sans API). **Phrases, scan d'image et définitions de mots** passent par Gemini avec la clé de l'utilisateur (`localStorage`, `gemini_api_key`) ; le quota de 1500 appels par jour est compté côté client (`trackApiCall`).
 - **Gros JSON** : chargés une fois (promesse mise en cache dans `src/utils/api.ts`) et mis en cache par le service worker (`vite.config.ts`).
 - **Design** : thème sombre uniquement, accent unique `japan-red` (`#DC143C`). Réutiliser les classes de `src/index.css` (`.card`, `.btn-primary`, `.btn-secondary`, `.badge-jlpt` + `.badge-n1` à `.badge-n5`) ; `.kanji-char` pour le texte japonais en grand ; `text-green-500` / `text-yellow-500` / `text-red-500` pour les scores. Mobile : champs de saisie à 16 px minimum (sinon iOS zoome), `100dvh` plutôt que `100vh`.
 - **Logs** : utiliser `logger.info(contexte, message)` (`src/utils/logger.ts`, persisté en `localStorage`) plutôt que `console.*`.

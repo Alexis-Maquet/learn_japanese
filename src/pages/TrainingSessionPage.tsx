@@ -134,7 +134,8 @@ export function TrainingSessionPage() {
 
         <ErrorDetails cards={failedCards} />
 
-        <div className="flex gap-3">
+        {/* Boutons toujours visibles : la liste des erreurs peut être longue */}
+        <div className="sticky bottom-0 -mx-4 px-4 py-3 flex gap-3 bg-japan-dark/95 backdrop-blur border-t border-japan-border">
           <button
             onClick={() => {
               endSession();

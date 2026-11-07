@@ -35,6 +35,8 @@ jobs:
           git fetch origin gh-pages
           git show origin/gh-pages:kanjiapi_full.json > public/kanjiapi_full.json
           git show origin/gh-pages:kanji_words.json > public/kanji_words.json
+          # Tracés KanjiVG (~6700 fichiers) : sans eux, les tracés d'ordre des traits sont absents en production
+          git archive origin/gh-pages svg | tar -x -C public
 
       - name: Build
         run: npm run build

@@ -37,7 +37,7 @@ Créer ou modifier le jeton dans `tailwind.config.js` (`japan.*`), puis l'utilis
 `public/kanjiapi_full.json`, `public/kanji_words.json` et `public/svg/` ne sont pas versionnés. Sans eux, l'app démarre mais les kanjis, les mots et les tracés ne chargent pas.
 - `kanjiapi_full.json` : copier `resources/kanjiapi_full.json`, ou `git show origin/gh-pages:kanjiapi_full.json > public/kanjiapi_full.json`.
 - `kanji_words.json` : `npm run generate-words`, ou `git show origin/gh-pages:kanji_words.json > public/kanji_words.json`.
-- `public/svg/` : l'origine n'est pas documentée. Ne rien inventer, demander à l'utilisateur.
+- `public/svg/` : `git archive origin/gh-pages svg | tar -x -C public` (la branche `gh-pages` contient les ~6700 tracés).
 
 ## Livraison
 
@@ -50,7 +50,7 @@ Créer ou modifier le jeton dans `tailwind.config.js` (`japan.*`), puis l'utilis
 ## Garde-fous
 
 - Ne jamais committer `public/kanjiapi_full.json`, `public/kanji_words.json` ni `public/svg/` (gitignorés, ~98 Mo).
-- Ne jamais supprimer la branche `gh-pages` : le workflow de déploiement y lit les deux JSON.
+- Ne jamais supprimer la branche `gh-pages` : le workflow de déploiement y lit les deux JSON et les tracés `svg/`.
 - Ne jamais pousser directement sur `main`.
 - Ne pas écrire de couleur en dur (`bg-[#…]`, `style={{ color: '#…' }}`) ; dans le CSS brut, utiliser `theme('colors.…')`.
 - Construire les URLs de ressources avec `import.meta.env.BASE_URL` (le site est servi sous `/learn_japanese/`) et importer via l'alias `@/`.

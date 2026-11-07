@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { TrainingSession, TrainingCard, KanjiDetails } from '@/types';
+import type { TrainingSession, TrainingCard, KanjiDetails, CardAnswerDetail } from '@/types';
 import { logger } from '@/utils/logger';
 import { readJson } from '@/utils/safeStorage';
 
@@ -15,7 +15,7 @@ export function isPausedSession(v: unknown): v is TrainingSession {
 interface TrainingStore {
   session: TrainingSession | null;
   startSession: (listIds: string[], listName: string, kanjis: KanjiDetails[], preserveOrder?: boolean) => void;
-  answerCard: (correct: boolean, selectedAnswer?: string) => void;
+  answerCard: (correct: boolean, selectedAnswer?: string, detail?: CardAnswerDetail) => void;
   nextCard: () => void;
   prevCard: () => void;
   pauseSession: () => void;
@@ -79,7 +79,7 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
     set({ session });
   },
 
-  answerCard: (correct, selectedAnswer) => {
+  answerCard: (correct, selectedAnswer, detail) => {
     const { session } = get();
     if (session) {
       const card = session.cards[session.currentIndex];
@@ -91,7 +91,7 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
     set((s) => {
       if (!s.session) return s;
       const cards = [...s.session.cards];
-      cards[s.session.currentIndex] = { ...cards[s.session.currentIndex], answered: true, correct, selectedAnswer };
+      cards[s.session.currentIndex] = { ...cards[s.session.currentIndex], answered: true, correct, selectedAnswer, answer: detail };
       return { session: { ...s.session, cards } };
     });
   },

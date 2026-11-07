@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTrainingStore } from '@/store/trainingStore';
 import { useStatsStore } from '@/store/statsStore';
 import { RomajiInput } from '@/components/training/RomajiInput';
+import { ErrorDetails } from '@/components/training/ErrorDetails';
 
 function pct(correct: number, total: number) {
   if (total === 0) return 0;
@@ -131,6 +132,8 @@ export function TrainingSessionPage() {
           </div>
         )}
 
+        <ErrorDetails cards={failedCards} />
+
         <div className="flex gap-3">
           <button
             onClick={() => {
@@ -176,7 +179,7 @@ export function TrainingSessionPage() {
         {card && (
           <RomajiInput
             card={card}
-            onAnswer={(c, selected) => answerCard(c, selected)}
+            onAnswer={(c, selected, detail) => answerCard(c, selected, detail)}
             onNext={nextCard}
             isLastCard={session.currentIndex === session.cards.length - 1}
           />

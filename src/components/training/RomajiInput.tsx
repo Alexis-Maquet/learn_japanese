@@ -1,28 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import type { TrainingCard } from '@/types';
-import { checkAnswer, toRomaji, stripOkurigana } from '@/utils/romaji';
+import type { TrainingCard, CardAnswerDetail } from '@/types';
+import { checkAnswer, toRomaji, stripOkurigana, deduplicateReadings } from '@/utils/romaji';
 import { KanjiDetailModal } from '@/components/scan/KanjiDetailModal';
 import { playCorrect } from '@/utils/sound';
 
 interface Props {
   card: TrainingCard;
-  onAnswer: (correct: boolean, selected: string) => void;
+  onAnswer: (correct: boolean, selected: string, detail: CardAnswerDetail) => void;
   onNext: () => void;
   isLastCard?: boolean;
-}
-
-function deduplicateReadings(readings: string[]): string[] {
-  const seenStems = new Set<string>();
-  const seenFull = new Set<string>();
-  return readings.filter((r) => {
-    const clean = r.replace(/^-|-$/g, '');
-    const stem = clean.split('.')[0];
-    const full = clean.replace('.', '');
-    if (seenStems.has(stem) || seenFull.has(full)) return false;
-    seenStems.add(stem);
-    seenFull.add(full);
-    return true;
-  });
 }
 
 function buildReadings(on: string[], kun: string[]): string[] {
@@ -82,7 +68,11 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
     setSessionCorrect(allValid);
     setMeaningCorrect(isMeaningCorrect);
     setSubmitted(true);
-    onAnswer(allValid, nonEmpty.join(', '));
+    onAnswer(allValid, nonEmpty.join(', '), {
+      readings: nonEmpty.map((value) => ({ value: value.trim(), correct: checkAnswer(value, allValidReadings) })),
+      meaning: meaningInput.trim(),
+      meaningCorrect: isMeaningCorrect,
+    });
   };
 
   const correctionReadings = deduplicateReadings(allValidReadings);

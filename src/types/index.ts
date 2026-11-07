@@ -68,12 +68,20 @@ export interface ConjugationExercise {
 
 export type ReadingType = 'on' | 'kun';
 
+// Détail de la réponse donnée à une carte de prononciation (affiché dans le récapitulatif des erreurs)
+export interface CardAnswerDetail {
+  readings: { value: string; correct: boolean }[];
+  meaning: string;
+  meaningCorrect: boolean;
+}
+
 export interface TrainingCard {
   kanji: string;
   details: KanjiDetails;
   answered: boolean;
   correct: boolean | null;
   selectedAnswer?: string;
+  answer?: CardAnswerDetail;
 }
 
 export interface TrainingSession {

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useListStore } from '@/store/listStore';
 import { useKanjiStore } from '@/store/kanjiStore';
-import { useTrainingStore } from '@/store/trainingStore';
+import { useTrainingStore, isPausedSession } from '@/store/trainingStore';
+import { readJson } from '@/utils/safeStorage';
 import { useStatsStore } from '@/store/statsStore';
 import { JLPT_PREDEFINED, FREQ_PREDEFINED, ALL_PREDEFINED, resolvePredefinedKanjis } from '@/utils/predefinedLists';
 import { getApiKey, saveApiKey, clearApiKey } from '@/utils/geminiVision';
@@ -81,10 +82,8 @@ export function TrainingPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [pausedInfo, setPausedInfo] = useState<{ listName: string; progress: number; total: number } | null>(() => {
-    const raw = localStorage.getItem('training_paused_session');
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    return { listName: s.listName, progress: s.currentIndex, total: s.cards.length };
+    const s = readJson('training_paused_session', isPausedSession);
+    return s ? { listName: s.listName, progress: s.currentIndex, total: s.cards.length } : null;
   });
 
   useEffect(() => {
@@ -204,6 +203,15 @@ export function TrainingPage() {
       ? reviewableKanjis.slice(0, effectiveReviewCount)
       : resolveSelectedKanjis();
     if (kanjis.length === 0 || loading) return;
+    // Seule la session « Prononciation » écrase une session en pause : on demande avant
+    if (trainingType !== 'review' && pausedInfo) {
+      const ok = window.confirm(
+        `Une session est en pause (« ${pausedInfo.listName} », ${pausedInfo.progress} / ${pausedInfo.total}). ` +
+        'En démarrer une nouvelle la supprimera. Continuer ?',
+      );
+      if (!ok) return;
+      setPausedInfo(null);
+    }
     setLoading(true);
     try {
       await Promise.all(kanjis.map((k) => loadDetails(k)));
@@ -441,7 +449,7 @@ export function TrainingPage() {
         )}
       </div>
 
-      {trainingType === 'romaji' && pausedInfo && (
+      {pausedInfo && (
         <div className="card p-4 border-yellow-600/50 bg-yellow-900/10 flex items-center gap-3">
           <span className="text-yellow-400 text-xl shrink-0">⏸</span>
           <div className="flex-1 min-w-0">

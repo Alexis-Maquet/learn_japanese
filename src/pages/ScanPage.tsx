@@ -102,7 +102,9 @@ export function ScanPage() {
       } else {
         setGeminiError(msg);
       }
-      if (msg.includes('401') || msg.includes('API_KEY_INVALID') || msg.includes('PERMISSION_DENIED') || msg.includes('auth')) {
+      // La clé n'est effacée que si Gemini la déclare invalide ; 401, PERMISSION_DENIED ou « auth »
+      // peuvent venir d'autre chose (réseau, restrictions du projet) : on garde la clé et on propose de la remplacer
+      if (msg.includes('API_KEY_INVALID') || msg.includes('API key not valid')) {
         clearApiKey();
         setShowApiKeyModal(true);
       }
@@ -234,7 +236,16 @@ export function ScanPage() {
           {geminiStatus === 'error' && (
             <div className="text-red-400 text-sm space-y-1">
               <p>Erreur Gemini API.</p>
-              {geminiError && <p className="text-xs text-red-500 font-mono break-all">{geminiError}</p>}
+              {geminiError && (
+                <div className="space-y-1.5">
+                  <p className="text-xs text-red-500 font-mono break-all">{geminiError}</p>
+                  {hasApiKey && (
+                    <button onClick={() => setShowApiKeyModal(true)} className="text-xs text-gray-400 hover:text-white underline">
+                      Remplacer la clé API
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

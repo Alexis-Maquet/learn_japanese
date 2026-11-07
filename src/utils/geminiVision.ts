@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { SentenceExercise, ConjugationExercise } from '@/types';
+import { readJson } from '@/utils/safeStorage';
 
 const CONJUGATION_RULES: { chapterNum: number; form: string; label: string; rule: string }[] = [
   { chapterNum: 3, form: 'ます形', label: '〜ます / 〜ません', rule: 'Présent poli. G1: く→きます む→みます ぬ→にます ぶ→びます う→います つ→ちます る→ります す→します. G2: る→ます. する→します くる→きます' },
@@ -42,19 +43,25 @@ const DAILY_LIMIT = 1500;
 interface DailyUsage { date: string; count: number; }
 function today(): string { return new Date().toISOString().slice(0, 10); }
 
+function isDailyUsage(v: unknown): v is DailyUsage {
+  return typeof v === 'object' && v !== null
+    && typeof (v as DailyUsage).date === 'string' && typeof (v as DailyUsage).count === 'number';
+}
+
 export function trackApiCall(): void {
   const d = today();
-  const raw = localStorage.getItem('gemini_daily_usage');
-  const prev: DailyUsage = raw ? JSON.parse(raw) : { date: d, count: 0 };
+  const prev = readJson('gemini_daily_usage', isDailyUsage) ?? { date: d, count: 0 };
   const count = prev.date === d ? prev.count + 1 : 1;
-  localStorage.setItem('gemini_daily_usage', JSON.stringify({ date: d, count }));
+  try {
+    localStorage.setItem('gemini_daily_usage', JSON.stringify({ date: d, count }));
+  } catch {
+    // stockage plein ou refusé : le compteur local est perdu, l'appel a déjà eu lieu
+  }
 }
 
 export function getRemainingCalls(): number {
-  const raw = localStorage.getItem('gemini_daily_usage');
-  if (!raw) return DAILY_LIMIT;
-  const usage: DailyUsage = JSON.parse(raw);
-  if (usage.date !== today()) return DAILY_LIMIT;
+  const usage = readJson('gemini_daily_usage', isDailyUsage);
+  if (!usage || usage.date !== today()) return DAILY_LIMIT;
   return Math.max(0, DAILY_LIMIT - usage.count);
 }
 
@@ -308,18 +315,34 @@ Réponds UNIQUEMENT avec ce JSON sans markdown ni backticks :
   const data = JSON.parse(match[0]) as { exercises: SentenceExercise[] };
   if (!Array.isArray(data.exercises)) return [];
 
-  return data.exercises
-    .filter(ex => Array.isArray(ex.words) && ex.words.some(w => w.isTarget))
+  return normalizeSentenceExercises(data.exercises);
+}
+
+/**
+ * Valide la réponse de Gemini. Un mot cible doit pouvoir être répondu dans les deux modes
+ * (au moins 2 options pour le QCM, au moins un mot-clé pour la saisie libre). Sinon le mot est
+ * dégradé en mot ordinaire ; une phrase sans aucun mot cible exploitable est écartée.
+ */
+export function normalizeSentenceExercises(exercises: SentenceExercise[]): SentenceExercise[] {
+  const isTextList = (v: unknown): v is string[] =>
+    Array.isArray(v) && v.length > 0 && v.every(x => typeof x === 'string' && x.trim() !== '');
+
+  return exercises
+    .filter(ex => typeof ex.sentence === 'string' && ex.sentence.trim() !== '' && Array.isArray(ex.words))
     .map(ex => ({
       sentence: ex.sentence,
       translation: ex.translation ?? '',
       words: ex.words.map(w => {
-        if (!w.isTarget || !w.options || w.options.length < 2) return w;
+        if (!w.isTarget) return w;
+        if (!isTextList(w.options) || w.options.length < 2 || !isTextList(w.keywords)) {
+          return { ...w, isTarget: false, options: undefined, keywords: undefined };
+        }
         const correct = w.options[0];
         const shuffledOpts = [...w.options].sort(() => Math.random() - 0.5);
         return { ...w, options: shuffledOpts, correctOption: correct };
       }),
-    }));
+    }))
+    .filter(ex => ex.words.some(w => w.isTarget));
 }
 
 const VERB_POOL: string[] = [

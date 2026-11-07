@@ -201,7 +201,7 @@ export function ListDetailPage() {
                   />
                   <button
                     onClick={() => removeKanjiFromList(list.id, k)}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-700 rounded-full text-white text-xs hidden group-hover:flex items-center justify-center hover:bg-red-600"
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-japan-surface border border-japan-border rounded-full text-gray-300 text-xs flex items-center justify-center hover:bg-japan-red hover:border-japan-red hover:text-white"
                     title="Retirer"
                   >
                     ✕

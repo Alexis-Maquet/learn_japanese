@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useKanjiStore } from '@/store/kanjiStore';
-import { jlptNumericToLabel, getDomainsForKanji } from '@/utils/domains';
+import { jlptNumericToLabel } from '@/utils/domains';
 import { JlptBadge } from '@/components/kanji/JlptBadge';
 import { useListStore } from '@/store/listStore';
 
@@ -15,20 +15,18 @@ interface Props {
 }
 
 export function KanjiCard({ kanji, jlptLevel, listId, selected, onSelect, linkState }: Props) {
-  const { details, loadDetails, filters } = useKanjiStore();
-  const { addKanjiToList, removeKanjiFromList, lists } = useListStore();
-  const d = details[kanji];
+  // Sélecteurs : chaque carte ne se re-rend que pour son propre kanji
+  const d = useKanjiStore((s) => s.details[kanji]);
+  const loadDetails = useKanjiStore((s) => s.loadDetails);
+  const addKanjiToList = useListStore((s) => s.addKanjiToList);
+  const removeKanjiFromList = useListStore((s) => s.removeKanjiFromList);
+  const inList = useListStore((s) => (listId ? s.lists.find((l) => l.id === listId)?.kanjis.includes(kanji) ?? false : false));
 
   useEffect(() => {
     loadDetails(kanji);
   }, [kanji, loadDetails]);
 
   const jlpt = d ? jlptNumericToLabel(d.jlpt) : (jlptLevel ?? null);
-  const domains = d ? getDomainsForKanji(d.meanings) : [];
-
-  if (filters.domains.length > 0 && d && !filters.domains.some((fd) => domains.includes(fd as never))) {
-    return null;
-  }
 
   const cardContent = (
     <>
@@ -79,7 +77,6 @@ export function KanjiCard({ kanji, jlptLevel, listId, selected, onSelect, linkSt
         <button
           onClick={(e) => {
             e.preventDefault();
-            const inList = lists.find((l) => l.id === listId)?.kanjis.includes(kanji);
             if (inList) removeKanjiFromList(listId, kanji);
             else addKanjiToList(listId, kanji);
           }}

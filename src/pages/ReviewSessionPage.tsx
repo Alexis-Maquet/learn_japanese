@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useKanjiStore } from '@/store/kanjiStore';
 import { useStatsStore } from '@/store/statsStore';
@@ -31,10 +31,16 @@ export function ReviewSessionPage() {
   const state = location.state as SessionState | null;
 
   const details = useKanjiStore((s) => s.details);
+  const loadDetails = useKanjiStore((s) => s.loadDetails);
   const kanjiStats = useStatsStore((s) => s.kanjiStats);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
+
+  // Après un rechargement de la page, la session (état du routeur) survit mais le store est vide
+  useEffect(() => {
+    state?.kanjis.forEach((k) => { loadDetails(k).catch(() => { /* kanji introuvable : carte sans détails */ }); });
+  }, [state, loadDetails]);
 
   if (!state) {
     return (

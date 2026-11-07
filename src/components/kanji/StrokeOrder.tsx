@@ -26,7 +26,10 @@ export function StrokeOrder({ kanji }: Props) {
     setCurrent(0);
     setPlaying(false);
 
-    fetch(getKanjiVGUrl(kanji))
+    // Au changement de kanji, la requête précédente est annulée : sa réponse tardive ne doit pas écraser la nouvelle
+    const controller = new AbortController();
+
+    fetch(getKanjiVGUrl(kanji), { signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw new Error();
         return r.text();
@@ -40,8 +43,10 @@ export function StrokeOrder({ kanji }: Props) {
         setStrokes(parsed);
         setCurrent(parsed.length);
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch((e) => { if (e?.name !== 'AbortError') setError(true); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+
+    return () => controller.abort();
   }, [kanji]);
 
   const step = useCallback(() => {

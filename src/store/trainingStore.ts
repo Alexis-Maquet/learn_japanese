@@ -1,8 +1,16 @@
 import { create } from 'zustand';
 import type { TrainingSession, TrainingCard, KanjiDetails } from '@/types';
 import { logger } from '@/utils/logger';
+import { readJson } from '@/utils/safeStorage';
 
 const PAUSED_KEY = 'training_paused_session';
+
+export function isPausedSession(v: unknown): v is TrainingSession {
+  if (typeof v !== 'object' || v === null) return false;
+  const s = v as Partial<TrainingSession>;
+  return typeof s.id === 'string' && typeof s.listName === 'string'
+    && typeof s.currentIndex === 'number' && Array.isArray(s.cards);
+}
 
 interface TrainingStore {
   session: TrainingSession | null;
@@ -37,9 +45,8 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
   },
 
   resumePausedSession: () => {
-    const raw = localStorage.getItem(PAUSED_KEY);
-    if (!raw) return false;
-    const session = JSON.parse(raw) as TrainingSession;
+    const session = readJson(PAUSED_KEY, isPausedSession);
+    if (!session) return false;
     localStorage.removeItem(PAUSED_KEY);
     logger.info('trainingStore', `Session reprise : "${session.listName}"`, { sessionId: session.id });
     set({ session });

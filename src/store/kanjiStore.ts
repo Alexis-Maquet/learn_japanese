@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { KanjiDetails, KanjiWord, FilterState } from '@/types';
-import { fetchKanjiByJlpt, fetchKanjiNoJlpt, fetchKanjiByFrequency, fetchKanjiDetails, fetchKanjiWords, searchKanjiInDb } from '@/utils/api';
+import { fetchKanjiByJlpt, fetchKanjiNoJlpt, fetchKanjiByFrequency, fetchKanjiDetails, fetchKanjiWords, searchKanjiInDb, getKanjiMeaningsSync } from '@/utils/api';
+import { getDomainsForKanji } from '@/utils/domains';
+import type { Domain } from '@/types';
 import { logger } from '@/utils/logger';
 
 const FREQUENCY_GROUPS: Record<string, number> = {
@@ -28,6 +30,17 @@ interface KanjiStore {
   setFilters: (filters: Partial<FilterState>) => void;
   setPage: (page: number) => void;
   getFilteredKanji: () => string[];
+}
+
+// getFilteredKanji est appelé à chaque changement du store : on ne recalcule les domaines qu'une fois par kanji
+const domainCache = new Map<string, Domain[]>();
+function domainsOf(kanji: string): Domain[] {
+  let domains = domainCache.get(kanji);
+  if (!domains) {
+    domains = getDomainsForKanji(getKanjiMeaningsSync(kanji) ?? []);
+    domainCache.set(kanji, domains);
+  }
+  return domains;
 }
 
 export const useKanjiStore = create<KanjiStore>((set, get) => ({
@@ -117,9 +130,18 @@ export const useKanjiStore = create<KanjiStore>((set, get) => ({
       }
     }
 
-    if (!filters.search.trim()) return pool;
+    let result = pool;
 
-    const matches = searchKanjiInDb(filters.search.trim());
-    return pool.filter((k) => matches.has(k));
+    if (filters.search.trim()) {
+      const matches = searchKanjiInDb(filters.search.trim());
+      result = result.filter((k) => matches.has(k));
+    }
+
+    // Filtre par domaine appliqué ici, avant la pagination : sinon les pages se vident et le compteur est faux
+    if (filters.domains.length > 0) {
+      result = result.filter((k) => domainsOf(k).some((d) => filters.domains.includes(d)));
+    }
+
+    return result;
   },
 }));

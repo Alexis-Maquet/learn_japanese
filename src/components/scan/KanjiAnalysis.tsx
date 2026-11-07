@@ -6,7 +6,7 @@ import { AddToListModal } from '@/components/lists/AddToListModal';
 import { KanjiDetailModal } from './KanjiDetailModal';
 import { jlptNumericToLabel } from '@/utils/domains';
 import { getWordDefinition, getApiKey } from '@/utils/geminiVision';
-import type { KanjiDetails } from '@/types';
+import type { KanjiDetails, KanjiWord } from '@/types';
 
 interface KanjiCardProps {
   kanji: string;
@@ -41,6 +41,19 @@ function KanjiCard({ kanji, onClick }: KanjiCardProps) {
   );
 }
 
+// Correspondance exacte sur n'importe quel caractère d'abord ; repli par préfixe seulement s'il n'y en a aucune
+function findDefinition(word: string, chars: string[], kanjiWords: Record<string, KanjiWord[]>) {
+  for (const k of chars) {
+    const exact = (kanjiWords[k] ?? []).find((e) => e.word === word);
+    if (exact) return { definition: exact, approximate: false };
+  }
+  for (const k of chars) {
+    const prefix = (kanjiWords[k] ?? []).find((e) => e.word.length > 1 && e.word.startsWith(word));
+    if (prefix) return { definition: prefix, approximate: true };
+  }
+  return { definition: null, approximate: false };
+}
+
 interface WordGroupProps {
   word: string;
   onKanjiClick: (k: string) => void;
@@ -50,7 +63,7 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
   const { kanjiWords, loadWords } = useKanjiStore();
   const chars = useMemo(() => [...word], [word]);
   const [geminiDef, setGeminiDef] = useState<{ reading: string; meaning: string } | null>(null);
-  const [geminiLoading, setGeminiLoading] = useState(false);
+  const [geminiStatus, setGeminiStatus] = useState<'idle' | 'loading' | 'failed'>('idle');
 
   useEffect(() => {
     chars.forEach((k) => loadWords(k));
@@ -58,26 +71,24 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
 
   const allLoaded = useMemo(() => chars.every(k => kanjiWords[k] !== undefined), [chars, kanjiWords]);
 
-  const definition = useMemo(() => {
-    for (const k of chars) {
-      const entries = kanjiWords[k] ?? [];
-      const match =
-        entries.find((e) => e.word === word) ??
-        entries.find((e) => e.word.length > 1 && e.word.startsWith(word));
-      if (match) return match;
-    }
-    return null;
-  }, [word, chars, kanjiWords]);
+  const { definition, approximate } = useMemo(
+    () => findDefinition(word, chars, kanjiWords),
+    [word, chars, kanjiWords],
+  );
 
-  useEffect(() => {
-    if (!allLoaded || definition !== null || geminiDef !== null || geminiLoading) return;
-    const apiKey = getApiKey();
-    if (!apiKey) return;
-    setGeminiLoading(true);
+  // Un appel Gemini par clic, jamais automatique : un échec (quota, clé invalide) ne relance rien
+  // et les mots scannés ne consomment pas le quota de 1500 appels par jour sans action de l'utilisateur
+  const apiKey = getApiKey();
+  const defineWithGemini = () => {
+    if (!apiKey || geminiStatus === 'loading') return;
+    setGeminiStatus('loading');
     getWordDefinition(apiKey, word)
-      .then(d => { if (d) setGeminiDef(d); })
-      .finally(() => setGeminiLoading(false));
-  }, [allLoaded, definition, word, geminiDef, geminiLoading]);
+      .then(d => {
+        if (d) { setGeminiDef(d); setGeminiStatus('idle'); }
+        else setGeminiStatus('failed');
+      })
+      .catch(() => setGeminiStatus('failed'));
+  };
 
   const displayDef = definition ?? geminiDef;
 
@@ -89,7 +100,7 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
           <span className="kanji-char text-2xl text-white">{word}</span>
           {displayDef && <SpeakButton text={word} />}
         </div>
-        {geminiLoading ? (
+        {geminiStatus === 'loading' ? (
           <div className="flex items-center gap-2 self-center">
             <span className="w-3 h-3 border border-gray-500 border-t-transparent rounded-full animate-spin" />
             <span className="text-xs text-gray-600">Gemini…</span>
@@ -98,10 +109,20 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
           <div className="flex-1 min-w-0">
             <p className="kanji-char text-base text-gray-400 leading-tight">{displayDef.reading}</p>
             <p className="text-sm text-gray-300 mt-0.5">{displayDef.meaning}</p>
+            {approximate && definition && (
+              <span className="text-xs text-gray-600">≈ mot proche : <span className="kanji-char">{definition.word}</span></span>
+            )}
             {!definition && geminiDef && (
               <span className="text-xs text-gray-600">✨ Gemini</span>
             )}
           </div>
+        ) : allLoaded && apiKey && geminiStatus === 'idle' ? (
+          <button
+            onClick={defineWithGemini}
+            className="btn-secondary text-xs self-center"
+          >
+            Définir avec Gemini
+          </button>
         ) : (
           <p className="text-xs text-gray-600 italic self-center">définition non trouvée</p>
         )}

@@ -1,24 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { toHiragana } from 'wanakana';
 import { generateConjugationExercisesLocal } from '@/utils/conjugationLocal';
+import { checkConjugationAnswer } from '@/utils/conjugationAnswer';
 import type { ConjugationExercise } from '@/types';
 
 interface SessionState {
   categories: string[];
   count: number;
-}
-
-function checkAnswer(input: string, exercise: ConjugationExercise): boolean {
-  const trimmed = input.trim();
-  if (!trimmed) return false;
-  const normalized = toHiragana(trimmed.toLowerCase()).replace(/\s+/g, '');
-  const kana = exercise.correctAnswerKana.replace(/\s+/g, '');
-  return (
-    trimmed === exercise.correctAnswer ||
-    trimmed === kana ||
-    normalized === kana
-  );
 }
 
 export function ConjugationSessionPage() {
@@ -62,7 +50,7 @@ export function ConjugationSessionPage() {
 
   const handleSubmit = useCallback(() => {
     if (submitted || !exercise || !inputValue.trim()) return;
-    const correct = checkAnswer(inputValue, exercise);
+    const correct = checkConjugationAnswer(inputValue, exercise);
     setSubmitted(true);
     setIsCorrect(correct);
     if (correct) {

@@ -12,6 +12,8 @@ export default defineConfig({
       workbox: {
         // Bundle JS/CSS/HTML/fonts/images; serve large JSON from network with cache-first fallback
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // Les tracés KanjiVG (~6700 fichiers, ~42 Mo) sont mis en cache à la demande (voir plus bas), jamais préchargés
+        globIgnores: ['svg/**'],
         runtimeCaching: [
           // Google Fonts stylesheet
           {
@@ -37,10 +39,11 @@ export default defineConfig({
               expiration: { maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
-          // Word examples
+          // Word examples — servi depuis le cache puis rafraîchi en arrière-plan, pour qu'une régénération
+          // du fichier (npm run generate-words) atteigne les utilisateurs à leur visite suivante
           {
             urlPattern: /\/kanji_words\.json$/,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: { cacheName: 'kanji-words' },
           },
           // Stroke order SVGs

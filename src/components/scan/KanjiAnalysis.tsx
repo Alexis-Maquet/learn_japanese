@@ -50,7 +50,7 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
   const { kanjiWords, loadWords } = useKanjiStore();
   const chars = useMemo(() => [...word], [word]);
   const [geminiDef, setGeminiDef] = useState<{ reading: string; meaning: string } | null>(null);
-  const [geminiLoading, setGeminiLoading] = useState(false);
+  const [geminiStatus, setGeminiStatus] = useState<'idle' | 'loading' | 'failed'>('idle');
 
   useEffect(() => {
     chars.forEach((k) => loadWords(k));
@@ -69,15 +69,19 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
     return null;
   }, [word, chars, kanjiWords]);
 
-  useEffect(() => {
-    if (!allLoaded || definition !== null || geminiDef !== null || geminiLoading) return;
-    const apiKey = getApiKey();
-    if (!apiKey) return;
-    setGeminiLoading(true);
+  // Un appel Gemini par clic, jamais automatique : un échec (quota, clé invalide) ne relance rien
+  // et les mots scannés ne consomment pas le quota de 1500 appels par jour sans action de l'utilisateur
+  const apiKey = getApiKey();
+  const defineWithGemini = () => {
+    if (!apiKey || geminiStatus === 'loading') return;
+    setGeminiStatus('loading');
     getWordDefinition(apiKey, word)
-      .then(d => { if (d) setGeminiDef(d); })
-      .finally(() => setGeminiLoading(false));
-  }, [allLoaded, definition, word, geminiDef, geminiLoading]);
+      .then(d => {
+        if (d) { setGeminiDef(d); setGeminiStatus('idle'); }
+        else setGeminiStatus('failed');
+      })
+      .catch(() => setGeminiStatus('failed'));
+  };
 
   const displayDef = definition ?? geminiDef;
 
@@ -89,7 +93,7 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
           <span className="kanji-char text-2xl text-white">{word}</span>
           {displayDef && <SpeakButton text={word} />}
         </div>
-        {geminiLoading ? (
+        {geminiStatus === 'loading' ? (
           <div className="flex items-center gap-2 self-center">
             <span className="w-3 h-3 border border-gray-500 border-t-transparent rounded-full animate-spin" />
             <span className="text-xs text-gray-600">Gemini…</span>
@@ -102,6 +106,13 @@ function KanjiWordGroup({ word, onKanjiClick }: WordGroupProps) {
               <span className="text-xs text-gray-600">✨ Gemini</span>
             )}
           </div>
+        ) : allLoaded && apiKey && geminiStatus === 'idle' ? (
+          <button
+            onClick={defineWithGemini}
+            className="btn-secondary text-xs self-center"
+          >
+            Définir avec Gemini
+          </button>
         ) : (
           <p className="text-xs text-gray-600 italic self-center">définition non trouvée</p>
         )}

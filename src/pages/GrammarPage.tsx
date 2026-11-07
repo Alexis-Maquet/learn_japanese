@@ -333,7 +333,7 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
   ],
   'comparison': [
     { label: 'Comparaison directe', form: 'より〜', front: 'A は B より 〜です', meaning: 'A est plus [adj] que B',
-      rule: 'より = que (point de comparaison)\nQuestion : A と B と どちらが 〜ですか。',
+      rule: 'より = que (point de comparaison)\nadj + です — な-adj sans な (静かな→静かです)\nQuestion : A と B と どちらが 〜ですか。',
       example: '東京は大阪より大きいです。', trans: "Tokyo est plus grande qu'Osaka." },
     { label: 'Construction のほうが', form: 'のほうが〜', front: 'A のほうが B より 〜です', meaning: 'A est plus [adj] que B (emphase sur A)',
       rule: 'のほうが met en relief l\'élément comparé.',

@@ -144,6 +144,14 @@ function tf(w: WordEntry, remove: number, suffix: string): { kanji: string; kana
   return { kanji: kj + suffix, kana: kn + suffix };
 }
 
+// Adjectif + です (な retiré pour les adjectifs en な) : partie à produire dans les comparaisons
+function adjPredicate(w: WordEntry): { kanji: string; kana: string } {
+  return tf(w, w.type === 'na-adj' ? 1 : 0, 'です');
+}
+function hAdjPredicate(w: WordEntry): string {
+  return w.type === 'na-adj' ? 'な-adj : retirer な + です' : 'い-adj tel quel + です';
+}
+
 function lk(w: WordEntry): string { return w.baseReading.slice(-1); }
 
 const G1_MASU: Record<string, string> = { 'く':'き','ぐ':'ぎ','す':'し','つ':'ち','ぬ':'に','ぶ':'び','む':'み','う':'い','る':'り' };
@@ -938,24 +946,26 @@ const TEMPLATES: Template[] = [
     hint: (w, a) => `nom + になります : ${w.baseForm} → ${a.kanji}` },
 
   // ── CATEGORY: comparison ──────────────────────────────────────────────────
+  // La consigne affiche le cadre de la phrase ; la réponse ne porte que sur la
+  // partie à produire : adjectif + です (な retiré pour les adjectifs en な).
 
   { categoryId:'comparison', targetForm:'より〜', grammarPoint:'AはBより〜',
-    applicable: isI,
-    generate: w => tf(w, 0, 'より高いです'),  // dummy — overridden below
-    ctx: w => `pour construire la comparaison "A est plus ${w.baseMeaning} que B"`,
-    hint: (w, a) => `AはBより[adj] : ${w.baseForm} → ${a.kanji}` },
+    applicable: w => isI(w) || isNa(w),
+    generate: w => adjPredicate(w),
+    ctx: w => `pour compléter « AはBより＿＿ » : "A est plus ${w.baseMeaning} que B"`,
+    hint: (w, a) => `${hAdjPredicate(w)} : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'comparison', targetForm:'のほうが〜', grammarPoint:'〜のほうが〜より〜',
-    applicable: isI,
-    generate: w => ({ kanji:'AのほうがBより'+w.baseForm, kana:'AのほうがBより'+w.baseReading }),
-    ctx: w => `pour dire "A est plus ${w.baseMeaning} que B" (construction のほうが)`,
-    hint: (w, a) => `AのほうがBより + adj : ${w.baseForm} → ${a.kanji}` },
+    applicable: w => isI(w) || isNa(w),
+    generate: w => adjPredicate(w),
+    ctx: w => `pour compléter « AのほうがBより＿＿ » : "A est plus ${w.baseMeaning} que B" (construction のほうが)`,
+    hint: (w, a) => `${hAdjPredicate(w)} : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'comparison', targetForm:'一番', grammarPoint:'〜の中で一番〜',
     applicable: w => isI(w) || isNa(w),
-    generate: w => ({ kanji:'この中で一番'+w.baseForm, kana:'このなかでいちばん'+w.baseReading }),
-    ctx: w => `pour dire "le/la plus ${w.baseMeaning} parmi…"`,
-    hint: (w, a) => `の中で一番 + adj : ${w.baseForm} → ${a.kanji}` },
+    generate: w => adjPredicate(w),
+    ctx: w => `pour compléter « このなかで一番＿＿ » : "le/la plus ${w.baseMeaning} parmi…"`,
+    hint: (w, a) => `${hAdjPredicate(w)} : ${w.baseForm} → ${a.kanji}` },
 
   // ── CATEGORY: nominalizer ─────────────────────────────────────────────────
 
@@ -978,15 +988,6 @@ const TEMPLATES: Template[] = [
     hint: (w, a) => `辞書形 + ことがあります : ${w.baseForm} → ${a.kanji}` },
 
 ];
-
-// Fix comparison templates (dummy override for the first one)
-const cmpIdx = TEMPLATES.findIndex(t => t.categoryId === 'comparison' && t.grammarPoint === 'AはBより〜');
-if (cmpIdx >= 0) {
-  TEMPLATES[cmpIdx] = {
-    ...TEMPLATES[cmpIdx],
-    generate: w => ({ kanji:'AはBより'+w.baseForm, kana:'AはBより'+w.baseReading }),
-  };
-}
 
 // ── Category frequency map ────────────────────────────────────────────────────
 

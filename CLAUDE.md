@@ -2,53 +2,66 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Application web (PWA) pour apprendre le japonais : référence de kanjis par niveau JLPT, listes personnelles, entraînements (cartes, phrases, conjugaison), fiches de grammaire, scan d'images. React 19 + TypeScript + Vite + Tailwind + zustand, sans backend. L'interface et les commentaires sont en français.
+PWA pour apprendre le japonais (kanjis JLPT, listes, entraînements, grammaire, scan). React 19 + TypeScript + Vite + Tailwind + zustand, sans backend, déployée sur GitHub Pages. Interface, commentaires et commits en français.
 
-## Commandes
+## Avant de livrer
+
+Il n'y a **aucun test** : la vérification repose sur ces trois commandes, à lancer avant tout commit.
 
 ```bash
-npm ci               # installer (node_modules n'est pas fourni)
-npm run dev          # serveur de dev Vite
-npm run build        # tsc -b && vite build (le typage fait partie du build)
-npm run lint         # eslint . — 16 problèmes (11 erreurs) déjà présents sur main
-npx tsc -b           # typage seul
-npm run generate-words   # régénère public/kanji_words.json depuis JMdict
+npm ci            # si node_modules est absent
+npx tsc -b        # typage
+npm run build     # tsc -b + vite build
+npm run lint      # eslint .
 ```
 
-Il n'y a **aucun test** (ni script `test`, ni fichier `*.test.*`). Les vérifications possibles sont `tsc -b`, `lint` et `build`.
+- `npm run lint` signale des erreurs qui existent déjà sur `main` : le total ne doit pas augmenter. Lance-le aussi sur `main` pour comparer, ne te fie pas à un chiffre mémorisé.
+- Dis explicitement ce que tu n'as **pas** pu vérifier : le rendu dans un navigateur, et tout ce qui passe par Gemini (en général, aucune clé API n'est disponible dans l'environnement de travail). Ne présente jamais un résultat non vérifié comme acquis.
+- Pour voir l'app : `npm run dev` (nécessite les données, voir la procédure plus bas).
 
-## Données volumineuses non versionnées
+## Procédures
 
-`public/kanjiapi_full.json` (~98 Mo), `public/kanji_words.json` et `public/svg/` (tracés KanjiVG) sont dans `.gitignore`. Sans eux, l'app démarre mais la liste des kanjis, les mots d'exemple et les tracés ne chargent pas. `resources/kanjiapi_full.json` est une copie locale (aussi ignorée) à recopier dans `public/`. Le workflow de déploiement les récupère depuis la branche `gh-pages` (`git show origin/gh-pages:...`) : ne pas supprimer cette branche. Il ne restaure que les deux JSON, pas `public/svg/`.
+### Ajouter une catégorie de grammaire
+1. Ajouter l'entrée dans `GRAMMAR_CATEGORIES` (`src/utils/conjugationLocal.ts`) : `id`, `nameFR`, `nameJP`, `level`, `freq`. Le `level` détermine les filtres N5/N4/N3 de `TrainingPage`.
+2. Ajouter ses `TEMPLATES` avec ce `categoryId`. Le tirage les regroupe par famille de formes (`getFamily`) puis pondère par `freq`.
+3. Ajouter `CATEGORY_CARDS[id]` dans `src/pages/GrammarPage.tsx`, sinon l'onglet s'affiche vide.
+4. Vérifier qu'aucune règle n'existe déjà dans une autre catégorie : exercice et fiche doivent classer une règle au même endroit.
 
-## Architecture
+### Modifier la génération des phrases (Gemini)
+Le prompt est dans `generateSentenceExercises` (`src/utils/geminiVision.ts`). La variété vient du tirage de thème, structure et sujet par phrase ; le naturel, des règles du prompt et de la limite de deux kanjis par phrase. Le format JSON de réponse est lu par `SentenceExercise` : ne pas le changer sans adapter le parsing. Sans clé API, le résultat ne peut pas être testé : l'écrire dans le compte rendu.
 
-- **Pas de backend** : tout est servi en statique. `base` Vite = `/learn_japanese/`, donc toujours construire les URLs de ressources avec `import.meta.env.BASE_URL` (voir `src/utils/api.ts`). Le routage SPA sur GitHub Pages repose sur `public/404.html` + le script de restauration de chemin dans `index.html` : ne pas retirer l'un sans l'autre.
-- **Alias** `@/` → `src/`. Routes déclarées dans `src/App.tsx` (pages dans `src/pages/`).
-- **Données kanjis** : `src/utils/api.ts` charge une seule fois le gros JSON (promesse mise en cache au niveau module, `dbCache` pour les recherches synchrones) ; `src/store/kanjiStore.ts` (zustand) expose niveaux JLPT, fréquence, détails, mots et filtres.
-- **État** : stores zustand dans `src/store/` (kanji, listes, entraînement, stats). Les sessions d'entraînement en pause sont persistées en `localStorage`.
-- **PWA** : `vite-plugin-pwa` (workbox) met en cache-first les gros JSON et les SVG de tracés ; la config est dans `vite.config.ts`. Viewport verrouillé (zoom désactivé) pour un rendu fixe sur téléphone : voir `index.html`, `src/index.css` et le listener `gesturestart` dans `src/main.tsx`.
+### Ajouter ou changer une couleur
+Créer ou modifier le jeton dans `tailwind.config.js` (`japan.*`), puis l'utiliser par son nom (`bg-japan-card`). Jamais de valeur hexadécimale dans le code.
 
-### Deux moteurs d'exercices, une taxonomie partagée
+### Restaurer les données manquantes
+`public/kanjiapi_full.json`, `public/kanji_words.json` et `public/svg/` ne sont pas versionnés. Sans eux, l'app démarre mais les kanjis, les mots et les tracés ne chargent pas.
+- `kanjiapi_full.json` : copier `resources/kanjiapi_full.json`, ou `git show origin/gh-pages:kanjiapi_full.json > public/kanjiapi_full.json`.
+- `kanji_words.json` : `npm run generate-words`, ou `git show origin/gh-pages:kanji_words.json > public/kanji_words.json`.
+- `public/svg/` : l'origine n'est pas documentée. Ne rien inventer, demander à l'utilisateur.
 
-- **Conjugaison** (`src/utils/conjugationLocal.ts`) : 100 % local, sans API. `TEMPLATES` décrit chaque règle de grammaire (`categoryId`, `generate`, `hint`…) appliquée à `LOCAL_WORD_LIST`. Le tirage pondère par famille de formes puis par `freq` de catégorie.
-- **Phrases** (`src/utils/geminiVision.ts`, `generateSentenceExercises`) : appelle Gemini avec un prompt qui impose thème, structure et sujet par phrase, puis valide le JSON. La clé API de l'utilisateur est dans `localStorage` (`gemini_api_key`) ; le quota de 1500 appels/jour est compté côté client (`trackApiCall`). Le modèle est choisi à l'exécution par `pickModel` selon `MODEL_PREFERENCE`.
-- **`GRAMMAR_CATEGORIES`** (exportée par `conjugationLocal.ts`) est la liste maîtresse des catégories : elle alimente les boutons de `TrainingPage`, les onglets de `GrammarPage` et la pondération du tirage. Ajouter une catégorie implique de toucher ses `TEMPLATES` **et** `CATEGORY_CARDS` dans `src/pages/GrammarPage.tsx` (sinon l'onglet est vide). `GrammarPage` ajoute en plus des onglets de référence (`REFERENCE_TABS`) sans exercice associé.
-- Éviter de dupliquer un modèle de règle dans deux catégories : la page grammaire et l'exercice doivent rester d'accord sur la catégorie d'une règle.
+## Livraison
 
-## Design
+- Travailler sur la branche indiquée par la session. Commits en Conventional Commits, en français (`fix(grammar): …`, `feat(mobile): …`).
+- Ne créer une PR que si l'utilisateur la demande. Rédiger sa description avec le skill `format-pr` (résumé, modifications, résultats réels des tests).
+- **Fusionner dans `main` met le site en production** : `deploy.yml` redéploie GitHub Pages à chaque push sur `main`. Ne fusionner que sur demande explicite, puis indiquer l'état du déploiement.
+- Si la PR d'une branche est déjà fusionnée, repartir de `main` à jour (même nom de branche) au lieu d'empiler des commits.
+- La revue automatique (`pr-review.yml`, sous-agent `pr-reviewer`) ne se déclenche que par un commentaire `@claude` d'un propriétaire, membre ou collaborateur, et exige le secret `CLAUDE_CODE_OAUTH_TOKEN`.
 
-Thème sombre uniquement. Les couleurs viennent des jetons de `tailwind.config.js` ; ne jamais écrire de valeur hexadécimale en dur (ni `bg-[#…]`, ni `style={{ color: '#…' }}`) : ajouter un jeton si besoin.
+## Garde-fous
 
-- Jetons : `japan-dark` (fond de page), `japan-card` (cartes), `japan-surface` (boutons secondaires, survols), `japan-border`, `japan-muted`, `japan-deep` (verso des fiches), `japan-thumb` (barre de défilement). Accent unique : `japan-red` (`#DC143C`). Utilisables avec toutes les utilitaires et l'opacité (`bg-japan-dark/90`).
-- Composants CSS de `src/index.css` à réutiliser : `.card`, `.btn-primary`, `.btn-secondary`, `.badge-jlpt` avec `.badge-n1` à `.badge-n5` et `.badge-none`.
-- Tout texte japonais affiché en grand prend `.kanji-char` (police Noto Sans JP).
-- Couleurs de score (≥ 80 %, ≥ 50 %, en dessous) : `text-green-500`, `text-yellow-500`, `text-red-500`.
-- Dans le CSS brut, passer par `theme('colors.…')` plutôt qu'une valeur en dur (voir les tracés `.stroke-order-svg`).
-- Mobile : champs de saisie à 16 px minimum (règle globale dans `index.css`, sinon iOS zoome), `100dvh` plutôt que `100vh`, pas de dépendance au zoom (désactivé).
+- Ne jamais committer `public/kanjiapi_full.json`, `public/kanji_words.json` ni `public/svg/` (gitignorés, ~98 Mo).
+- Ne jamais supprimer la branche `gh-pages` : le workflow de déploiement y lit les deux JSON.
+- Ne jamais pousser directement sur `main`.
+- Ne pas écrire de couleur en dur (`bg-[#…]`, `style={{ color: '#…' }}`) ; dans le CSS brut, utiliser `theme('colors.…')`.
+- Construire les URLs de ressources avec `import.meta.env.BASE_URL` (le site est servi sous `/learn_japanese/`) et importer via l'alias `@/`.
+- Ne retirer `public/404.html` et le script de restauration de chemin de `index.html` que ensemble : le routage SPA sur Pages en dépend.
+- Ne pas désactiver le verrouillage du zoom mobile (viewport, `index.css`, `gesturestart` dans `main.tsx`) sans demande.
+- Ne pas dupliquer un modèle de règle entre deux catégories.
 
-## CI et automatisations
+## Contexte indispensable
 
-- `.github/workflows/deploy.yml` : à chaque push sur `main`, build puis déploiement GitHub Pages via GitHub Actions (la source Pages n'est pas une branche). Fusionner dans `main` redéploie le site.
-- `.github/workflows/pr-review.yml` : revue de PR par le sous-agent `.claude/agents/pr-reviewer.md`, déclenchée **uniquement** par un commentaire contenant `@claude` sur une PR, par un propriétaire, membre ou collaborateur. Nécessite le secret `CLAUDE_CODE_OAUTH_TOKEN`.
-- `.claude/skills/format-pr/SKILL.md` : format attendu des descriptions de PR (résumé, modifications point par point, résultats des tests). `.claude/settings.local.json` est local ; le reste de `.claude/` est versionné.
+- **Taxonomie partagée** : `GRAMMAR_CATEGORIES` alimente à la fois les boutons de `TrainingPage`, les onglets de `GrammarPage` et la pondération du tirage de conjugaison. `GrammarPage` ajoute des onglets de référence (`REFERENCE_TABS`) sans exercice associé.
+- **Conjugaison** : 100 % locale (`conjugationLocal.ts`, sans API). **Phrases, scan d'image et définitions de mots** passent par Gemini avec la clé de l'utilisateur (`localStorage`, `gemini_api_key`) ; le quota de 1500 appels par jour est compté côté client (`trackApiCall`). `generateConjugationExercises` et `CONJUGATION_RULES` dans `geminiVision.ts` ne sont plus utilisés : ne pas y modifier de règles.
+- **Gros JSON** : chargés une fois (promesse mise en cache dans `src/utils/api.ts`) et mis en cache par le service worker (`vite.config.ts`).
+- **Design** : thème sombre uniquement, accent unique `japan-red` (`#DC143C`). Réutiliser les classes de `src/index.css` (`.card`, `.btn-primary`, `.btn-secondary`, `.badge-jlpt` + `.badge-n1` à `.badge-n5`) ; `.kanji-char` pour le texte japonais en grand ; `text-green-500` / `text-yellow-500` / `text-red-500` pour les scores. Mobile : champs de saisie à 16 px minimum (sinon iOS zoome), `100dvh` plutôt que `100vh`.
+- **Logs** : utiliser `logger.info(contexte, message)` (`src/utils/logger.ts`, persisté en `localStorage`) plutôt que `console.*`.

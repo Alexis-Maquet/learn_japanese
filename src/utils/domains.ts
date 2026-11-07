@@ -65,17 +65,21 @@ const DOMAIN_KEYWORDS: Record<Domain, string[]> = {
     'send', 'receive', 'carry', 'bring', 'lift', 'lower', 'shake', 'touch', 'hit', 'kick'],
 };
 
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Mot entier (pluriel simple accepté) : « ear » ne doit pas correspondre à « year », ni « ten » à « marten »,
+// mais « birds » correspond à « bird ». Précompilé une fois : getDomainsForKanji est appelé pour des milliers de kanjis.
+const DOMAIN_PATTERNS: [Domain, RegExp][] = (Object.entries(DOMAIN_KEYWORDS) as [Domain, string[]][]).map(
+  ([domain, keywords]) => [domain, new RegExp(`\\b(?:${keywords.map(escapeRegExp).join('|')})(?:s|es)?\\b`, 'i')],
+);
+
 export function getDomainsForKanji(meanings: string[]): Domain[] {
-  const lowerMeanings = meanings.map((m) => m.toLowerCase());
   const matched = new Set<Domain>();
 
-  for (const [domain, keywords] of Object.entries(DOMAIN_KEYWORDS) as [Domain, string[]][]) {
-    for (const keyword of keywords) {
-      if (lowerMeanings.some((m) => m.includes(keyword))) {
-        matched.add(domain);
-        break;
-      }
-    }
+  for (const [domain, pattern] of DOMAIN_PATTERNS) {
+    if (meanings.some((m) => pattern.test(m))) matched.add(domain);
   }
 
   return Array.from(matched);

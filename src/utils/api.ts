@@ -54,6 +54,11 @@ export function searchKanjiInDb(query: string): Set<string> {
   return result;
 }
 
+// Accès synchrone, utilisable une fois la base chargée (le filtre par domaine en a besoin avant la pagination)
+export function getKanjiMeaningsSync(kanji: string): string[] | undefined {
+  return dbCache?.kanjis[kanji]?.meanings;
+}
+
 function toKanjiDetails(entry: KanjiApiEntry): KanjiDetails {
   return {
     kanji: entry.kanji,

@@ -29,7 +29,7 @@ export function KanjiDetailPage() {
   const navList = listCtx?.kanjis ?? allKanji;
   const idx = navList.indexOf(char);
   const prevKanji = idx > 0 ? navList[idx - 1] : null;
-  const nextKanji = idx < navList.length - 1 ? navList[idx + 1] : null;
+  const nextKanji = idx >= 0 && idx < navList.length - 1 ? navList[idx + 1] : null;
 
   useEffect(() => {
     if (!char) return;

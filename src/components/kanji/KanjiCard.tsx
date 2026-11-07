@@ -70,8 +70,8 @@ export function KanjiCard({ kanji, jlptLevel, listId, selected, onSelect, linkSt
         </>
       ) : (
         <div className="w-full space-y-1">
-          <div className="h-3 bg-[#21262d] rounded animate-pulse" />
-          <div className="h-3 bg-[#21262d] rounded animate-pulse w-3/4 mx-auto" />
+          <div className="h-3 bg-japan-surface rounded animate-pulse" />
+          <div className="h-3 bg-japan-surface rounded animate-pulse w-3/4 mx-auto" />
         </div>
       )}
 

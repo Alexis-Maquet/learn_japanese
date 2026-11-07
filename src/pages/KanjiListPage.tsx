@@ -155,7 +155,7 @@ export function KanjiListPage() {
                       className={`w-8 h-8 rounded text-sm transition-colors ${
                         page === currentPage
                           ? 'bg-japan-red text-white'
-                          : 'bg-[#21262d] text-gray-400 hover:text-white'
+                          : 'bg-japan-surface text-gray-400 hover:text-white'
                       }`}
                     >
                       {page}
@@ -177,7 +177,7 @@ export function KanjiListPage() {
 
       {/* Barre de sélection sticky */}
       {selectionMode && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#161b22] border-t border-[#30363d] px-4 py-3 z-40">
+        <div className="fixed bottom-0 left-0 right-0 bg-japan-card border-t border-japan-border px-4 py-3 z-40">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="text-white font-medium">

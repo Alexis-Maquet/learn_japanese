@@ -35,7 +35,7 @@ export function CreateListModal({ onClose, onCreated }: Props) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Kanjis N5 pour les animaux"
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-japan-red"
+              className="w-full bg-japan-dark border border-japan-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-japan-red"
             />
           </div>
           <div>
@@ -45,7 +45,7 @@ export function CreateListModal({ onClose, onCreated }: Props) {
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="Description optionnelle..."
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-japan-red resize-none"
+              className="w-full bg-japan-dark border border-japan-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-japan-red resize-none"
             />
           </div>
           <div className="flex justify-end gap-2 pt-1">

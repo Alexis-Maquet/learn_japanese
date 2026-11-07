@@ -137,7 +137,7 @@ export function KanjiDetailPage() {
               <h2 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">Significations</h2>
               <div className="flex flex-wrap gap-2">
                 {d.meanings.map((m, i) => (
-                  <span key={i} className="bg-[#21262d] border border-[#30363d] text-gray-200 px-3 py-1 rounded-full text-sm">
+                  <span key={i} className="bg-japan-surface border border-japan-border text-gray-200 px-3 py-1 rounded-full text-sm">
                     {m}
                   </span>
                 ))}

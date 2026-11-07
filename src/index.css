@@ -11,7 +11,7 @@
   }
 
   body {
-    @apply bg-[#0d1117] text-gray-100 font-japanese;
+    @apply bg-japan-dark text-gray-100 font-japanese;
     font-family: 'Noto Sans JP', sans-serif;
   }
 
@@ -39,11 +39,11 @@
   }
 
   .btn-secondary {
-    @apply bg-[#21262d] text-gray-200 px-4 py-2 rounded-lg hover:bg-[#30363d] transition-colors border border-[#30363d];
+    @apply bg-japan-surface text-gray-200 px-4 py-2 rounded-lg hover:bg-japan-border transition-colors border border-japan-border;
   }
 
   .card {
-    @apply bg-[#161b22] border border-[#30363d] rounded-xl;
+    @apply bg-japan-card border border-japan-border rounded-xl;
   }
 
   .badge-jlpt {
@@ -61,18 +61,18 @@
 /* Stroke order SVG styling */
 .stroke-order-svg path {
   fill: none;
-  stroke: #e5e7eb;
+  stroke: theme('colors.gray.200');
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .stroke-order-svg path.active {
-  stroke: #DC143C;
+  stroke: theme('colors.japan.red');
 }
 
 .stroke-order-svg path.dimmed {
-  stroke: #374151;
+  stroke: theme('colors.gray.700');
 }
 
 /* ── Mobile / PWA ─────────────────────────────────────────────── */
@@ -92,11 +92,11 @@ button { -webkit-tap-highlight-color: transparent; user-select: none; }
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-[#0d1117];
+  @apply bg-japan-dark;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#30363d] rounded;
+  @apply bg-japan-border rounded;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-[#484f58];
+  @apply bg-japan-thumb;
 }

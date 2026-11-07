@@ -98,7 +98,7 @@ export function StatsPage() {
         <div className="card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#30363d] text-xs text-gray-500">
+              <tr className="border-b border-japan-border text-xs text-gray-500">
                 <th className="text-left px-4 py-3 font-medium">Date</th>
                 <th className="text-left px-4 py-3 font-medium">Liste</th>
                 <th className="text-right px-4 py-3 font-medium">Score</th>
@@ -107,7 +107,7 @@ export function StatsPage() {
             </thead>
             <tbody>
               {sessions.slice(0, 15).map((s, i) => (
-                <tr key={s.id} className={`border-b border-[#21262d] last:border-0 ${i % 2 === 0 ? '' : 'bg-[#161b22]/30'}`}>
+                <tr key={s.id} className={`border-b border-japan-surface last:border-0 ${i % 2 === 0 ? '' : 'bg-japan-card/30'}`}>
                   <td className="px-4 py-3 text-gray-500">{formatDate(s.date)}</td>
                   <td className="px-4 py-3 text-gray-300 max-w-[180px] truncate">{s.listName}</td>
                   <td className="px-4 py-3 text-right">
@@ -133,7 +133,7 @@ export function StatsPage() {
                 <Link
                   key={kanji}
                   to={`/kanji/${encodeURIComponent(kanji)}`}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[#21262d] transition-colors"
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-japan-surface transition-colors"
                   title={`${correct}/${seen} — ${rate}%`}
                 >
                   <span className="kanji-char text-2xl text-white">{kanji}</span>
@@ -156,7 +156,7 @@ export function StatsPage() {
                 <Link
                   key={kanji}
                   to={`/kanji/${encodeURIComponent(kanji)}`}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[#21262d] transition-colors"
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-japan-surface transition-colors"
                   title={`${rate}% sur ${seen} passages`}
                 >
                   <span className="kanji-char text-2xl text-white">{kanji}</span>

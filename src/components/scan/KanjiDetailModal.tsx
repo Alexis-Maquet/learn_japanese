@@ -39,11 +39,11 @@ export function KanjiDetailModal({ kanji, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-[#0d1117] border border-[#30363d] rounded-xl w-full max-w-2xl my-8"
+        className="bg-japan-dark border border-japan-border rounded-xl w-full max-w-2xl my-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[#30363d]">
+        <div className="flex items-center justify-between p-5 border-b border-japan-border">
           <div className="flex items-center gap-4">
             <span className="kanji-char text-5xl text-white leading-none">{kanji}</span>
             <div className="space-y-1">
@@ -71,7 +71,7 @@ export function KanjiDetailModal({ kanji, onClose }: Props) {
               <h2 className="text-xs uppercase tracking-wider text-gray-500 mb-2 font-medium">Significations</h2>
               <div className="flex flex-wrap gap-2">
                 {d.meanings.map((m, i) => (
-                  <span key={i} className="bg-[#21262d] border border-[#30363d] text-gray-200 px-3 py-1 rounded-full text-sm">
+                  <span key={i} className="bg-japan-surface border border-japan-border text-gray-200 px-3 py-1 rounded-full text-sm">
                     {m}
                   </span>
                 ))}

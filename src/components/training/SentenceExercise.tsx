@@ -72,7 +72,7 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
                   : word.isTarget
                   ? 'text-yellow-300 underline decoration-yellow-500/40 underline-offset-4'
                   : 'text-white hover:text-gray-400',
-                tooltipIdx === i ? 'bg-[#21262d]' : '',
+                tooltipIdx === i ? 'bg-japan-surface' : '',
               ].filter(Boolean).join(' ')}
             >
               {word.text}
@@ -82,12 +82,12 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
 
         {/* Full translation after submission */}
         {submitted && exercise.translation && (
-          <p className="text-sm text-gray-300 italic border-t border-[#30363d] pt-2">{exercise.translation}</p>
+          <p className="text-sm text-gray-300 italic border-t border-japan-border pt-2">{exercise.translation}</p>
         )}
 
         {/* Inline tooltip */}
         {activeTooltipWord && (
-          <div className="border-t border-[#30363d] pt-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">
+          <div className="border-t border-japan-border pt-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">
             <span className="kanji-char text-base text-white">{activeTooltipWord.text}</span>
             {(!activeTooltipWord.isTarget || submitted) && (
               <>
@@ -130,7 +130,7 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
                 ) : (
                   <button
                     onClick={() => setRevealedReadings(r => new Set([...r, index]))}
-                    className="text-xs text-gray-600 hover:text-gray-400 border border-[#30363d] rounded px-1.5 py-0.5 transition-colors"
+                    className="text-xs text-gray-600 hover:text-gray-400 border border-japan-border rounded px-1.5 py-0.5 transition-colors"
                   >
                     読み
                   </button>
@@ -155,10 +155,10 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
                     spellCheck={false}
                     onChange={e => setAnswers(a => ({ ...a, [index]: e.target.value }))}
                     onKeyDown={e => { if (e.key === 'Enter' && canSubmit) handleSubmit(); }}
-                    className={`w-full px-3 py-2 rounded-lg border bg-[#161b22] text-white placeholder-gray-600 outline-none text-sm transition-colors disabled:cursor-default ${
+                    className={`w-full px-3 py-2 rounded-lg border bg-japan-card text-white placeholder-gray-600 outline-none text-sm transition-colors disabled:cursor-default ${
                       submitted
                         ? correct ? 'border-green-500 bg-green-900/10' : 'border-red-500 bg-red-900/10'
-                        : 'border-[#30363d] focus:border-japan-red'
+                        : 'border-japan-border focus:border-japan-red'
                     }`}
                   />
                   {submitted && correct === false && (
@@ -179,10 +179,10 @@ export function SentenceExercise({ exercise, mode, onResult, onNext, isLastExerc
                             ? 'border-green-600/60 bg-green-900/10'
                             : ans === opt
                             ? 'border-red-600/60 bg-red-900/10'
-                            : 'border-[#21262d] opacity-40'
+                            : 'border-japan-surface opacity-40'
                           : ans === opt
                           ? 'border-japan-red bg-japan-red/10'
-                          : 'border-[#30363d] hover:border-gray-500'
+                          : 'border-japan-border hover:border-gray-500'
                       }`}
                     >
                       <input

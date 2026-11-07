@@ -35,7 +35,7 @@ function KanjiCard({ kanji, onClick }: KanjiCardProps) {
           {d.meanings.slice(0, 2).join(', ')}
         </p>
       ) : (
-        <div className="w-full h-3 bg-[#21262d] rounded animate-pulse" />
+        <div className="w-full h-3 bg-japan-surface rounded animate-pulse" />
       )}
     </button>
   );

@@ -126,7 +126,7 @@ export function ListDetailPage() {
               placeholder="Rechercher par kanji ou signification anglaise…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-japan-red"
+              className="w-full bg-japan-dark border border-japan-border rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-japan-red"
             />
 
             {/* JLPT */}
@@ -164,7 +164,7 @@ export function ListDetailPage() {
                     className={`px-2.5 py-1 rounded-md text-xs border transition-all ${
                       domains.includes(domain)
                         ? 'bg-japan-red/20 border-japan-red text-red-300'
-                        : 'border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white'
+                        : 'border-japan-border text-gray-400 hover:border-gray-500 hover:text-white'
                     }`}
                   >
                     {domain}

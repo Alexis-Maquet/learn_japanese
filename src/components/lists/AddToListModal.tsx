@@ -52,7 +52,7 @@ export function AddToListModal({ kanjis, onClose }: Props) {
                     className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm ${
                       inList
                         ? 'bg-japan-red/20 border-japan-red text-white'
-                        : 'border-[#30363d] text-gray-300 hover:border-gray-500'
+                        : 'border-japan-border text-gray-300 hover:border-gray-500'
                     }`}
                   >
                     <div className="text-left">
@@ -74,7 +74,7 @@ export function AddToListModal({ kanjis, onClose }: Props) {
                   className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-sm ${
                     allIn
                       ? 'bg-japan-red/20 border-japan-red text-white opacity-60 cursor-default'
-                      : 'border-[#30363d] text-gray-300 hover:border-gray-500'
+                      : 'border-japan-border text-gray-300 hover:border-gray-500'
                   }`}
                 >
                   <div className="text-left">

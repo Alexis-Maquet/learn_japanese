@@ -15,7 +15,7 @@ export function Navigation() {
   const lists = useListStore((s) => s.lists);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0d1117]/95 backdrop-blur border-b border-[#30363d] [padding-top:env(safe-area-inset-top)]">
+    <header className="sticky top-0 z-50 bg-japan-dark/95 backdrop-blur border-b border-japan-border [padding-top:env(safe-area-inset-top)]">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 flex items-center gap-2 sm:gap-6 h-14">
         <Link to="/" className="flex items-center gap-1.5 font-bold text-lg text-white shrink-0">
           <span className="text-japan-red text-2xl kanji-char">漢字</span>
@@ -32,13 +32,13 @@ export function Navigation() {
                 className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-sm transition-colors ${
                   isActive
                     ? 'bg-japan-red text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-[#21262d]'
+                    : 'text-gray-400 hover:text-white hover:bg-japan-surface'
                 }`}
               >
                 <span>{icon}</span>
                 <span className="hidden sm:inline">{label}</span>
                 {to === '/lists' && lists.length > 0 && (
-                  <span className="bg-[#30363d] text-gray-300 text-xs px-1.5 py-0.5 rounded-full">
+                  <span className="bg-japan-border text-gray-300 text-xs px-1.5 py-0.5 rounded-full">
                     {lists.length}
                   </span>
                 )}

@@ -36,7 +36,7 @@ function ListRow({ id, name, description, count, badge, badgeColor, borderColor,
       disabled={!available}
       className={[
         'w-full p-4 rounded-xl border text-left transition-all flex items-center gap-3',
-        borderColor ? `border-l-4 ${borderColor}` : 'border-[#30363d]',
+        borderColor ? `border-l-4 ${borderColor}` : 'border-japan-border',
         isSelected ? 'ring-1 ring-japan-red bg-japan-red/10' : available ? 'hover:border-gray-500' : '',
         !available ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
       ].join(' ')}
@@ -246,7 +246,7 @@ export function TrainingPage() {
               className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
                 trainingType === type
                   ? 'border-japan-red bg-japan-red/10 text-white'
-                  : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                  : 'border-japan-border text-gray-400 hover:border-gray-500'
               }`}
             >
               {label}
@@ -261,23 +261,23 @@ export function TrainingPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setReviewCount(c => Math.max(1, c - 5))}
-                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                  className="w-9 h-9 rounded-lg border border-japan-border text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
                 >−</button>
                 <input
                   type="number"
                   min={1}
                   value={reviewCount}
                   onChange={e => setReviewCount(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm text-center outline-none focus:border-japan-red"
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-japan-border bg-japan-card text-white text-sm text-center outline-none focus:border-japan-red"
                 />
                 <button
                   onClick={() => setReviewCount(c => c + 5)}
-                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                  className="w-9 h-9 rounded-lg border border-japan-border text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
                 >+</button>
               </div>
             </div>
             {totalKanjis > 0 && (
-              <div className="px-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-xs text-gray-400 space-y-0.5">
+              <div className="px-3 py-2 rounded-lg bg-japan-card border border-japan-border text-xs text-gray-400 space-y-0.5">
                 <p>
                   <span className="text-white font-medium">{reviewableKanjis.length}</span> kanjis entraînés sur {totalKanjis} sélectionnés
                 </p>
@@ -302,7 +302,7 @@ export function TrainingPage() {
                 <div className="flex gap-1">
                   {(['all','n5','n4','n3'] as const).map(p => (
                     <button key={p} onClick={() => applyPreset(p)}
-                      className="px-2 py-0.5 rounded text-xs border border-[#30363d] text-gray-500 hover:text-white hover:border-gray-400 transition-colors">
+                      className="px-2 py-0.5 rounded text-xs border border-japan-border text-gray-500 hover:text-white hover:border-gray-400 transition-colors">
                       {p === 'all' ? 'Tout' : p.toUpperCase()}
                     </button>
                   ))}
@@ -318,7 +318,7 @@ export function TrainingPage() {
                       key={cat.id}
                       onClick={() => toggleCategory(cat.id)}
                       className={`px-2.5 py-1 rounded-lg border text-xs transition-colors flex items-center gap-1.5 ${
-                        on ? 'border-japan-red bg-japan-red/10 text-white' : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                        on ? 'border-japan-red bg-japan-red/10 text-white' : 'border-japan-border text-gray-400 hover:border-gray-500'
                       }`}
                     >
                       <span className={`text-[10px] font-semibold ${levelColor} opacity-75`}>{cat.level.split('–')[0]}</span>
@@ -334,7 +334,7 @@ export function TrainingPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setConjugationCount(c => Math.max(1, c - 5))}
-                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                  className="w-9 h-9 rounded-lg border border-japan-border text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
                 >−</button>
                 <input
                   type="number"
@@ -342,11 +342,11 @@ export function TrainingPage() {
                   max={120}
                   value={conjugationCount}
                   onChange={e => setConjugationCount(Math.min(120, Math.max(1, parseInt(e.target.value) || 1)))}
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm text-center outline-none focus:border-japan-red"
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-japan-border bg-japan-card text-white text-sm text-center outline-none focus:border-japan-red"
                 />
                 <button
                   onClick={() => setConjugationCount(c => Math.min(120, c + 5))}
-                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                  className="w-9 h-9 rounded-lg border border-japan-border text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
                 >+</button>
               </div>
             </div>
@@ -365,7 +365,7 @@ export function TrainingPage() {
                     className={`flex-1 py-1.5 px-3 rounded-lg border text-xs font-medium transition-colors ${
                       sentenceMode === m
                         ? 'border-japan-red bg-japan-red/10 text-white'
-                        : 'border-[#30363d] text-gray-400 hover:border-gray-500'
+                        : 'border-japan-border text-gray-400 hover:border-gray-500'
                     }`}
                   >
                     {m === 'mcq' ? 'QCM (4 choix)' : 'Texte libre'}
@@ -378,7 +378,7 @@ export function TrainingPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setSentenceCount(c => Math.max(1, c - 5))}
-                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                  className="w-9 h-9 rounded-lg border border-japan-border text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
                 >−</button>
                 <input
                   type="number"
@@ -386,18 +386,18 @@ export function TrainingPage() {
                   max={100}
                   value={sentenceCount}
                   onChange={e => setSentenceCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
-                  className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm text-center outline-none focus:border-japan-red"
+                  className="flex-1 px-3 py-1.5 rounded-lg border border-japan-border bg-japan-card text-white text-sm text-center outline-none focus:border-japan-red"
                 />
                 <button
                   onClick={() => setSentenceCount(c => Math.min(100, c + 5))}
-                  className="w-9 h-9 rounded-lg border border-[#30363d] text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
+                  className="w-9 h-9 rounded-lg border border-japan-border text-gray-400 hover:border-gray-500 hover:text-white transition-colors text-lg font-medium shrink-0"
                 >+</button>
               </div>
             </div>
             <div className="space-y-1.5">
               <p className="text-xs text-gray-500">Clé API Gemini</p>
               {hasApiKey && !editingApiKey ? (
-                <div className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22]">
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-lg border border-japan-border bg-japan-card">
                   <span className="text-xs text-green-400">✓ Clé configurée</span>
                   <div className="flex gap-3">
                     <button onClick={() => setEditingApiKey(true)} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Modifier</button>
@@ -412,7 +412,7 @@ export function TrainingPage() {
                     onChange={e => setApiKeyInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSaveApiKey(); }}
                     placeholder="AIza…"
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-[#30363d] bg-[#161b22] text-white text-sm outline-none focus:border-japan-red placeholder-gray-600"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-japan-border bg-japan-card text-white text-sm outline-none focus:border-japan-red placeholder-gray-600"
                   />
                   <button
                     onClick={handleSaveApiKey}
@@ -540,7 +540,7 @@ export function TrainingPage() {
       )}
 
       {/* Sticky start button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#0d1117]/90 backdrop-blur border-t border-[#21262d]">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-japan-dark/90 backdrop-blur border-t border-japan-surface">
         <div className="max-w-2xl mx-auto">
           {trainingType === 'romaji' || trainingType === 'review' ? (
             <button

@@ -94,16 +94,16 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
 
   const inputClass = (value: string) => {
     const s = inputState(value);
-    const base = 'w-full px-4 py-2.5 rounded-lg border bg-[#161b22] text-white placeholder-gray-600 outline-none transition-colors disabled:cursor-default text-sm';
+    const base = 'w-full px-4 py-2.5 rounded-lg border bg-japan-card text-white placeholder-gray-600 outline-none transition-colors disabled:cursor-default text-sm';
     if (s === 'correct') return `${base} border-green-500 bg-green-900/10`;
     if (s === 'wrong') return `${base} border-red-500 bg-red-900/10`;
-    return `${base} border-[#30363d] focus:border-japan-red`;
+    return `${base} border-japan-border focus:border-japan-red`;
   };
 
   return (
     <div className="flex flex-col items-center gap-6 w-full">
       {/* Kanji card */}
-      <div className="w-56 h-56 flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-2xl shadow-xl">
+      <div className="w-56 h-56 flex flex-col items-center justify-center bg-japan-card border border-japan-border rounded-2xl shadow-xl">
         <span className="kanji-char text-8xl text-white select-none">{card.kanji}</span>
       </div>
 
@@ -124,8 +124,8 @@ export function RomajiInput({ card, onAnswer, onNext, isLastCard = false }: Prop
             autoCapitalize="off"
             spellCheck={false}
             className={(() => {
-              const base = 'w-full px-4 py-2.5 rounded-lg border bg-[#161b22] text-white placeholder-gray-600 outline-none transition-colors disabled:cursor-default text-sm';
-              if (!submitted) return `${base} border-[#30363d] focus:border-japan-red`;
+              const base = 'w-full px-4 py-2.5 rounded-lg border bg-japan-card text-white placeholder-gray-600 outline-none transition-colors disabled:cursor-default text-sm';
+              if (!submitted) return `${base} border-japan-border focus:border-japan-red`;
               return meaningCorrect ? `${base} border-green-500 bg-green-900/10` : `${base} border-red-500 bg-red-900/10`;
             })()}
             onChange={(e) => setMeaningInput(e.target.value)}

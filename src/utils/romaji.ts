@@ -24,7 +24,12 @@ export function fullReading(reading: string): string {
   return reading.replace('.', '');
 }
 
-export function checkAnswer(input: string, readings: string[]): boolean {
+// « nn » ou « n' » saisis pour ん : kann → kan (nn suivi d'une voyelle reste n + n : konnichi)
+function normalizeN(input: string): string {
+  return input.replace(/nn(?![aiueoy])/gi, 'n');
+}
+
+function matchesReadings(input: string, readings: string[]): boolean {
   const normalized = normalizeAnswer(input);
   const hiragana = normalizeAnswer(toHiragana(input));
   return readings.some((r) => {
@@ -34,10 +39,15 @@ export function checkAnswer(input: string, readings: string[]): boolean {
     return (
       normalized === normalizeAnswer(toRomaji(stripped)) ||
       normalized === normalizeAnswer(toRomaji(full)) ||
-      hiragana === normalizeAnswer(stripped) ||
-      hiragana === normalizeAnswer(full) ||
+      // les lectures on'yomi sont en katakana : on compare aussi en hiragana (かん pour カン)
+      hiragana === normalizeAnswer(toHiragana(stripped)) ||
+      hiragana === normalizeAnswer(toHiragana(full)) ||
       normalized === normalizeAnswer(stripped) ||
       normalized === normalizeAnswer(full)
     );
   });
+}
+
+export function checkAnswer(input: string, readings: string[]): boolean {
+  return [...new Set([input, normalizeN(input)])].some((v) => matchesReadings(v, readings));
 }

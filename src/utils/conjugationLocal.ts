@@ -7,73 +7,74 @@ interface WordEntry {
   baseReading: string;
   baseMeaning: string;
   type: WordType;
+  transitive?: boolean; // verbe transitif : seul cas où 〜てある est correct
 }
 
 export const LOCAL_WORD_LIST: WordEntry[] = [
   // G1
-  { baseForm: '書く', baseReading: 'かく', baseMeaning: 'écrire', type: 'g1' },
-  { baseForm: '聞く', baseReading: 'きく', baseMeaning: 'écouter', type: 'g1' },
+  { baseForm: '書く', baseReading: 'かく', baseMeaning: 'écrire', type: 'g1', transitive: true },
+  { baseForm: '聞く', baseReading: 'きく', baseMeaning: 'écouter', type: 'g1', transitive: true },
   { baseForm: '泳ぐ', baseReading: 'およぐ', baseMeaning: 'nager', type: 'g1' },
-  { baseForm: '話す', baseReading: 'はなす', baseMeaning: 'parler', type: 'g1' },
+  { baseForm: '話す', baseReading: 'はなす', baseMeaning: 'parler', type: 'g1', transitive: true },
   { baseForm: '待つ', baseReading: 'まつ', baseMeaning: 'attendre', type: 'g1' },
   { baseForm: '遊ぶ', baseReading: 'あそぶ', baseMeaning: 'jouer', type: 'g1' },
   { baseForm: '帰る', baseReading: 'かえる', baseMeaning: 'rentrer', type: 'g1' },
   { baseForm: '乗る', baseReading: 'のる', baseMeaning: 'monter dans', type: 'g1' },
   { baseForm: '走る', baseReading: 'はしる', baseMeaning: 'courir', type: 'g1' },
-  { baseForm: '作る', baseReading: 'つくる', baseMeaning: 'faire/créer', type: 'g1' },
-  { baseForm: '歌う', baseReading: 'うたう', baseMeaning: 'chanter', type: 'g1' },
-  { baseForm: '買う', baseReading: 'かう', baseMeaning: 'acheter', type: 'g1' },
-  { baseForm: '洗う', baseReading: 'あらう', baseMeaning: 'laver', type: 'g1' },
+  { baseForm: '作る', baseReading: 'つくる', baseMeaning: 'faire/créer', type: 'g1', transitive: true },
+  { baseForm: '歌う', baseReading: 'うたう', baseMeaning: 'chanter', type: 'g1', transitive: true },
+  { baseForm: '買う', baseReading: 'かう', baseMeaning: 'acheter', type: 'g1', transitive: true },
+  { baseForm: '洗う', baseReading: 'あらう', baseMeaning: 'laver', type: 'g1', transitive: true },
   { baseForm: '会う', baseReading: 'あう', baseMeaning: 'rencontrer', type: 'g1' },
-  { baseForm: '使う', baseReading: 'つかう', baseMeaning: 'utiliser', type: 'g1' },
-  { baseForm: '習う', baseReading: 'ならう', baseMeaning: 'apprendre', type: 'g1' },
+  { baseForm: '使う', baseReading: 'つかう', baseMeaning: 'utiliser', type: 'g1', transitive: true },
+  { baseForm: '習う', baseReading: 'ならう', baseMeaning: 'apprendre', type: 'g1', transitive: true },
   { baseForm: '急ぐ', baseReading: 'いそぐ', baseMeaning: 'se dépêcher', type: 'g1' },
-  { baseForm: '消す', baseReading: 'けす', baseMeaning: 'éteindre', type: 'g1' },
-  { baseForm: '出す', baseReading: 'だす', baseMeaning: 'envoyer/sortir', type: 'g1' },
-  { baseForm: '押す', baseReading: 'おす', baseMeaning: 'pousser', type: 'g1' },
-  { baseForm: '貸す', baseReading: 'かす', baseMeaning: 'prêter', type: 'g1' },
+  { baseForm: '消す', baseReading: 'けす', baseMeaning: 'éteindre', type: 'g1', transitive: true },
+  { baseForm: '出す', baseReading: 'だす', baseMeaning: 'envoyer/sortir', type: 'g1', transitive: true },
+  { baseForm: '押す', baseReading: 'おす', baseMeaning: 'pousser', type: 'g1', transitive: true },
+  { baseForm: '貸す', baseReading: 'かす', baseMeaning: 'prêter', type: 'g1', transitive: true },
   { baseForm: '立つ', baseReading: 'たつ', baseMeaning: 'se lever', type: 'g1' },
   { baseForm: '勝つ', baseReading: 'かつ', baseMeaning: 'gagner', type: 'g1' },
   { baseForm: '持つ', baseReading: 'もつ', baseMeaning: 'tenir/avoir', type: 'g1' },
-  { baseForm: '送る', baseReading: 'おくる', baseMeaning: 'envoyer', type: 'g1' },
-  { baseForm: '取る', baseReading: 'とる', baseMeaning: 'prendre', type: 'g1' },
+  { baseForm: '送る', baseReading: 'おくる', baseMeaning: 'envoyer', type: 'g1', transitive: true },
+  { baseForm: '取る', baseReading: 'とる', baseMeaning: 'prendre', type: 'g1', transitive: true },
   { baseForm: '頑張る', baseReading: 'がんばる', baseMeaning: 'persévérer', type: 'g1' },
-  { baseForm: '売る', baseReading: 'うる', baseMeaning: 'vendre', type: 'g1' },
+  { baseForm: '売る', baseReading: 'うる', baseMeaning: 'vendre', type: 'g1', transitive: true },
   { baseForm: '知る', baseReading: 'しる', baseMeaning: 'savoir', type: 'g1' },
-  { baseForm: '切る', baseReading: 'きる', baseMeaning: 'couper', type: 'g1' },
+  { baseForm: '切る', baseReading: 'きる', baseMeaning: 'couper', type: 'g1', transitive: true },
   { baseForm: '通る', baseReading: 'とおる', baseMeaning: 'passer par', type: 'g1' },
   { baseForm: '終わる', baseReading: 'おわる', baseMeaning: 'finir', type: 'g1' },
   { baseForm: '泣く', baseReading: 'なく', baseMeaning: 'pleurer', type: 'g1' },
   { baseForm: '笑う', baseReading: 'わらう', baseMeaning: 'rire', type: 'g1' },
   { baseForm: '働く', baseReading: 'はたらく', baseMeaning: 'travailler', type: 'g1' },
   { baseForm: '歩く', baseReading: 'あるく', baseMeaning: 'marcher', type: 'g1' },
-  { baseForm: '引く', baseReading: 'ひく', baseMeaning: 'tirer', type: 'g1' },
-  { baseForm: '起こす', baseReading: 'おこす', baseMeaning: 'réveiller', type: 'g1' },
+  { baseForm: '引く', baseReading: 'ひく', baseMeaning: 'tirer', type: 'g1', transitive: true },
+  { baseForm: '起こす', baseReading: 'おこす', baseMeaning: 'réveiller', type: 'g1', transitive: true },
   { baseForm: '困る', baseReading: 'こまる', baseMeaning: 'être gêné', type: 'g1' },
   { baseForm: '始まる', baseReading: 'はじまる', baseMeaning: 'commencer', type: 'g1' },
   // G2
   { baseForm: '起きる', baseReading: 'おきる', baseMeaning: 'se lever', type: 'g2' },
   { baseForm: '寝る', baseReading: 'ねる', baseMeaning: 'dormir', type: 'g2' },
-  { baseForm: '教える', baseReading: 'おしえる', baseMeaning: 'enseigner', type: 'g2' },
-  { baseForm: '覚える', baseReading: 'おぼえる', baseMeaning: 'mémoriser', type: 'g2' },
-  { baseForm: '忘れる', baseReading: 'わすれる', baseMeaning: 'oublier', type: 'g2' },
-  { baseForm: '借りる', baseReading: 'かりる', baseMeaning: 'emprunter', type: 'g2' },
-  { baseForm: '着る', baseReading: 'きる', baseMeaning: 'porter (vêtement)', type: 'g2' },
+  { baseForm: '教える', baseReading: 'おしえる', baseMeaning: 'enseigner', type: 'g2', transitive: true },
+  { baseForm: '覚える', baseReading: 'おぼえる', baseMeaning: 'mémoriser', type: 'g2', transitive: true },
+  { baseForm: '忘れる', baseReading: 'わすれる', baseMeaning: 'oublier', type: 'g2', transitive: true },
+  { baseForm: '借りる', baseReading: 'かりる', baseMeaning: 'emprunter', type: 'g2', transitive: true },
+  { baseForm: '着る', baseReading: 'きる', baseMeaning: 'porter (vêtement)', type: 'g2', transitive: true },
   { baseForm: '降りる', baseReading: 'おりる', baseMeaning: 'descendre', type: 'g2' },
-  { baseForm: '閉める', baseReading: 'しめる', baseMeaning: 'fermer', type: 'g2' },
-  { baseForm: '開ける', baseReading: 'あける', baseMeaning: 'ouvrir', type: 'g2' },
-  { baseForm: '見せる', baseReading: 'みせる', baseMeaning: 'montrer', type: 'g2' },
+  { baseForm: '閉める', baseReading: 'しめる', baseMeaning: 'fermer', type: 'g2', transitive: true },
+  { baseForm: '開ける', baseReading: 'あける', baseMeaning: 'ouvrir', type: 'g2', transitive: true },
+  { baseForm: '見せる', baseReading: 'みせる', baseMeaning: 'montrer', type: 'g2', transitive: true },
   { baseForm: '疲れる', baseReading: 'つかれる', baseMeaning: 'se fatiguer', type: 'g2' },
-  { baseForm: '調べる', baseReading: 'しらべる', baseMeaning: 'rechercher', type: 'g2' },
+  { baseForm: '調べる', baseReading: 'しらべる', baseMeaning: 'rechercher', type: 'g2', transitive: true },
   { baseForm: '答える', baseReading: 'こたえる', baseMeaning: 'répondre', type: 'g2' },
-  { baseForm: '続ける', baseReading: 'つづける', baseMeaning: 'continuer', type: 'g2' },
-  { baseForm: '集める', baseReading: 'あつめる', baseMeaning: 'collecter', type: 'g2' },
-  { baseForm: '決める', baseReading: 'きめる', baseMeaning: 'décider', type: 'g2' },
-  { baseForm: 'あげる', baseReading: 'あげる', baseMeaning: 'donner', type: 'g2' },
+  { baseForm: '続ける', baseReading: 'つづける', baseMeaning: 'continuer', type: 'g2', transitive: true },
+  { baseForm: '集める', baseReading: 'あつめる', baseMeaning: 'collecter', type: 'g2', transitive: true },
+  { baseForm: '決める', baseReading: 'きめる', baseMeaning: 'décider', type: 'g2', transitive: true },
+  { baseForm: 'あげる', baseReading: 'あげる', baseMeaning: 'donner', type: 'g2', transitive: true },
   { baseForm: '生まれる', baseReading: 'うまれる', baseMeaning: 'naître', type: 'g2' },
-  { baseForm: '考える', baseReading: 'かんがえる', baseMeaning: 'réfléchir', type: 'g2' },
-  { baseForm: '食べる', baseReading: 'たべる', baseMeaning: 'manger', type: 'g2' },
-  { baseForm: '見る', baseReading: 'みる', baseMeaning: 'voir/regarder', type: 'g2' },
+  { baseForm: '考える', baseReading: 'かんがえる', baseMeaning: 'réfléchir', type: 'g2', transitive: true },
+  { baseForm: '食べる', baseReading: 'たべる', baseMeaning: 'manger', type: 'g2', transitive: true },
+  { baseForm: '見る', baseReading: 'みる', baseMeaning: 'voir/regarder', type: 'g2', transitive: true },
   // する
   { baseForm: '運動する', baseReading: 'うんどうする', baseMeaning: 'faire du sport', type: 'suru' },
   { baseForm: '掃除する', baseReading: 'そうじする', baseMeaning: 'nettoyer', type: 'suru' },
@@ -173,7 +174,6 @@ function masuStem(w: WordEntry): { kanji: string; kana: string } | null {
 
 function teForm(w: WordEntry): { kanji: string; kana: string } | null {
   if (w.type === 'g1') {
-    if (w.baseReading === 'いく') return tf(w, 1, 'って');
     const s = G1_TE[lk(w)]; return s ? tf(w, 1, s) : null;
   }
   if (w.type === 'g2') return tf(w, 1, 'て');
@@ -190,7 +190,6 @@ function naiForm(w: WordEntry): { kanji: string; kana: string } | null {
 
 function taForm(w: WordEntry): { kanji: string; kana: string } | null {
   if (w.type === 'g1') {
-    if (w.baseReading === 'いく') return tf(w, 1, 'った');
     const s = G1_TA[lk(w)]; return s ? tf(w, 1, s) : null;
   }
   if (w.type === 'g2') return tf(w, 1, 'た');
@@ -279,6 +278,15 @@ interface Template {
   hint: (w: WordEntry, ans: Pair) => string;
 }
 
+// Verbes non volontaires ou d'état : exclus de ために / ようにします / V-stem に行く
+const NON_VOLITIONAL = new Set(['生まれる', '困る', '疲れる', '始まる', '終わる', '忘れる', '知る', '心配する', '泣く']);
+// Verbes (et noms en する) avec lesquels V-stem に行く est incorrect : déplacement, état ou nom sans sens de « but »
+const NO_NI_IKU = new Set([
+  ...NON_VOLITIONAL, '帰る', '通る', '降りる', '立つ', '勝つ', '頑張る', '起きる',
+  '電話する', '料理する', '紹介する', '準備する', '参加する', '結婚する', '卒業する',
+]);
+// Le potentiel n'existe pas (ou n'a pas de sens ici) pour ces verbes
+const NO_POTENTIAL = new Set(['困る', '始まる', '知る']);
 const isVerb = (w: WordEntry) => w.type === 'g1' || w.type === 'g2' || w.type === 'suru';
 const isI    = (w: WordEntry) => w.type === 'i-adj';
 const isNa   = (w: WordEntry) => w.type === 'na-adj';
@@ -381,7 +389,7 @@ const TEMPLATES: Template[] = [
     hint: (w, a) => `${hTe(w)} + いました : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'aspect', targetForm:'て形', grammarPoint:'〜てある',
-    applicable: w => isVerb(w) && w.type !== 'suru',
+    applicable: w => isVerb(w) && w.transitive === true,
     generate: w => { const t = teForm(w); return t ? { kanji:t.kanji+'あります', kana:t.kana+'あります' } : null; },
     ctx: w => `pour indiquer que quelque chose a été "${w.baseMeaning}" (état résultant)`,
     hint: (w, a) => `${hTe(w)} + あります (verbe transitif seulement) : ${w.baseForm} → ${a.kanji}` },
@@ -513,7 +521,7 @@ const TEMPLATES: Template[] = [
   // ── CATEGORY: potential ───────────────────────────────────────────────────
 
   { categoryId:'potential', targetForm:'可能形', grammarPoint:'可能形 (potentiel)',
-    applicable: w => isVerb(w) && !['困る','始まる'].includes(w.baseForm),
+    applicable: w => isVerb(w) && !NO_POTENTIAL.has(w.baseForm),
     generate: w => { const p = potential(w); return p ? { kanji:p.kanji.slice(0,-1)+'ます', kana:p.kana.slice(0,-1)+'ます' } : null; },
     ctx: w => `pour dire qu'on peut "${w.baseMeaning}" (forme potentielle)`,
     hint: (w, a) => {
@@ -559,7 +567,7 @@ const TEMPLATES: Template[] = [
       return { kanji:c.kanji.slice(0,-1)+'られます', kana:c.kana.slice(0,-1)+'られます' };
     },
     ctx: w => `causatif-passif de "${w.baseForm}" (être forcé de faire)`,
-    hint: (w, a) => `使役形 (${w.type==='g1'?`${lk(w)}→させ`:'させ'}) + られます : ${w.baseForm} → ${a.kanji}` },
+    hint: (w, a) => `使役形 (${w.type==='g1'?`${lk(w)}→${G1_CAUS[lk(w)]?.slice(0,-1)}`:'る→させ'}) + られます : ${w.baseForm} → ${a.kanji}` },
 
   // ── CATEGORY: conditional ─────────────────────────────────────────────────
 
@@ -594,7 +602,7 @@ const TEMPLATES: Template[] = [
   // ── CATEGORY: purpose ─────────────────────────────────────────────────────
 
   { categoryId:'purpose', targetForm:'ます幹', grammarPoint:'V-stem に行く',
-    applicable: isVerb,
+    applicable: w => isVerb(w) && !NO_NI_IKU.has(w.baseForm),
     generate: w => {
       if (w.type === 'suru') return { kanji:w.baseForm.slice(0,-2)+'に行きます', kana:w.baseReading.slice(0,-2)+'にいきます' };
       const s = masuStem(w);
@@ -606,13 +614,13 @@ const TEMPLATES: Template[] = [
       : `${hMasu(w)} → stem + に行きます : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'purpose', targetForm:'辞書形', grammarPoint:'〜ために',
-    applicable: isVerb,
+    applicable: w => isVerb(w) && !NON_VOLITIONAL.has(w.baseForm),
     generate: w => ({ kanji:w.baseForm+'ために', kana:w.baseReading+'ために' }),
     ctx: w => `pour exprimer le but de "${w.baseMeaning}" (dans le but de)`,
     hint: (w, a) => `辞書形 + ために : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'purpose', targetForm:'可能形', grammarPoint:'〜ように',
-    applicable: w => isVerb(w) && !['困る','始まる'].includes(w.baseForm),
+    applicable: w => isVerb(w) && !NO_POTENTIAL.has(w.baseForm),
     generate: w => { const p = potential(w); return p ? { kanji:p.kanji+'ように', kana:p.kana+'ように' } : null; },
     ctx: w => `pour exprimer un but progressif (pour pouvoir "${w.baseMeaning}")`,
     hint: (w, a) => `可能形 + ように : ${w.baseForm} → ${a.kanji}` },
@@ -694,13 +702,13 @@ const TEMPLATES: Template[] = [
     hint: (w, a) => `辞書形 + ことになりました : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'intention', targetForm:'可能形', grammarPoint:'〜ようになりました',
-    applicable: w => isVerb(w) && !['困る','始まる'].includes(w.baseForm),
+    applicable: w => isVerb(w) && !NO_POTENTIAL.has(w.baseForm),
     generate: w => { const p = potential(w); return p ? { kanji:p.kanji+'ようになりました', kana:p.kana+'ようになりました' } : null; },
     ctx: w => `pour exprimer qu'on est maintenant capable de "${w.baseMeaning}" (changement)`,
     hint: (w, a) => `可能形 + ようになりました : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'intention', targetForm:'辞書形', grammarPoint:'〜ようにします',
-    applicable: isVerb,
+    applicable: w => isVerb(w) && !NON_VOLITIONAL.has(w.baseForm),
     generate: w => ({ kanji:w.baseForm+'ようにします', kana:w.baseReading+'ようにします' }),
     ctx: w => `pour exprimer l'effort d'essayer de "${w.baseMeaning}"`,
     hint: (w, a) => `辞書形 + ようにします : ${w.baseForm} → ${a.kanji}` },
@@ -774,28 +782,28 @@ const TEMPLATES: Template[] = [
   { categoryId:'cause', targetForm:'た形', grammarPoint:'〜から',
     applicable: isVerb,
     generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'から', kana:t.kana+'から' } : null; },
-    ctx: w => `pour donner la raison de "${w.baseMeaning}" (parce que — subjectif)`,
+    ctx: w => `pour donner la raison de "${w.baseMeaning}" au passé (parce que — subjectif)`,
     hint: (w, a) => `${hTa(w)} + から : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'cause', targetForm:'た形', grammarPoint:'〜ので',
     applicable: isVerb,
     generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'ので', kana:t.kana+'ので' } : null; },
-    ctx: w => `pour donner la raison de "${w.baseMeaning}" (parce que — objectif/poli)`,
+    ctx: w => `pour donner la raison de "${w.baseMeaning}" au passé (parce que — objectif/poli)`,
     hint: (w, a) => `${hTa(w)} + ので : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'cause', targetForm:'た形', grammarPoint:'〜のに',
     applicable: isVerb,
     generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'のに', kana:t.kana+'のに' } : null; },
-    ctx: w => `pour exprimer une déception malgré "${w.baseMeaning}" (bien que / pourtant)`,
+    ctx: w => `pour exprimer une déception malgré "${w.baseMeaning}" au passé (bien que / pourtant)`,
     hint: (w, a) => `${hTa(w)} + のに (concession) : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'cause', targetForm:'た形', grammarPoint:'〜けど',
     applicable: isVerb,
     generate: w => { const t = taForm(w); return t ? { kanji:t.kanji+'けど', kana:t.kana+'けど' } : null; },
-    ctx: w => `pour introduire une nuance "mais" après "${w.baseMeaning}"`,
+    ctx: w => `pour introduire une nuance "mais" après "${w.baseMeaning}" au passé`,
     hint: (w, a) => `${hTa(w)} + けど : ${w.baseForm} → ${a.kanji}` },
 
-  { categoryId:'cause', targetForm:'ます幹', grammarPoint:'〜すぎる',
+  { categoryId:'aspect', targetForm:'ます幹', grammarPoint:'〜すぎる',
     applicable: isVerb,
     generate: w => { const s = masuStem(w); return s ? { kanji:s.kanji+'すぎます', kana:s.kana+'すぎます' } : null; },
     ctx: w => `pour dire qu'on "${w.baseMeaning}" trop`,
@@ -846,7 +854,7 @@ const TEMPLATES: Template[] = [
     hint: (w, a) => `い-adj い→くなります : ${w.baseForm} → ${a.kanji}` },
 
   { categoryId:'i-adj', targetForm:'そうです', grammarPoint:'い-adj + そうです',
-    applicable: isI,
+    applicable: w => isI(w) && w.baseForm !== 'かわいい', // かわいそう = « pitoyable », pas « a l'air mignon »
     generate: w => tf(w, 1, 'そうです'),
     ctx: w => `pour dire que ça a l'air "${w.baseMeaning}" (apparence directe)`,
     hint: (w, a) => `い-adj い→そうです : ${w.baseForm} → ${a.kanji}` },

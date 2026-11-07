@@ -66,6 +66,9 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
     { label: 'Continuation', form: 'て形', front: '〜ていきます', meaning: "Continuer à faire / changement s'éloignant",
       rule: '形て + いきます\nContinuation ou changement s\'éloignant dans le temps.',
       example: '少しずつ暖かくなっていきます。', trans: 'Il va faire de plus en plus chaud petit à petit.' },
+    { label: 'Trop (verbe)', form: 'ます幹', front: '〜すぎます', meaning: 'Faire trop de [V]',
+      rule: 'ます-stem + すぎます\nい-adj: い→すぎます  な-adj: な→すぎます.',
+      example: '食べすぎました。', trans: "J'ai trop mangé." },
   ],
   'giving': [
     { label: 'Donner une action', form: 'て形', front: '〜てあげます', meaning: "Faire [V] pour quelqu'un (sortant)",
@@ -252,9 +255,6 @@ const CATEGORY_CARDS: Record<string, Card[]> = {
     { label: 'Mais / nuance', form: '短縮形', front: '〜けど', meaning: 'Mais / bien que [V]',
       rule: 'Forme courte (tout temps) + けど\n例 行きたいけど  行ったけど\nIntroduit une nuance ou un contraste (informel).',
       example: '行きたいけど、時間がありません。', trans: "Je voudrais y aller, mais je n'ai pas le temps." },
-    { label: 'Trop (verbe)', form: 'ます幹', front: '〜すぎます', meaning: 'Faire trop de [V]',
-      rule: 'ます-stem + すぎます\nい-adj: い→すぎます  な-adj: な→すぎます.',
-      example: '食べすぎました。', trans: "J'ai trop mangé." },
   ],
   'i-adj': [
     { label: 'Présent affirmatif', form: 'い-adj', front: '〜い + です', meaning: 'Présent affirmatif (poli)',

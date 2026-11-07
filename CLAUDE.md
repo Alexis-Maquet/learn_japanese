@@ -36,6 +36,17 @@ Il n'y a **aucun test** (ni script `test`, ni fichier `*.test.*`). Les vérifica
 - **`GRAMMAR_CATEGORIES`** (exportée par `conjugationLocal.ts`) est la liste maîtresse des catégories : elle alimente les boutons de `TrainingPage`, les onglets de `GrammarPage` et la pondération du tirage. Ajouter une catégorie implique de toucher ses `TEMPLATES` **et** `CATEGORY_CARDS` dans `src/pages/GrammarPage.tsx` (sinon l'onglet est vide). `GrammarPage` ajoute en plus des onglets de référence (`REFERENCE_TABS`) sans exercice associé.
 - Éviter de dupliquer un modèle de règle dans deux catégories : la page grammaire et l'exercice doivent rester d'accord sur la catégorie d'une règle.
 
+## Design
+
+Thème sombre uniquement. Les couleurs viennent des jetons de `tailwind.config.js` ; ne jamais écrire de valeur hexadécimale en dur (ni `bg-[#…]`, ni `style={{ color: '#…' }}`) : ajouter un jeton si besoin.
+
+- Jetons : `japan-dark` (fond de page), `japan-card` (cartes), `japan-surface` (boutons secondaires, survols), `japan-border`, `japan-muted`, `japan-deep` (verso des fiches), `japan-thumb` (barre de défilement). Accent unique : `japan-red` (`#DC143C`). Utilisables avec toutes les utilitaires et l'opacité (`bg-japan-dark/90`).
+- Composants CSS de `src/index.css` à réutiliser : `.card`, `.btn-primary`, `.btn-secondary`, `.badge-jlpt` avec `.badge-n1` à `.badge-n5` et `.badge-none`.
+- Tout texte japonais affiché en grand prend `.kanji-char` (police Noto Sans JP).
+- Couleurs de score (≥ 80 %, ≥ 50 %, en dessous) : `text-green-500`, `text-yellow-500`, `text-red-500`.
+- Dans le CSS brut, passer par `theme('colors.…')` plutôt qu'une valeur en dur (voir les tracés `.stroke-order-svg`).
+- Mobile : champs de saisie à 16 px minimum (règle globale dans `index.css`, sinon iOS zoome), `100dvh` plutôt que `100vh`, pas de dépendance au zoom (désactivé).
+
 ## CI et automatisations
 
 - `.github/workflows/deploy.yml` : à chaque push sur `main`, build puis déploiement GitHub Pages via GitHub Actions (la source Pages n'est pas une branche). Fusionner dans `main` redéploie le site.

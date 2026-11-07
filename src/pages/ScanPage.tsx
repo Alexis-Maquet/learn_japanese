@@ -145,7 +145,7 @@ export function ScanPage() {
             <img
               src={image.dataUrl}
               alt="Image capturée"
-              className="max-h-64 rounded-lg border border-[#30363d] object-contain"
+              className="max-h-64 rounded-lg border border-japan-border object-contain"
             />
           </div>
         )}
@@ -245,7 +245,7 @@ export function ScanPage() {
               <button
                 onClick={() => setActiveSource('tesseract')}
                 className={`px-3 py-1 rounded-full text-xs transition-colors ${
-                  activeSource === 'tesseract' ? 'bg-japan-red text-white' : 'bg-[#21262d] text-gray-400 hover:text-white'
+                  activeSource === 'tesseract' ? 'bg-japan-red text-white' : 'bg-japan-surface text-gray-400 hover:text-white'
                 }`}
               >
                 Tesseract
@@ -253,7 +253,7 @@ export function ScanPage() {
               <button
                 onClick={() => setActiveSource('gemini')}
                 className={`px-3 py-1 rounded-full text-xs transition-colors ${
-                  activeSource === 'gemini' ? 'bg-japan-red text-white' : 'bg-[#21262d] text-gray-400 hover:text-white'
+                  activeSource === 'gemini' ? 'bg-japan-red text-white' : 'bg-japan-surface text-gray-400 hover:text-white'
                 }`}
               >
                 Gemini
@@ -265,7 +265,7 @@ export function ScanPage() {
           {activeText && (
             <div className="space-y-2">
               <p className="text-xs text-gray-500">Texte extrait :</p>
-              <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 text-base leading-relaxed font-mono">
+              <div className="bg-japan-card border border-japan-border rounded-lg p-4 text-base leading-relaxed font-mono">
                 {segments.map((seg, i) =>
                   seg.isKanji ? (
                     <span key={i} className="text-japan-red font-semibold bg-japan-red/10 rounded px-0.5">
@@ -295,7 +295,7 @@ export function ScanPage() {
       {/* API key modal */}
       {showApiKeyModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 w-full max-w-md space-y-4">
+          <div className="bg-japan-card border border-japan-border rounded-xl p-6 w-full max-w-md space-y-4">
             <h3 className="text-lg font-bold text-white">Clé API Gemini</h3>
             <p className="text-sm text-gray-400">
               {hasApiKey
@@ -316,7 +316,7 @@ export function ScanPage() {
               value={apiKeyInput}
               onChange={(e) => { setApiKeyInput(e.target.value); setApiKeyError(''); }}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveApiKey()}
-              className="w-full bg-[#0d1117] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-japan-red"
+              className="w-full bg-japan-dark border border-japan-border rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-japan-red"
               autoFocus
             />
             {apiKeyError && <p className="text-red-400 text-xs">{apiKeyError}</p>}

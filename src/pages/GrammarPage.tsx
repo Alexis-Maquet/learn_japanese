@@ -544,8 +544,8 @@ export function GrammarPage() {
                 onClick={() => selectTab(i)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap border ${
                   active
-                    ? `${s.tab} bg-[#21262d]`
-                    : 'border-transparent text-gray-500 hover:text-gray-300 hover:bg-[#21262d]'
+                    ? `${s.tab} bg-japan-surface`
+                    : 'border-transparent text-gray-500 hover:text-gray-300 hover:bg-japan-surface'
                 }`}
               >
                 {c.nameFR}
@@ -556,7 +556,7 @@ export function GrammarPage() {
       </div>
 
       {/* Category heading */}
-      <div className="flex items-center gap-4 mb-5 pb-4 border-b border-[#30363d]">
+      <div className="flex items-center gap-4 mb-5 pb-4 border-b border-japan-border">
         <span className="kanji-char text-3xl text-japan-red opacity-80 select-none leading-none">
           {cat.nameJP}
         </span>
@@ -606,14 +606,14 @@ export function GrammarPage() {
               >
                 {/* Front */}
                 <div
-                  className="absolute inset-0 rounded-xl p-4 flex flex-col bg-[#161b22] border border-[#30363d] shadow-lg overflow-hidden"
-                  style={{ backfaceVisibility: 'hidden', borderLeftWidth: '3px', borderLeftColor: '#c84535' }}
+                  className="absolute inset-0 rounded-xl p-4 flex flex-col bg-japan-card border border-japan-border border-l-[3px] border-l-japan-red shadow-lg overflow-hidden"
+                  style={{ backfaceVisibility: 'hidden' }}
                 >
                   <p className="text-[10px] font-bold uppercase tracking-widest text-japan-red mb-1 leading-none">
                     {card.label}
                   </p>
                   {card.form && (
-                    <span className="kanji-char inline-block self-start text-[10px] text-gray-500 bg-[#0d1117] border border-[#30363d] rounded px-1.5 py-px mb-2">
+                    <span className="kanji-char inline-block self-start text-[10px] text-gray-500 bg-japan-dark border border-japan-border rounded px-1.5 py-px mb-2">
                       {card.form}
                     </span>
                   )}
@@ -627,8 +627,8 @@ export function GrammarPage() {
 
                 {/* Back */}
                 <div
-                  className="absolute inset-0 rounded-xl p-4 flex flex-col bg-[#0f1929] border border-[#30363d] shadow-lg overflow-y-auto"
-                  style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', borderLeftWidth: '3px', borderLeftColor: '#c84535' }}
+                  className="absolute inset-0 rounded-xl p-4 flex flex-col bg-japan-deep border border-japan-border border-l-[3px] border-l-japan-red shadow-lg overflow-y-auto"
+                  style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
                 >
                   <p className="text-sm font-bold text-white mb-1.5 leading-snug">
                     {card.meaning}
@@ -636,7 +636,7 @@ export function GrammarPage() {
                   <p className="text-xs text-gray-400 leading-relaxed">
                     {multiline(card.rule)}
                   </p>
-                  <div className="mt-auto pt-2 border-t border-[#30363d]">
+                  <div className="mt-auto pt-2 border-t border-japan-border">
                     <p className="kanji-char text-sm text-white leading-snug">{card.example}</p>
                     <p className="text-xs text-gray-500 italic mt-0.5">{card.trans}</p>
                   </div>

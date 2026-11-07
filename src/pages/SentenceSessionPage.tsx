@@ -98,8 +98,7 @@ export function SentenceSessionPage() {
           <div className="text-5xl">{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚'}</div>
           <h1 className="text-2xl font-bold text-white">Session terminée !</h1>
           <div
-            className="text-5xl font-bold"
-            style={{ color: pct >= 80 ? '#22c55e' : pct >= 50 ? '#eab308' : '#ef4444' }}
+            className={`text-5xl font-bold ${pct >= 80 ? 'text-green-500' : pct >= 50 ? 'text-yellow-500' : 'text-red-500'}`}
           >
             {pct}%
           </div>
@@ -132,7 +131,7 @@ export function SentenceSessionPage() {
           <span className="truncate max-w-[200px]" title={state.listName}>{state.listName}</span>
           <span>Phrase {currentIndex + 1} / {exercises.length}</span>
         </div>
-        <div className="w-full bg-[#21262d] rounded-full h-2">
+        <div className="w-full bg-japan-surface rounded-full h-2">
           <div
             className="bg-japan-red h-2 rounded-full transition-all"
             style={{ width: `${(currentIndex / exercises.length) * 100}%` }}

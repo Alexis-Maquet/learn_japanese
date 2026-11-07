@@ -86,7 +86,7 @@ export function ReviewSessionPage() {
           <span className="truncate max-w-[200px]" title={listName}>{listName}</span>
           <span>Kanji {currentIndex + 1} / {kanjis.length}</span>
         </div>
-        <div className="w-full bg-[#21262d] rounded-full h-2">
+        <div className="w-full bg-japan-surface rounded-full h-2">
           <div
             className="bg-japan-red h-2 rounded-full transition-all"
             style={{ width: `${(currentIndex / kanjis.length) * 100}%` }}
@@ -114,7 +114,7 @@ export function ReviewSessionPage() {
 
         {/* Readings */}
         {detail && (
-          <div className="space-y-3 border-t border-[#30363d] pt-4">
+          <div className="space-y-3 border-t border-japan-border pt-4">
             {onReadings.length > 0 && (
               <div className="space-y-1">
                 <p className="text-xs text-gray-500 uppercase tracking-wider">On-yomi</p>

@@ -119,8 +119,7 @@ export function ConjugationSessionPage() {
           <div className="text-5xl">{pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚'}</div>
           <h1 className="text-2xl font-bold text-white">Session terminée !</h1>
           <div
-            className="text-5xl font-bold"
-            style={{ color: pct >= 80 ? '#22c55e' : pct >= 50 ? '#eab308' : '#ef4444' }}
+            className={`text-5xl font-bold ${pct >= 80 ? 'text-green-500' : pct >= 50 ? 'text-yellow-500' : 'text-red-500'}`}
           >
             {pct}%
           </div>
@@ -147,7 +146,7 @@ export function ConjugationSessionPage() {
                     <span className="text-gray-500 text-xs">({wa.exercise.correctAnswerKana})</span>
                   )}
                 </div>
-                <div className="rounded bg-[#0d1117] px-3 py-2 text-xs text-gray-400">
+                <div className="rounded bg-japan-dark px-3 py-2 text-xs text-gray-400">
                   <span className="kanji-char text-yellow-400/70 mr-2">{wa.exercise.grammarPoint}</span>
                   {wa.exercise.hint}
                 </div>
@@ -172,7 +171,7 @@ export function ConjugationSessionPage() {
           <span>Conjugaison</span>
           <span>Question {currentIndex + 1} / {exercises.length}</span>
         </div>
-        <div className="w-full bg-[#21262d] rounded-full h-2">
+        <div className="w-full bg-japan-surface rounded-full h-2">
           <div
             className="bg-japan-red h-2 rounded-full transition-all"
             style={{ width: `${(currentIndex / exercises.length) * 100}%` }}
@@ -206,7 +205,7 @@ export function ConjugationSessionPage() {
             <div className="space-y-1.5">
               <button
                 onClick={() => setShowHint(v => !v)}
-                className="w-full text-xs text-gray-500 hover:text-yellow-400 border border-dashed border-[#30363d] hover:border-yellow-500/40 rounded-lg py-1.5 transition-colors"
+                className="w-full text-xs text-gray-500 hover:text-yellow-400 border border-dashed border-japan-border hover:border-yellow-500/40 rounded-lg py-1.5 transition-colors"
               >
                 {showHint ? 'Masquer l\'indice' : 'Voir un indice'}
               </button>
@@ -236,9 +235,9 @@ export function ConjugationSessionPage() {
                 readOnly={submitted}
                 placeholder="たべて ou tabete…"
                 className={[
-                  'flex-1 px-4 py-3 rounded-lg border bg-[#0d1117] kanji-char text-lg text-white placeholder:text-gray-600 outline-none transition-colors',
+                  'flex-1 px-4 py-3 rounded-lg border bg-japan-dark kanji-char text-lg text-white placeholder:text-gray-600 outline-none transition-colors',
                   !submitted
-                    ? 'border-[#30363d] focus:border-gray-400'
+                    ? 'border-japan-border focus:border-gray-400'
                     : isCorrect
                       ? 'border-green-500 bg-green-500/5 text-green-300 cursor-default'
                       : 'border-red-500 bg-red-500/5 text-red-300 cursor-default',
@@ -280,9 +279,9 @@ export function ConjugationSessionPage() {
 
           {/* Hint revealed after answer */}
           {submitted && (
-            <div className="rounded-lg bg-[#161b22] border border-[#30363d] px-4 py-3 space-y-1">
+            <div className="rounded-lg bg-japan-card border border-japan-border px-4 py-3 space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="kanji-char text-xs text-gray-400 bg-[#0d1117] border border-[#30363d] rounded px-2 py-0.5">
+                <span className="kanji-char text-xs text-gray-400 bg-japan-dark border border-japan-border rounded px-2 py-0.5">
                   {exercise.targetForm}
                 </span>
                 <span className="kanji-char text-xs text-gray-500">{exercise.grammarPoint}</span>

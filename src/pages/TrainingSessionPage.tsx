@@ -56,7 +56,7 @@ export function TrainingSessionPage() {
           <div className="text-5xl">{scorePct >= 80 ? '🎉' : scorePct >= 50 ? '👍' : '📚'}</div>
           <h1 className="text-2xl font-bold text-white">Session terminée !</h1>
 
-          <div className="text-5xl font-bold" style={{ color: scorePct >= 80 ? '#22c55e' : scorePct >= 50 ? '#eab308' : '#ef4444' }}>
+          <div className={`text-5xl font-bold ${scorePct >= 80 ? 'text-green-500' : scorePct >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
             {scorePct}%
           </div>
 
@@ -81,7 +81,7 @@ export function TrainingSessionPage() {
 
           {/* Historical comparison */}
           {(globalAvg !== null || bestScore !== null) && (
-            <div className="border-t border-[#30363d] pt-4 flex justify-center gap-8 text-xs text-gray-500">
+            <div className="border-t border-japan-border pt-4 flex justify-center gap-8 text-xs text-gray-500">
               {globalAvg !== null && (
                 <div className="text-center">
                   <p className={`text-base font-bold ${globalAvg >= 80 ? 'text-green-400' : globalAvg >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
@@ -114,7 +114,7 @@ export function TrainingSessionPage() {
                   <Link
                     key={c.kanji}
                     to={`/kanji/${encodeURIComponent(c.kanji)}`}
-                    className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-[#21262d] transition-colors"
+                    className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-japan-surface transition-colors"
                     title={c.details.meanings[0]}
                   >
                     <span className="kanji-char text-2xl text-red-300">{c.kanji}</span>
@@ -157,7 +157,7 @@ export function TrainingSessionPage() {
           <span className="truncate max-w-[200px]" title={session.listName}>{session.listName}</span>
           <span>{session.currentIndex + 1} / {session.cards.length}</span>
         </div>
-        <div className="w-full bg-[#21262d] rounded-full h-2">
+        <div className="w-full bg-japan-surface rounded-full h-2">
           <div
             className="bg-japan-red h-2 rounded-full transition-all"
             style={{ width: `${(session.currentIndex / session.cards.length) * 100}%` }}
